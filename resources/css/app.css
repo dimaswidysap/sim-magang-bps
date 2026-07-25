@@ -1,0 +1,38 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@100..900&display=swap");
+
+@import "tailwindcss";
+
+@source "../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php";
+@source "../../storage/framework/views/*.php";
+@source "../**/*.blade.php";
+@source "../**/*.js";
+
+@theme {
+    --font-montserrat: "Montserrat", sans-serif;
+
+    --color-primary: #1e88e5;
+    --color-primary-dark: #1565c0;
+    --color-primary-light: #64b5f6;
+
+    --color-secondary: #43a047;
+    --color-secondary-dark: #2e7d32;
+
+    --color-accent: #f9a825;
+    --color-accent-dark: #f57f17;
+
+    --color-info: #26c6da;
+
+    --color-background: #f5f7fa;
+    --color-surface: #ffffff;
+
+    --color-text: #263238;
+    --color-text-light: #607d8b;
+
+    --color-border: #e0e0e0;
+
+    --color-success: #2e7d32;
+    --color-warning: #fb8c00;
+    --color-danger: #e53935;
+
+    --color-footer: #1d2128;
+}
