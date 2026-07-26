@@ -7,7 +7,7 @@
     <title>SIM MAGANG</title>
       @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body>
+<body class="font-montserrat">
 @yield('content')
 </body>
 </html>

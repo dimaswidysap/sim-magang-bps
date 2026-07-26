@@ -8,7 +8,7 @@
         </section>
         <!-- Login Card -->
         <section
-            class="absolute  lg:right-[5%] w-[90%] bg-black/20 backdrop-blur-md max-w-md lg:w-1/3 rounded-3xl shadow-2xl overflow-hidden"
+            class="absolute h-[90%] text-[80%] md:text-[100%] lg:right-[5%] w-[90%] bg-black/20 backdrop-blur-md max-w-md lg:w-1/3 rounded-3xl shadow-2xl overflow-hidden"
         >
             <!-- Header -->
             <div class="px-8 py-8 text-center">
@@ -18,15 +18,19 @@
             </div>
 
             <!-- Form -->
-            <form class="space-y-6 p-8">
+            <form class="space-y-6 p-8" method="POST" action="{{ route('login.post') }}">
+                @csrf
+
                 <!-- Email -->
                 <div>
                     <label class="mb-2 block text-sm font-semibold text-white">
-                        Email / NIP / NIM
+                        Email
                     </label>
 
                     <input
-                        type="text"
+                        type="email"
+                        name="email"
+                        value="{{ old('email') }}"
                         placeholder="Masukkan Email"
                         class="w-full rounded-xl border border-border bg-background px-4 py-3 text-text placeholder:text-text-light outline-none transition duration-300 focus:border-primary focus:ring-4 focus:ring-primary/20"
                     />
@@ -40,13 +44,21 @@
 
                     <input
                         type="password"
+                        name="password"
                         placeholder="Masukkan Password"
                         class="w-full rounded-xl border border-border bg-background px-4 py-3 text-text placeholder:text-text-light outline-none transition duration-300 focus:border-primary focus:ring-4 focus:ring-primary/20"
                     />
                 </div>
 
+                {{-- pesan error - otomatis muncul kalau login gagal --}}
+                @error('email')
+                    <div class="w-full py-2">
+                        <span class="text-danger text-sm font-bold">{{ $message }}</span>
+                    </div>
+                @enderror
+
                 <!-- Remember -->
-                <div class="flex items-center justify-between">
+                {{-- <div class="flex items-center justify-between">
                     <label
                         class="flex items-center gap-2 text-sm text-text-light"
                     >
@@ -60,10 +72,11 @@
                     >
                         Lupa Password?
                     </a>
-                </div>
+                </div> --}}
 
                 <!-- Button -->
                 <button
+                    type="submit"
                     class="w-full rounded-xl bg-primary py-3 font-semibold text-white shadow-lg transition duration-300 hover:scale-[1.02] hover:bg-primary-dark active:scale-[0.98]"
                 >
                     Masuk

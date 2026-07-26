@@ -7,6 +7,13 @@
 @source "../**/*.blade.php";
 @source "../**/*.js";
 
+/* 1. Taruh class buatanmu di sini (Di LUAR @theme) */
+@layer components {
+    .container-dalam {
+        @apply bg-surface border border-text/40 rounded-xl py-1 px-1;
+    }
+}
+
 @theme {
     --font-montserrat: "Montserrat", sans-serif;
 

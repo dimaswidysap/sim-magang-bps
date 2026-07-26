@@ -2,7 +2,7 @@
 
 @section('content')
 @include('components.HeaderHome')
-<main class="w-full h-screen relative overflow-hidden">
+<main class="w-full h-[110vh] relative overflow-hidden">
     {{-- container background image --}}
     <section class="w-full aspect-video">
         @include('components.BuldingBg')

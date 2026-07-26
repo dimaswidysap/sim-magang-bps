@@ -52,9 +52,9 @@ class UserSeeder extends Seeder
 
         // 3. Mahasiswa
         $mahasiswaUser = User::firstOrCreate(
-            ['email' => 'mahasiswa@example.com'],
+            ['email' => 'dimaswidysaputra41@example.com'],
             [
-                'name' => 'Andi Wijaya',
+                'name' => 'Dimas Widy Saputra',
                 'password' => Hash::make('password123'),
                 'role' => 'mahasiswa',
                 'is_active' => true,
@@ -67,7 +67,7 @@ class UserSeeder extends Seeder
             [
                 'nim' => '2305101038',
                 'instansi_asal' => 'UNIVERSITAS PGRI MADIUN',
-                'jenjang' => 'D4',
+                'jenjang' => 'S1',
                 'jurusan' => 'Teknik Informatika',
                 'status' => 'aktif',
                 'tanggal_mulai' => now()->toDateString(),
