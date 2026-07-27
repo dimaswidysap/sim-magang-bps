@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Admin\AdminMahasiswa;
+use App\Http\Controllers\Admin\adminAsn;
 use App\Http\Controllers\MahasiswaController;
 use App\Http\Controllers\AsnController;
 
@@ -20,14 +21,21 @@ Route::post('/logout', [AuthController::class, 'logout'])
 // SUPER ADMIN
 Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/', [AdminController::class, 'adminIndex'])->name('admin-index');
-    Route::get('/mahasiswa',[AdminController::class,'adminMahasiswa'])->name('admin-mahasiswa');
 
-    //
+    // Management Mahasiswa
+    Route::get('/mahasiswa',[AdminController::class,'adminMahasiswa'])->name('admin-mahasiswa');
     Route::get('/mahasiswa/create',[AdminMahasiswa::class,'showForm'])->name('admin.mahasiswa.create');
     Route::post('/mahasiswa', [AdminMahasiswa::class, 'storeMahasiswa'])->name('admin.mahasiswa.store');
     Route::get('/mahasiswa/detail/{id}',[AdminMahasiswa::class,'detailMahasiswa'])->name('admin-mahasiswa-detail');
     Route::get('/mahasiswa/update/{id}',[AdminMahasiswa::class,'formMahasiswaEdit'])->name('form-mahasiswa-edit');
     Route::put('/mahasiswa/{id}', [AdminMahasiswa::class, 'updateMahasiswa'])->name('admin-mahasiswa-update');
+    Route::delete('/destroyMahasiswa/{id}',[AdminMahasiswa::class,'destroyMahasiswa'])->name('admin-mahasiswa-destroy');
+
+
+    // Management ASN
+    Route::get('/asn',[AdminController::class,'adminAsn'])->name('admin-asn');
+    Route::get('/asn/detail/{id}',[AdminAsn::class,'detailAsn'])->name('admin-asn-detail');
+
 });
 
 // MAHASISWA

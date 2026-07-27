@@ -9,7 +9,9 @@
             <!-- Tombol Kembali -->
             <div class="mb-6">
 
-                <x-main-button class="bg-primary text-white" href="{{ route('admin-mahasiswa') }}">
+                <x-main-button
+                    class="bg-primary hover:bg-primary-dark  text-xs px-4 py-2 rounded-lg text-white transition-colors shadow-sm inline-flex items-center gap-2"
+                    href="{{ route('admin-mahasiswa') }}">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd"
                             d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
@@ -115,6 +117,22 @@
                                 <p class="font-medium text-text">
                                     {{ $detailUser->mahasiswaProfile?->periode_magang_id ?? '-' }}</p>
                             </div>
+                            <div>
+                                <p class="text-sm text-text-light mb-1">Keahlian
+                                <p class="font-medium text-text">
+
+                                    @if ($detailUser->mahasiswaProfile && count($detailUser->mahasiswaProfile->skills) > 0)
+                                        <div class="skills-container">
+                                            <ul>
+                                                @foreach ($detailUser->mahasiswaProfile->skills as $skill)
+                                                    <li>{{ $skill->nama_skill }} </li>
+                                                @endforeach
+                                            </ul>
+                                        </div>
+                                    @else
+                                        <p>Belum ada data skill yang ditambahkan.</p>
+                                    @endif
+                            </div>
                         </div>
                     </div>
 
@@ -171,19 +189,18 @@
                                     {{ $detailUser->surat_pengantar_path ? 'Ada' : 'Belum ada' }}</p>
                             </div>
 
+
                         </div>
                     </div>
 
                 </div>
 
                 <!-- Footer Actions -->
-                <div class="bg-footer px-6 md:px-10 py-5 flex flex-col md:flex-row gap-3 justify-end items-center">
+                <div class="bg-footer  px-6 md:px-10 py-5 flex  flex-col md:flex-row gap-3 justify-end items-center">
                     <form action="{{ route('admin-mahasiswa-destroy', $detailUser->id) }}" method="POST"
                         onsubmit="return confirm('Yakin ingin menghapus data mahasiswa ini? Semua data terkait (absensi, tugas) ikut terhapus dan tidak bisa dikembalikan.')">
                         @csrf
                         @method('DELETE')
-
-
                         <x-main-button type="submit" class="bg-danger text-white">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
                                 stroke-width="2" class="w-5 h-5">

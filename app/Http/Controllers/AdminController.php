@@ -18,11 +18,19 @@ class AdminController extends Controller
         return View('admin.index');
     }
 
-    public function adminMahasiswa()
-{
-    // Tambahkan query() setelah model User
-    $dataMahasiswa = User::query()->where('role', 'mahasiswa')->with('mahasiswaProfile')->get();
+    // mengambil semua data ASN
+    public function adminAsn()
+    {
+        $dataAsn = User::query()->where('role', 'asn')->with('AsnProfile')->get();
+        return view('admin.asn.index',compact('dataAsn'));
+    }
 
-    return view('admin.mahasiswa.index', compact('dataMahasiswa'));
-}
+    // mengambil semua data mahasiswa
+    public function adminMahasiswa()
+    {
+        // Tambahkan query() setelah model User
+        $dataMahasiswa = User::query()->where('role', 'mahasiswa')->with('mahasiswaProfile')->get();
+
+        return view('admin.mahasiswa.index', compact('dataMahasiswa'));
+    }
 }

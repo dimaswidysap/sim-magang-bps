@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Admin;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Controllers\Controller;
@@ -55,10 +56,14 @@ class AdminMahasiswa extends Controller
 
     public function formMahasiswaEdit($id)
     {
-        $dataUser = User::where('id', $id)->where('role', 'mahasiswa')->with('mahasiswaProfile.skills')->firstOrFail();
+        // Tambahkan query() setelah User
+        $dataUser = User::query()->where('id', $id)->where('role', 'mahasiswa')->with('mahasiswaProfile.skills')->firstOrFail();
 
-        $periodeList = PeriodeMagang::orderBy('tanggal_mulai', 'desc')->get();
-        $skillList = Skill::orderBy('nama_skill')->get();
+        // Tambahkan query() setelah PeriodeMagang
+        $periodeList = PeriodeMagang::query()->orderBy('tanggal_mulai', 'desc')->get();
+
+        // Tambahkan query() setelah Skill
+        $skillList = Skill::query()->orderBy('nama_skill','asc')->get();
 
         // Ambil daftar id skill yang sudah dipilih mahasiswa ini, buat mempermudah
         // cek "checked" di form. Kalau belum punya profile, otomatis array kosong.
@@ -69,7 +74,7 @@ class AdminMahasiswa extends Controller
 
     public function updateMahasiswa(Request $request, $id)
     {
-        $user = User::where('id', $id)->where('role', 'mahasiswa')->firstOrFail();
+        $user = User::query()->where('id', $id)->where('role', 'mahasiswa')->firstOrFail();
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -122,6 +127,7 @@ class AdminMahasiswa extends Controller
         return redirect()->route('admin-mahasiswa')->with('success', 'Data mahasiswa berhasil diperbarui.');
     }
 
+    // menghapus data mahasiswa (berserta user untuk login)
     public function destroyMahasiswa(Request $request, $id)
     {
         $user = User::query()
@@ -132,11 +138,11 @@ class AdminMahasiswa extends Controller
         // Mencegah admin menghapus akunnya sendiri secara tidak sengaja -
         // tidak relevan untuk role mahasiswa, tapi pola ini penting kalau
         // nanti Anda buat destroy() serupa untuk admin/ASN.
-        if ($user->id === auth()->id()) {
+        if ($user->id === Auth::id()) {
             return back()->with('error', 'Anda tidak bisa menghapus akun sendiri.');
         }
 
-        $user->query()->delete();
+        $user->delete('id');
 
         return redirect()->route('admin-mahasiswa')->with('success', 'Data mahasiswa berhasil dihapus.');
     }
