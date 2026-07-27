@@ -38,21 +38,33 @@
                             <tbody>
                                 @forelse ($dataMahasiswa as $mhs)
                                     <tr class="border-b border-border hover:bg-background transition-colors">
-                                        <td class="p-4 text-sm font-medium text-text">{{ $mhs->mahasiswaProfile->nim }}</td>
+                                        <td class="p-4 text-sm font-medium text-text">
+                                            {{ $mhs->mahasiswaProfile->nim ?? '-' }}</td>
                                         <td class="p-4 text-sm font-medium text-text">{{ $mhs->name }}</td>
-                                        <td class="p-4 text-sm text-text">{{ $mhs->mahasiswaProfile->instansi_asal }}</td>
-                                        <td class="p-4 text-sm text-text">{{ $mhs->mahasiswaProfile->jurusan }}
-                                            ({{ $mhs->mahasiswaProfile->jenjang }})
+                                        <td class="p-4 text-sm text-text">{{ $mhs->mahasiswaProfile->instansi_asal ?? '-' }}
+                                        </td>
+                                        <td class="p-4 text-sm text-text">{{ $mhs->mahasiswaProfile->jurusan ?? '-' }}
+                                            ({{ $mhs->mahasiswaProfile->jenjang ?? '-' }})
                                         </td>
                                         <td class="p-4 text-sm text-text">
-                                            {{ \Carbon\Carbon::parse($mhs->tanggal_mulai)->translatedFormat('d M Y') }} -
-                                            {{ \Carbon\Carbon::parse($mhs->tanggal_selesai)->translatedFormat('d M Y') }}
+                                            {{ \Carbon\Carbon::parse($mhs->tanggal_mulai)->translatedFormat('d M Y') ?? '-' }}
+                                            -
+                                            {{ \Carbon\Carbon::parse($mhs->tanggal_selesai)->translatedFormat('d M Y') ?? '-' }}
                                         </td>
-                                        <td class="p-4 text-sm text-center">
-                                            <span
-                                                class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-success/10 text-success capitalize border border-success/20">
-                                                {{ $mhs->mahasiswaProfile->status }}
-                                            </span>
+                                        <td class="p-4 text-center">
+                                            @if ($mhs->is_active)
+                                                <span
+                                                    class="px-3  py-0.5 bg-success text-surface text-sm font-semibold rounded-full flex items-center gap-2 shadow-sm">
+                                                    <span class="w-2 h-2 rounded-full bg-surface animate-pulse"></span>
+                                                    Aktif
+                                                </span>
+                                            @else
+                                                <span
+                                                    class="px-3  py-0.5 bg-danger text-surface text-sm font-semibold rounded-full flex items-center gap-2 shadow-sm">
+                                                    <span class="w-2 h-2 rounded-full bg-surface animate-pulse"></span>
+                                                    Nonaktif
+                                                </span>
+                                            @endif
                                         </td>
                                         <td class="p-4 text-sm text-center">
                                             <x-main-button class="bg-primary text-white"
