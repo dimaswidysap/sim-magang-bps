@@ -19,7 +19,7 @@ class UserSeeder extends Seeder
         //
         // 1. Super Admin
         User::firstOrCreate(
-            ['email' => 'admin@bps.go.id'],
+            ['email' => 'admin@gmail.com'],
             [
                 'name' => 'Super Admin',
                 'password' => Hash::make('password123'),

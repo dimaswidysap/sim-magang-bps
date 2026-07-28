@@ -6,6 +6,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Admin\AdminMahasiswa;
 use App\Http\Controllers\Admin\adminAsn;
 use App\Http\Controllers\Admin\AdminAsn as AdminAdminAsn;
+use App\Http\Controllers\Asn\TugasController;
 use App\Http\Controllers\MahasiswaController;
 use App\Http\Controllers\AsnController;
 
@@ -47,14 +48,18 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
 
 // MAHASISWA
 Route::prefix('mahasiswa')->middleware(['auth', 'role:mahasiswa'])->group(function () {
-    Route::get('/', [MahasiswaController::class, 'mahasiswaIndex'])->name('mahasiswa-index');
+    Route::get('/dashboard', [MahasiswaController::class, 'mahasiswaIndex'])->name('mahasiswa-index');
+
+    Route::get('/tugas',[MahasiswaController::class,'tugas'])->name('tugas');
+    Route::get('/tugas-saya',[MahasiswaController::class,'tugasSaya'])->name('tugas-saya');
 });
 
 // ASN
 Route::prefix('asn')->middleware(['auth', 'role:asn'])->group(function () {
     Route::get('/dashboard', [AsnController::class, 'asnIndex'])->name('asn-index');
 
-    Route::get('/create-task',[AsnController::class,'createTugas'])->name('asn-create-task');
+    Route::get('/create-task',[AsnController::class,'createTugasForm'])->name('asn-create-task-form');
+    Route::post('/storeTugas',[TugasController::class,'storeTugas'])->name('asn-store-tugas');
     Route::get('/task-not-done',[AsnController::class,'taskNotDone'])->name('task-not-done');
     Route::get('/task-done',[AsnController::class,'taskDone'])->name('task-done');
 

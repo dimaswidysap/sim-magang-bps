@@ -15,4 +15,9 @@ class Skill extends Model
     {
         return $this->belongsToMany(MahasiswaProfile::class, 'mahasiswa_profile_skill');
     }
+
+    public function tugas()
+    {
+        return $this->belongsToMany(Tugas::class, 'tugas_skill');
+    }
 }

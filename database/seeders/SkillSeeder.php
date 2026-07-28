@@ -14,6 +14,8 @@ class SkillSeeder extends Seeder
             'Back End',
             'Excel',
             'IT Support',
+            'Desain Grafis',
+            'Vedeo Editor',
         ];
 
         foreach ($skills as $skill) {

@@ -10,24 +10,29 @@ class TugasController extends Controller
 {
     //
     public function storeTugas(Request $request)
-{
-    $validated = $request->validate([
-        'judul' => 'required|string|max:255',
-        'deskripsi' => 'required|string',
-        'deadline' => 'required|date|after:now',
-    ]);
+    {
+        $validated = $request->validate([
+            'judul' => 'required|string|max:255',
+            'deskripsi' => 'required|string',
+            'deadline' => 'required|date|after:now',
+            'skills' => 'nullable|array',
+            'skills.*' => 'exists:skills,id',
+        ]);
 
-    Tugas::create([
-        'asn_id' => auth()->id(),
-        'judul' => $validated['judul'],
-        'deskripsi' => $validated['deskripsi'],
-        'deadline' => $validated['deadline'],
-        'status' => 'tersedia',
-        'periode_magang_id' => null, // kolom masih ada di tabel, sengaja tidak dipakai
-        'mahasiswa_profile_id' => null,
-    ]);
+        $tugas = Tugas::create([
+            'asn_id' => auth()->id(),
+            'judul' => $validated['judul'],
+            'deskripsi' => $validated['deskripsi'],
+            'deadline' => $validated['deadline'],
+            'status' => 'tersedia',
+            'periode_magang_id' => null,
+            'mahasiswa_profile_id' => null,
+        ]);
 
-    return redirect()->route('asn-index')
-        ->with('success', 'Tugas berhasil dibuat dan tersedia untuk diambil mahasiswa.');
-}
+        if (!empty($validated['skills'])) {
+            $tugas->skills()->attach($validated['skills']);
+        }
+
+        return redirect()->route('task-not-done')->with('success', 'Tugas berhasil dibuat dan tersedia untuk diambil mahasiswa.');
+    }
 }

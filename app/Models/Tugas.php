@@ -45,6 +45,11 @@ class Tugas extends Model
         return $this->hasMany(TugasSubmission::class);
     }
 
+    public function skills()
+    {
+        return $this->belongsToMany(Skill::class, 'tugas_skill');
+    }
+
     public function scopeTersedia($query)
     {
         return $query->where('status', 'tersedia');
