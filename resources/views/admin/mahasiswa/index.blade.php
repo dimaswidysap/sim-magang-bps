@@ -13,12 +13,14 @@
             <section class="w-full p-2">
                 <section class="container-dalam">
                     <section class="w-full flex justify-end mt-4 mb-8">
-                        <x-main-button class="bg-accent-dark text-white" href="{{ route('admin.mahasiswa.create') }}">
+                        <x-main-button
+                            class="bg-primary hover:bg-primary-dark  text-xs px-4 py-2 rounded-lg text-white transition-colors shadow-sm inline-flex items-center gap-2"
+                            href="{{ route('admin.mahasiswa.create') }}">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
                                 stroke="currentColor" class="w-5 h-5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                             </svg>
-                            <span>Tambah Data</span>
+                            <span>Tambah data</span>
                         </x-main-button>
                     </section>
                     {{-- table --}}
@@ -67,14 +69,15 @@
                                                 <p class="text-[12px] font-medium text-text">
                                                     {{ $mhs->mahasiswaProfile->jurusan ?? '-' }}</p>
                                                 <p class="text-xs text-text-light mt-0.5">
-                                                    ({{ $mhs->mahasiswaProfile->jenjang ?? '-' }})</p>
+                                                    ({{ $mhs->mahasiswaProfile->jenjang ?? '-' }})
+                                                </p>
                                             </td>
 
                                             <!-- Periode Magang -->
                                             <td class="px-6 py-4 text-[12px] text-text flex flex-col justify-center">
-                                                 <span>{{ \Carbon\Carbon::parse($mhs->tanggal_mulai)->translatedFormat('d M Y') ?? '-' }}</span>
+                                                <span>{{ \Carbon\Carbon::parse($mhs->tanggal_mulai)->translatedFormat('d M Y') ?? '-' }}</span>
                                                 <span class="text-text-light">s.d</span>
-                                                 <span>{{ \Carbon\Carbon::parse($mhs->tanggal_selesai)->translatedFormat('d M Y') ?? '-' }}</span>
+                                                <span>{{ \Carbon\Carbon::parse($mhs->tanggal_selesai)->translatedFormat('d M Y') ?? '-' }}</span>
                                             </td>
 
                                             <!-- Status Badge -->

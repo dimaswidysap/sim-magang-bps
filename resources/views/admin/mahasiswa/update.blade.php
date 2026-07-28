@@ -179,15 +179,31 @@
 
             <!-- Footer Buttons -->
             <div class="flex flex-col sm:flex-row justify-end items-center gap-4 pt-4">
-                <a href="{{ route('admin-mahasiswa') }}" class="w-full sm:w-auto bg-background hover:bg-surface border border-border text-text hover:text-primary flex justify-center items-center gap-2 px-8 py-3 rounded-xl font-medium transition-colors">
-                    Kembali
-                </a>
-                <button type="submit" class="w-full sm:w-auto bg-primary hover:bg-primary-dark text-surface flex justify-center items-center gap-2 px-8 py-3 rounded-xl font-medium transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                    </svg>
-                    Simpan Perubahan
-                </button>
+
+
+                <x-main-button
+                        class=" text-xs px-4 py-2 rounded-lg text-text border-text border transition-colors shadow-sm inline-flex items-center gap-2"
+                        href="{{ route('admin-mahasiswa') }}">
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        <span>Batal</span>
+                    </x-main-button>
+
+
+                <x-main-button
+                        class="bg-primary hover:bg-primary-dark  text-xs px-4 py-2 rounded-lg text-white transition-colors shadow-sm inline-flex items-center gap-2"
+                        type="submit">
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        <span>Simpan perubahan</span>
+                    </x-main-button>
+
             </div>
 
         </form>

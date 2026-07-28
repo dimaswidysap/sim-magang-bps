@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Admin\AdminMahasiswa;
 use App\Http\Controllers\Admin\adminAsn;
+use App\Http\Controllers\Admin\AdminAsn as AdminAdminAsn;
 use App\Http\Controllers\MahasiswaController;
 use App\Http\Controllers\AsnController;
 
@@ -35,6 +36,12 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
     // Management ASN
     Route::get('/asn',[AdminController::class,'adminAsn'])->name('admin-asn');
     Route::get('/asn/detail/{id}',[AdminAsn::class,'detailAsn'])->name('admin-asn-detail');
+    Route::get('/asn/update/{id}',[AdminAdminAsn::class,'formUpdateAsn'])->name('form-asn-edit');
+    Route::put('/asnUpdate/{id}',[AdminAsn::class,'updateAsn'])->name('admin-asn-update');
+    Route::get('/asn/create',[AdminAsn::class,'showForm'])->name('asn.mahasiswa.create');
+    Route::post('/asnCreate', [AdminAsn::class, 'storeAsn'])->name('admin-asn-store');
+    Route::delete('/asn/{id}', [AdminAsn::class, 'destroyAsn'])->name('admin-asn-destroy');
+
 
 });
 
@@ -45,9 +52,13 @@ Route::prefix('mahasiswa')->middleware(['auth', 'role:mahasiswa'])->group(functi
 
 // ASN
 Route::prefix('asn')->middleware(['auth', 'role:asn'])->group(function () {
-    Route::get('/', [AsnController::class, 'asnIndex'])->name('asn-index');
+    Route::get('/dashboard', [AsnController::class, 'asnIndex'])->name('asn-index');
+
+    Route::get('/create-task',[AsnController::class,'createTugas'])->name('asn-create-task');
+    Route::get('/task-not-done',[AsnController::class,'taskNotDone'])->name('task-not-done');
+    Route::get('/task-done',[AsnController::class,'taskDone'])->name('task-done');
+
+
+
 });
 
-// Nanti tambahkan pola yang sama untuk asn & mahasiswa:
-// Route::prefix('asn')->middleware(['auth', 'role:asn'])->group(function () { ... });
-// Route::prefix('mahasiswa')->middleware(['auth', 'role:mahasiswa'])->group(function () { ... });

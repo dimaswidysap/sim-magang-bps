@@ -7,8 +7,10 @@
             <!-- Tombol Kembali -->
             <div class="mb-6">
 
+
+
                 <x-main-button
-                    class="bg-primary hover:bg-primary-dark  text-xs px-4 py-2 rounded-lg text-white transition-colors shadow-sm inline-flex items-center gap-2"
+                    class="bg-primary text-white text-xs px-4 py-2 rounded-lg  transition-colors shadow-sm inline-flex items-center gap-2"
                     href="{{ route('admin-asn') }}">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd"
@@ -154,15 +156,33 @@
                 <!-- Footer Actions -->
                 <div class="bg-footer px-6 md:px-10 py-5 flex flex-col md:flex-row gap-3 justify-end items-center">
 
+                    <form method="POST" action="{{ route('admin-asn-destroy', $detailAsn->id) }}"
+                        onsubmit="return confirm('Yakin ingin menghapus data asn ini? Semua data terkait ikut terhapus dan tidak bisa dikembalikan.')">
+                        @csrf
+                        @method('DELETE')
+
+
+                        <x-main-button
+                            class="border border-danger text-danger! text-xs px-4 py-2 rounded-lg  transition-colors shadow-sm inline-flex items-center gap-2"
+                            type="submit">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                stroke-width="2" class="w-5 h-5">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M6 7h12M9 7V5h6v2m-8 0v12a2 2 0 002 2h6a2 2 0 002-2V7M10 11l4 4M14 11l-4 4" />
+                            </svg>
+                            <span>Hapus data</span>
+                        </x-main-button>>
+
+                    </form>
                     <x-main-button
                         class="bg-primary hover:bg-primary-dark  text-xs px-4 py-2 rounded-lg text-white transition-colors shadow-sm inline-flex items-center gap-2"
-                        href="{{ route('admin-asn') }}">
+                        href="{{ route('form-asn-edit', $detailAsn->id) }}">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                         </svg>
-                        <span>Edit</span>
+                        <span>Edit data</span>
                     </x-main-button>
                 </div>
 

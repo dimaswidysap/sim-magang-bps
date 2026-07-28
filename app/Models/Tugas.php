@@ -13,12 +13,13 @@ class Tugas extends Model
 
     protected $fillable = [
         'asn_id', 'periode_magang_id', 'mahasiswa_profile_id',
-        'judul', 'deskripsi', 'status', 'diambil_at', 'selesai_at',
+        'judul', 'deskripsi', 'deadline', 'status', 'diambil_at', 'selesai_at',
     ];
 
     protected function casts(): array
     {
         return [
+            'deadline' => 'datetime',
             'diambil_at' => 'datetime',
             'selesai_at' => 'datetime',
         ];
