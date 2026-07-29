@@ -33,4 +33,13 @@ class AdminController extends Controller
 
         return view('admin.mahasiswa.index', compact('dataMahasiswa'));
     }
+
+    public function adminSkill(){
+
+    return view('admin.skill.index');
+    }
+
+    public function adminPeriodeMagang(){
+        return view('admin.periode-magang.index');
+    }
 }

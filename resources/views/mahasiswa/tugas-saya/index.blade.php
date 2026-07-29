@@ -11,7 +11,7 @@
     <section class="flex flex-col flex-1 pl-60">
 
         {{-- header --}}
-        @include('components.admin.header-admin')
+          @include('components.mahasiswa.header-mahasiswa')
 
         <section class="w-full p-2">
             <section class="container-dalam"></section>

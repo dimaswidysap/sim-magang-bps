@@ -5,13 +5,13 @@
 <main class=" relative w-full flex bg-background">
 {{-- container-sidebar-admin --}}
 
-@include('components.asn.asn-sidebar')
+@include('components.admin.sidebar-admin')
 
     {{-- container-content --}}
     <section class="flex flex-col flex-1 pl-60">
 
         {{-- header --}}
-        @include('components.asn.header-asn')
+        @include('components.admin.header-admin')
 
         <section class="w-full p-2">
             <section class="container-dalam"></section>

@@ -157,7 +157,7 @@
                             </div>
                             <div>
                                 <p class="text-sm text-text-light mb-1">Nomor Telepon</p>
-                                <p class="font-medium text-text">{{ $detailUser->no_telp ?? '-' }}</p>
+                                <p class="font-medium text-text">{{ $detailUser->phone ?? '-' }}</p>
                             </div>
                             <div class="md:col-span-2">
                                 <p class="text-sm text-text-light mb-1">Alamat Asal</p>

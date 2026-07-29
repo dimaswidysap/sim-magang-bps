@@ -28,12 +28,10 @@ class UserSeeder extends Seeder
                 'email_verified_at' => now(),
             ],
         );
-
-        // 2. ASN
-        $asnUser = User::firstOrCreate(
-            ['email' => 'asn@bps.go.id'],
+        $asnUser2 = User::firstOrCreate(
+            ['email' => 'wijiutami@gmail.com'],
             [
-                'name' => 'Budi Santoso',
+                'name' => 'Wiji Utami',
                 'password' => Hash::make('password123'),
                 'role' => 'asn',
                 'is_active' => true,
@@ -42,17 +40,36 @@ class UserSeeder extends Seeder
         );
 
         AsnProfile::firstOrCreate(
-            ['user_id' => $asnUser->id],
+            ['user_id' => $asnUser2->id],
             [
-                'nip' => '198501012010011001',
-                'jabatan' => 'Statistisi Ahli Muda',
+                'nip' => '199002022015032002',
+                'jabatan' => 'Statistisi Ahli Pertama',
+                'unit_kerja' => 'BPS Kabupaten Madiun',
+            ],
+        );
+        $asnUser3 = User::firstOrCreate(
+            ['email' => 'Tarmadi@gmail.com'],
+            [
+                'name' => 'Tarmadi',
+                'password' => Hash::make('password123'),
+                'role' => 'asn',
+                'is_active' => true,
+                'email_verified_at' => now(),
+            ],
+        );
+
+        AsnProfile::firstOrCreate(
+            ['user_id' => $asnUser3->id],
+            [
+                'nip' => '198803032012121003',
+                'jabatan' => 'Pranata Komputer Ahli Muda',
                 'unit_kerja' => 'BPS Kabupaten Madiun',
             ],
         );
 
         // 3. Mahasiswa
         $mahasiswaUser = User::firstOrCreate(
-            ['email' => 'dimaswidysaputra41@example.com'],
+            ['email' => 'dimas@gmail.com'],
             [
                 'name' => 'Dimas Widy Saputra',
                 'password' => Hash::make('password123'),
@@ -75,6 +92,78 @@ class UserSeeder extends Seeder
             ],
         );
 
-        $this->command->info('3 user berhasil dibuat: admin@bps.go.id, asn@bps.go.id, mahasiswa@example.com (password: password123)');
+        $mahasiswaUser2 = User::firstOrCreate(
+            ['email' => 'ridho@gmail.com'],
+            [
+                'name' => 'Ridho',
+                'password' => Hash::make('password123'),
+                'role' => 'mahasiswa',
+                'is_active' => true,
+                'email_verified_at' => now(),
+            ],
+        );
+
+        MahasiswaProfile::firstOrCreate(
+            ['user_id' => $mahasiswaUser2->id],
+            [
+                'nim' => '2305101039',
+                'instansi_asal' => 'UNIVERSITAS PGRI MADIUN',
+                'jenjang' => 'S1',
+                'jurusan' => 'Teknik Informatika',
+                'status' => 'aktif',
+                'tanggal_mulai' => now()->toDateString(),
+                'tanggal_selesai' => now()->addMonths(3)->toDateString(),
+            ],
+        );
+
+        // Mahasiswa - Zevina
+        $mahasiswaUser3 = User::firstOrCreate(
+            ['email' => 'zevina@gmail.com'],
+            [
+                'name' => 'Zevina',
+                'password' => Hash::make('password123'),
+                'role' => 'mahasiswa',
+                'is_active' => true,
+                'email_verified_at' => now(),
+            ],
+        );
+
+        MahasiswaProfile::firstOrCreate(
+            ['user_id' => $mahasiswaUser3->id],
+            [
+                'nim' => '2305101040',
+                'instansi_asal' => 'UNIVERSITAS PGRI MADIUN',
+                'jenjang' => 'S1',
+                'jurusan' => 'Teknik Informatika',
+                'status' => 'aktif',
+                'tanggal_mulai' => now()->toDateString(),
+                'tanggal_selesai' => now()->addMonths(3)->toDateString(),
+            ],
+        );
+
+        // Mahasiswa - Gopal
+        $mahasiswaUser4 = User::firstOrCreate(
+            ['email' => 'gopal@gmail.com'],
+            [
+                'name' => 'Gopal',
+                'password' => Hash::make('password123'),
+                'role' => 'mahasiswa',
+                'is_active' => true,
+                'email_verified_at' => now(),
+            ],
+        );
+
+        MahasiswaProfile::firstOrCreate(
+            ['user_id' => $mahasiswaUser4->id],
+            [
+                'nim' => '2305101041',
+                'instansi_asal' => 'UNIVERSITAS PGRI MADIUN',
+                'jenjang' => 'S1',
+                'jurusan' => 'Teknik Informatika',
+                'status' => 'aktif',
+                'tanggal_mulai' => now()->toDateString(),
+                'tanggal_selesai' => now()->addMonths(3)->toDateString(),
+            ],
+        );
     }
 }
