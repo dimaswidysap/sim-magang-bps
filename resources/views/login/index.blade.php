@@ -91,17 +91,6 @@
                     <div class="flex-1 border-t border-border"></div>
                 </div>
 
-                <!-- Register -->
-                <p class="text-center text-sm text-text-light">
-                    Belum memiliki akun?
-
-                    <a
-                        href="#"
-                        class="font-semibold text-accent hover:text-accent-dark hover:underline"
-                    >
-                        Daftar Sekarang
-                    </a>
-                </p>
 
                 <!-- Back -->
                 <div class="text-center">

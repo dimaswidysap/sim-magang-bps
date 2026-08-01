@@ -8,6 +8,8 @@ use App\Models\User;
 use App\Models\PeriodeMagang;
 use App\Models\MahasiswaProfile;
 use App\Models\Skill;
+use App\Models\Tugas;
+
 
 class MahasiswaController extends Controller
 {
@@ -19,7 +21,8 @@ class MahasiswaController extends Controller
 
     public function tugas()
     {
-        return view('mahasiswa.tugas.index');
+        $dataTugas= Tugas::with('asn')->get();
+        return view('mahasiswa.tugas.index',compact('dataTugas'));
     }
     public function tugasSaya()
     {
