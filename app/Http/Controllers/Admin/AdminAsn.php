@@ -17,7 +17,7 @@ class AdminAsn extends Controller
         $detailAsn = User::with('asnProfile')->findOrFail($id);
 
         // 2. Kirim data ke view menggunakan compact()
-        return view('admin.asn.view', compact('detailAsn'));
+        return view('pages.admin.asn.view', compact('detailAsn'));
     }
 
     // menampilan form update asn
@@ -25,7 +25,7 @@ class AdminAsn extends Controller
     {
         $dataAsn = User::query()->where('id', $id)->where('role', 'asn')->with('asnProfile')->firstOrFail();
 
-        return view('admin.asn.update', compact('dataAsn'));
+        return view('pages.admin.asn.update', compact('dataAsn'));
     }
 
     // update data ke databases
@@ -75,7 +75,7 @@ class AdminAsn extends Controller
     // menampilkan form tambah data
     public function showForm()
     {
-        return view('admin.asn.create');
+        return view('pages.admin.asn.create');
     }
 
     // memasukan data ke dalam databases

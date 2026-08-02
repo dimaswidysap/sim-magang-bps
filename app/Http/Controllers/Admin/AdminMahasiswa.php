@@ -19,7 +19,7 @@ class AdminMahasiswa extends Controller
         $periodeList = PeriodeMagang::orderBy('tanggal_mulai', 'desc')->get();
         $skillList = Skill::orderBy('nama_skill', 'asc')->get();
 
-        return view('admin.mahasiswa.create', compact('periodeList', 'skillList'));
+        return view('pages.admin.mahasiswa.create', compact('periodeList', 'skillList'));
     }
 
     public function detailMahasiswa($id)
@@ -32,7 +32,7 @@ class AdminMahasiswa extends Controller
             ->with('mahasiswaProfile.skills') // sekalian ambil skill kalau perlu
             ->firstOrFail();
         // Jangan lupa mengirimkan variabel $detailUser ke dalam view menggunakan compact()
-        return view('admin.mahasiswa.view', compact('detailUser'));
+        return view('pages.admin.mahasiswa.view', compact('detailUser'));
     }
 
     public function storeMahasiswa(Request $request)
@@ -69,7 +69,7 @@ class AdminMahasiswa extends Controller
         // cek "checked" di form. Kalau belum punya profile, otomatis array kosong.
         $selectedSkillIds = $dataUser->mahasiswaProfile ? $dataUser->mahasiswaProfile->skills->pluck('id')->toArray() : [];
 
-        return view('admin.mahasiswa.update', compact('dataUser', 'periodeList', 'skillList', 'selectedSkillIds'));
+        return view('pages.admin.mahasiswa.update', compact('dataUser', 'periodeList', 'skillList', 'selectedSkillIds'));
     }
 
     public function updateMahasiswa(Request $request, $id)

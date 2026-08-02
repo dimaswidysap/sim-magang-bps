@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Http\Controllers\Mahasiswa;
+namespace App\Http\Controllers\Asn;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-class TugasController extends Controller
+class TugasNotDone extends Controller
 {
     //
+
 }

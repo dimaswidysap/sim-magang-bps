@@ -70,9 +70,10 @@
                     <x-main-button
                         class="border border-text  text-xs px-4 py-2 rounded-lg text-text transition-colors shadow-sm inline-flex items-center gap-2"
                         href="{{ route('admin-mahasiswa') }}">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            stroke-width="2" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7 7-7" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12h18" />
                         </svg>
                         <span>Kembali</span>
                     </x-main-button>

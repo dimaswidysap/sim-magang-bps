@@ -54,4 +54,14 @@ class Tugas extends Model
     {
         return $query->where('status', 'tersedia');
     }
+
+    public function scopeBelumSelesai($query)
+    {
+        return $query->where('status', '!=', 'selesai');
+    }
+
+    public function scopeMilikAsn($query, $asnId)
+    {
+        return $query->where('asn_id', $asnId);
+    }
 }

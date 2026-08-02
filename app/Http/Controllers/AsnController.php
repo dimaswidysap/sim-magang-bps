@@ -8,35 +8,42 @@ use Illuminate\View\View;
 use App\Models\Skill;
 use App\Models\User;
 use App\Models\AsnProfile;
+use App\Models\Tugas;
 
 class AsnController extends Controller
 {
     //
     public function asnIndex()
     {
-        return view('asn.index');
+        return view('pages.asn.index');
     }
 
     public function createTugasForm()
     {
         $skillList = Skill::orderBy('nama_skill', 'asc')->get();
 
-        return view('asn.create-task.create', compact('skillList'));
+        return view('pages.asn.create-task.create', compact('skillList'));
     }
     public function taskNotDone()
-    {
-        return view('asn.task-not-done.index');
-    }
+{
+    $tugasBelumSelesai = Tugas::milikAsn(auth()->id())
+        ->belumSelesai()
+        ->with(['mahasiswaProfile.user', 'skills'])
+        ->orderBy('deadline')
+        ->get();
+
+    return view('pages.asn.task-not-done.index', compact('tugasBelumSelesai'));
+}
     public function taskDone()
     {
-        return view('asn.task-done.index');
+        return view('pages.asn.task-done.index');
     }
 
     public function showFormProfil()
     {
         $profil = User::with('asnProfile')->findOrFail(Auth::id());
 
-        return view('asn.profil', compact('profil'));
+        return view('pages.asn.profil', compact('profil'));
     }
 
     public function updateProfil(Request $request)

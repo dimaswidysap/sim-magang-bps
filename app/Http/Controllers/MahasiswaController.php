@@ -16,17 +16,17 @@ class MahasiswaController extends Controller
     //
     public function mahasiswaIndex()
     {
-        return view('mahasiswa.index');
+        return view('pages.mahasiswa.index');
     }
 
     public function tugas()
     {
         $dataTugas= Tugas::with('asn')->get();
-        return view('mahasiswa.tugas.index',compact('dataTugas'));
+        return view('pages.mahasiswa.tugas.index',compact('dataTugas'));
     }
     public function tugasSaya()
     {
-        return view('mahasiswa.tugas-saya.index');
+        return view('pages.mahasiswa.tugas-saya.index');
     }
 
     public function showFormProfil()
@@ -38,7 +38,7 @@ class MahasiswaController extends Controller
 
         $selectedSkillIds = $profil->mahasiswaProfile ? $profil->mahasiswaProfile->skills->pluck('id')->toArray() : [];
 
-        return view('mahasiswa.profil', compact('profil', 'periodeList', 'skillList', 'selectedSkillIds'));
+        return view('pages.mahasiswa.profil', compact('profil', 'periodeList', 'skillList', 'selectedSkillIds'));
     }
 
     public function updateProfil(Request $request)

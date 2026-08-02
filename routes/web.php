@@ -6,9 +6,14 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Admin\AdminMahasiswa;
 use App\Http\Controllers\Admin\adminAsn;
 use App\Http\Controllers\Admin\AdminAsn as AdminAdminAsn;
+
+use App\Http\Controllers\Admin\PeriodeMagangController;
+use App\Http\Controllers\Admin\AdminSkill;
 use App\Http\Controllers\Asn\TugasController;
 use App\Http\Controllers\MahasiswaController;
 use App\Http\Controllers\AsnController;
+use App\Http\Controllers\Mahasiswa\MahasiswaTugas;
+
 
 Route::get('/', function () {
     return view('home.index');
@@ -45,12 +50,20 @@ Route::prefix('admin')
         Route::delete('/asn/{id}', [AdminAsn::class, 'destroyAsn'])->name('admin-asn-destroy');
 
         // management label skill
-        Route::get('/skill',[AdminController::class,'adminSkill'])->name('admin-skill');
-
+        Route::get('/skill', [AdminController::class, 'adminSkill'])->name('admin-skill');
+        Route::get('/skill/create', [AdminSkill::class, 'createSkill'])->name('create-skill');
+        Route::post('/skill', [AdminSkill::class, 'storeSkill'])->name('admin-skill-store');
+        Route::get('/skill/edit/{id}', [AdminSkill::class, 'formSkillEdit'])->name('admin-skill-edit');
+        Route::post('/skill/{id}', [AdminSkill::class, 'updateSkill'])->name('admin-skill-update');
+        Route::delete('/skill/destroy/{id}', [AdminSkill::class, 'destroySkill'])->name('admin-skill-destroy');
 
         // management periode magang
-        Route::get('/periode-magang',[AdminController::class,'adminPeriodeMagang'])->name('admin-periode-magang');
-
+        Route::get('/periode-magang', [AdminController::class, 'adminPeriodeMagang'])->name('admin-periode-magang');
+        Route::get('/periode/create', [PeriodeMagangController::class, 'formPeriodeCreate'])->name('admin-periode-create');
+        Route::post('/periode', [PeriodeMagangController::class, 'storePeriode'])->name('admin-periode-store');
+        Route::get('/periode/edit/{id}', [PeriodeMagangController::class, 'formPeriodeEdit'])->name('admin-periode-edit');
+        Route::put('/periode/{id}', [PeriodeMagangController::class, 'updatePeriode'])->name('admin-periode-update');
+        Route::delete('/periode/destroy/{id}', [PeriodeMagangController::class, 'destroyPeriode'])->name('admin-periode-destroy');
     });
 
 // MAHASISWA
@@ -64,6 +77,7 @@ Route::prefix('mahasiswa')
 
         Route::get('/tugas', [MahasiswaController::class, 'tugas'])->name('tugas');
         Route::get('/tugas-saya', [MahasiswaController::class, 'tugasSaya'])->name('tugas-saya');
+        route::get('/tugas/detail/{id}',[MahasiswaTugas::class,'detailTugas'])->name('detail-tugas');
     });
 
 // ASN
