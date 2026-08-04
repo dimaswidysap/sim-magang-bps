@@ -13,7 +13,9 @@ use App\Http\Controllers\Asn\TugasController;
 use App\Http\Controllers\MahasiswaController;
 use App\Http\Controllers\AsnController;
 use App\Http\Controllers\Mahasiswa\MahasiswaTugas;
-
+use App\Http\Controllers\Mahasiswa\TugasanggotacontrollerInvite;
+use App\Http\Controllers\Mahasiswa\TugasAnggotaControllerRespond;
+use App\Http\Controllers\Mahasiswa\TugasMahasiswaControllerAmbil;
 
 Route::get('/', function () {
     return view('home.index');
@@ -71,26 +73,42 @@ Route::prefix('mahasiswa')
     ->middleware(['auth', 'role:mahasiswa'])
     ->group(function () {
         Route::get('/dashboard', [MahasiswaController::class, 'mahasiswaIndex'])->name('mahasiswa-index');
-
         Route::get('/profil', [MahasiswaController::class, 'showFormProfil'])->name('mahasiswa-profil');
         Route::put('/profil', [MahasiswaController::class, 'updateProfil'])->name('mahasiswa-profil-update');
-
         Route::get('/tugas', [MahasiswaController::class, 'tugas'])->name('tugas');
         Route::get('/tugas-saya', [MahasiswaController::class, 'tugasSaya'])->name('tugas-saya');
-        route::get('/tugas/detail/{id}',[MahasiswaTugas::class,'detailTugas'])->name('detail-tugas');
-    });
+        Route::get('/detail-tugas-saya/{id}', [MahasiswaController::class, 'detailTugasSaya'])->name('detail-tugas-saya');
+        //
+        route::get('/tugas/detail/{id}', [MahasiswaTugas::class, 'detailTugas'])->name('detail-tugas');
+        //
+        Route::get('/tugas/{id}/undang', [TugasanggotacontrollerInvite::class, 'formUndangAnggota'])->name('mahasiswa-tugas-undang-form');
+        Route::post('/tugas/{id}/undang', [TugasanggotacontrollerInvite::class, 'undangAnggota'])->name('mahasiswa-tugas-undang');
+        //
+        Route::get('/undangan', [TugasAnggotaControllerRespond::class, 'daftarUndangan'])->name('mahasiswa-undangan');
+        Route::post('/undangan/{id}/terima', [TugasAnggotaControllerRespond::class, 'terimaUndangan'])->name('mahasiswa-undangan-terima');
+        Route::post('/undangan/{id}/tolak', [TugasAnggotaControllerRespond::class, 'tolakUndangan'])->name('mahasiswa-undangan-tolak');
+        //
+        Route::get('/tugas/tersedia', [TugasMahasiswaControllerAmbil::class, 'daftarTugasTersedia'])->name('mahasiswa-tugas-tersedia');
+        Route::post('/tugas/{id}/ambil', [TugasMahasiswaControllerAmbil::class, 'ambilTugas'])->name('mahasiswa-tugas-ambil');
+
+        });
 
 // ASN
 Route::prefix('asn')
     ->middleware(['auth', 'role:asn'])
     ->group(function () {
         Route::get('/dashboard', [AsnController::class, 'asnIndex'])->name('asn-index');
-
+        Route::delete('/tugas/{id}', [AsnController::class, 'destroyTugas'])->name('asn-tugas-destroy');
         Route::get('/profil', [AsnController::class, 'showFormProfil'])->name('asn-profil');
         Route::put('/profil', [AsnController::class, 'updateProfil'])->name('asn-profil-update');
-
         Route::get('/create-task', [AsnController::class, 'createTugasForm'])->name('asn-create-task-form');
-        Route::post('/storeTugas', [TugasController::class, 'storeTugas'])->name('asn-store-tugas');
         Route::get('/task-not-done', [AsnController::class, 'taskNotDone'])->name('task-not-done');
         Route::get('/task-done', [AsnController::class, 'taskDone'])->name('task-done');
+        Route::get('/pengumpulan', [AsnController::class, 'pengumpulanTugas'])->name('pengumpulan-tugas-asn');
+        //
+        Route::post('/storeTugas', [TugasController::class, 'storeTugas'])->name('asn-store-tugas');
+        Route::get('/update-tugas/{id}', [TugasController::class, 'editTugasForm'])->name('edit-tugas-form');
+        Route::put('/tugas/{id}', [TugasController::class, 'updateTugas'])->name('asn-update-tugas');
+
+
     });

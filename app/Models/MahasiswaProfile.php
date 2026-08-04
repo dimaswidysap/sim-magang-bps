@@ -42,4 +42,16 @@ class MahasiswaProfile extends Model
     {
         return $this->hasMany(Tugas::class);
     }
+
+    // Semua undangan tugas yang PERNAH diterima mahasiswa ini (sebagai anggota, bukan ketua)
+    public function undanganTugas()
+    {
+        return $this->hasMany(TugasAnggota::class);
+    }
+
+    // Cuma undangan yang masih menunggu jawaban (belum diterima/ditolak)
+    public function undanganMenunggu()
+    {
+        return $this->hasMany(TugasAnggota::class)->where('status', 'diundang');
+    }
 }

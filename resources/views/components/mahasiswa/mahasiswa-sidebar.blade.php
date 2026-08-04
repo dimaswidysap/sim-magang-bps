@@ -34,6 +34,20 @@
                 </li>
                 <!-- Menu Mahasiswa -->
                 <li>
+                    <x-nav-link :href="route('mahasiswa-undangan')" :active="request()->routeIs('mahasiswa-undangan')">
+                        <x-slot name="icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="2" class="w-5 h-5">
+
+                                <rect x="3" y="5" width="18" height="14" rx="2" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 7l9 6 9-6" />
+                            </svg>
+                        </x-slot>
+                        Undangan Tugas
+                    </x-nav-link>
+                </li>
+                <!-- Menu Mahasiswa -->
+                <li>
                     <x-nav-link :href="route('tugas')" :active="request()->routeIs('tugas')">
                         <x-slot name="icon">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"

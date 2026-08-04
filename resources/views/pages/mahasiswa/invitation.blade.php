@@ -1,24 +1,27 @@
 @extends('layouts.app')
 
 @section('content')
-
     <main class=" relative w-full flex bg-background">
         {{-- container-sidebar-admin --}}
 
-        @include('components.asn.asn-sidebar')
+        @include('components.mahasiswa.mahasiswa-sidebar')
 
         {{-- container-content --}}
         <section class="flex flex-col flex-1 pl-60">
 
             {{-- header --}}
-           @include('components.asn.header-asn')
+            @include('components.mahasiswa.header-mahasiswa')
 
             <section class="w-full p-2">
                 <section class="container-dalam">
-                    @include('components.asn.card-tugas')
+
+
+
+                    @include('components.invitation')
+
+
                 </section>
             </section>
         </section>
     </main>
-
 @endsection

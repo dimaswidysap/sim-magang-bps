@@ -14,7 +14,10 @@
           @include('components.mahasiswa.header-mahasiswa')
 
         <section class="w-full p-2">
-            <section class="container-dalam"></section>
+            <section class="container-dalam">
+                {{-- {{ $dataTugas }} --}}
+                @include('components.card-tugas-saya')
+            </section>
         </section>
     </section>
 </main>

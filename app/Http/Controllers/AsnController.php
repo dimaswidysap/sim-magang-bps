@@ -25,15 +25,15 @@ class AsnController extends Controller
         return view('pages.asn.create-task.create', compact('skillList'));
     }
     public function taskNotDone()
-{
-    $tugasBelumSelesai = Tugas::milikAsn(auth()->id())
-        ->belumSelesai()
-        ->with(['mahasiswaProfile.user', 'skills'])
-        ->orderBy('deadline')
-        ->get();
+    {
+        $tugasBelumSelesai = Tugas::milikAsn(auth()->id())
+            ->belumSelesai()
+            ->with(['mahasiswaProfile.user', 'skills'])
+            ->orderBy('deadline')
+            ->get();
 
-    return view('pages.asn.task-not-done.index', compact('tugasBelumSelesai'));
-}
+        return view('pages.asn.task-not-done.index', compact('tugasBelumSelesai'));
+    }
     public function taskDone()
     {
         return view('pages.asn.task-done.index');
@@ -73,5 +73,25 @@ class AsnController extends Controller
         );
 
         return redirect()->route('asn-profil')->with('success', 'Profil berhasil diperbarui.');
+    }
+
+    public function destroyTugas($id)
+    {
+        $tugas = Tugas::where('id', $id)
+            ->where('asn_id', auth()->id()) // cuma ASN pembuat yang boleh hapus
+            ->firstOrFail();
+
+        // cascadeOnDelete otomatis menghapus baris terkait di:
+        // - tugas_submissions (semua riwayat upload & review mahasiswa)
+        // - tugas_skill (relasi skill yang dibutuhkan tugas ini)
+        // - tugas_anggota (semua undangan/anggota tim, apapun statusnya)
+        $tugas->delete();
+
+        return redirect()->route('task-not-done')->with('success', 'Tugas berhasil dihapus beserta seluruh data terkait.');
+    }
+
+     public function pengumpulanTugas(){
+
+        return view('pages.asn.pengumpulan');
     }
 }

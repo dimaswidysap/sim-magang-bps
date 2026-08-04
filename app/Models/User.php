@@ -27,6 +27,8 @@ class User extends Authenticatable
         ];
     }
 
+
+
     public function mahasiswaProfile()
     {
         return $this->hasOne(MahasiswaProfile::class);

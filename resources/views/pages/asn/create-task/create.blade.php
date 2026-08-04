@@ -11,7 +11,7 @@
         <section class="flex flex-col flex-1 pl-60">
 
             {{-- header --}}
-            @include('components.admin.header-admin')
+            @include('components.asn.header-asn')
 
             <section class="w-full p-2">
                 <section class="container-dalam">
@@ -44,7 +44,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round"
                                         d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                                 </svg>
-                                Informasi Tugas
+                                Tambah Tugas
                             </h2>
                             <div class="grid grid-cols-1 gap-6 bg-background p-5 rounded-xl border border-border">
 
@@ -115,7 +115,7 @@
                                     stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                                 </svg>
-                                <span>Simpan data</span>
+                                <span>Tambahkan Tugas</span>
                             </x-main-button>
                         </div>
 

@@ -40,6 +40,35 @@ class Tugas extends Model
         return $this->belongsTo(MahasiswaProfile::class);
     }
 
+    public function anggota()
+    {
+        return $this->hasMany(TugasAnggota::class);
+    }
+
+    public function anggotaDiterima()
+    {
+        return $this->hasMany(TugasAnggota::class)->where('status', 'diterima');
+    }
+
+    /**
+     * Kumpulan SEMUA mahasiswa yang terlibat di tugas ini: ketua (dari
+     * kolom mahasiswaProfile) + anggota yang statusnya sudah diterima.
+     * Berguna buat tampilan "siapa saja yang mengerjakan tugas ini".
+     */
+    public function timLengkap()
+    {
+        $anggotaProfiles = $this->anggotaDiterima()
+            ->with('mahasiswaProfile.user')
+            ->get()
+            ->pluck('mahasiswaProfile');
+
+        if ($this->mahasiswaProfile) {
+            return $anggotaProfiles->prepend($this->mahasiswaProfile);
+        }
+
+        return $anggotaProfiles;
+    }
+
     public function submissions()
     {
         return $this->hasMany(TugasSubmission::class);
@@ -63,5 +92,20 @@ class Tugas extends Model
     public function scopeMilikAsn($query, $asnId)
     {
         return $query->where('asn_id', $asnId);
+    }
+
+    /**
+     * Tugas yang "dimiliki" mahasiswa - baik sebagai KETUA (mahasiswa_profile_id
+     * di tabel tugas) MAUPUN sebagai ANGGOTA yang undangannya sudah diterima.
+     */
+    public function scopeMilikMahasiswa($query, $mahasiswaProfileId)
+    {
+        return $query->where(function ($q) use ($mahasiswaProfileId) {
+            $q->where('mahasiswa_profile_id', $mahasiswaProfileId)
+                ->orWhereHas('anggota', function ($aq) use ($mahasiswaProfileId) {
+                    $aq->where('mahasiswa_profile_id', $mahasiswaProfileId)
+                        ->where('status', 'diterima');
+                });
+        });
     }
 }

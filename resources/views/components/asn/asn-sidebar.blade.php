@@ -63,6 +63,24 @@
                     </x-nav-link>
                 </li>
                 <li>
+                    <x-nav-link :href="route('pengumpulan-tugas-asn')" :active="request()->routeIs('pengumpulan-tugas-asn')">
+                        <x-slot name="icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="2" class="w-5 h-5">
+
+                                <!-- Dokumen -->
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M14 2H7a2 2 0 00-2 2v16a2 2 0 002 2h10a2 2 0 002-2V7l-5-5z" />
+
+                                <!-- Upload -->
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 17V9" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l3-3 3 3" />
+                            </svg>
+                        </x-slot>
+                        Pengumpulan
+                    </x-nav-link>
+                </li>
+                <li>
                     <x-nav-link :href="route('task-done')" :active="request()->routeIs('task-done')">
                         <x-slot name="icon">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"

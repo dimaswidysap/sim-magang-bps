@@ -112,7 +112,7 @@
                     class="p-6 md:px-8 md:py-6 bg-background border-t border-border flex flex-col sm:flex-row justify-between items-center gap-4">
 
                     <!-- Tombol Kembali -->
-                    <x-main-button href="{{ route('tugas') }}"
+                    <x-main-button href="{{ route('tugas-saya') }}"
                         class="w-full sm:w-auto bg-surface text-text border border-border hover:bg-background text-xs px-4 py-2 rounded-lg transition-colors shadow-sm inline-flex justify-center items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor" stroke-width="2">
@@ -121,21 +121,16 @@
                         <span>Kembali</span>
                     </x-main-button>
 
-                    @if ($detailTugas->status === 'tersedia')
-                        <form method="POST" action="{{ route('mahasiswa-tugas-ambil', $detailTugas->id) }}">
-                            @csrf
-                            <x-main-button type="submit"
-                                class="w-full sm:w-auto bg-primary hover:bg-primary-dark text-xs px-4 py-2 rounded-lg text-white transition-colors shadow-sm inline-flex justify-center items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <span>Ambil Tugas Ini</span>
-                            </x-main-button>
-                        </form>
-                    @endif
-
+                    {{-- href="{{ route('mahasiswa-tugas-undang') }}" --}}
+                    <x-main-button href="{{ route('mahasiswa-tugas-undang', $detailTugas->id) }}"
+                        class="w-full sm:w-auto bg-primary hover:bg-primary-dark text-xs px-4 py-2 rounded-lg text-white transition-colors shadow-sm inline-flex justify-center items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>Ajak Teman</span>
+                    </x-main-button>
                 </div>
             </div>
         </section>

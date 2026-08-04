@@ -10,7 +10,6 @@ use App\Models\MahasiswaProfile;
 use App\Models\Skill;
 use App\Models\Tugas;
 
-
 class MahasiswaController extends Controller
 {
     //
@@ -21,12 +20,32 @@ class MahasiswaController extends Controller
 
     public function tugas()
     {
-        $dataTugas= Tugas::with('asn')->get();
-        return view('pages.mahasiswa.tugas.index',compact('dataTugas'));
+        $dataTugas = Tugas::with('asn')->get();
+        return view('pages.mahasiswa.tugas.index', compact('dataTugas'));
     }
     public function tugasSaya()
     {
-        return view('pages.mahasiswa.tugas-saya.index');
+        $profil = auth()->user()->mahasiswaProfile;
+
+        // Mahasiswa yang belum lengkapi profil belum bisa "punya" tugas apa pun -
+        // tampilkan halaman kosong, bukan error.
+        if (!$profil) {
+            return view('pages.mahasiswa.tugas-saya.index', ['dataTugas' => collect()])->with('error', 'Lengkapi profil Anda dulu untuk bisa mengambil tugas.');
+        }
+
+        $dataTugas = Tugas::milikMahasiswa($profil->id)
+            ->with(['asn', 'skills', 'anggota.mahasiswaProfile.user']) // biar bisa tampilkan siapa saja tim-nya
+            ->orderBy('deadline')
+            ->get();
+
+        return view('pages.mahasiswa.tugas-saya.index', compact('dataTugas'));
+    }
+
+    public function detailTugasSaya($id)
+    {
+        $detailTugas = Tugas::findOrFail($id);
+
+        return view('pages.mahasiswa.tugas-saya.view', compact('detailTugas'));
     }
 
     public function showFormProfil()
@@ -34,7 +53,7 @@ class MahasiswaController extends Controller
         $profil = User::with('mahasiswaProfile.skills')->findOrFail(Auth::id());
 
         $periodeList = PeriodeMagang::orderBy('tanggal_mulai', 'desc')->get();
-        $skillList = Skill::query()->orderBy('nama_skill','asc')->get();
+        $skillList = Skill::query()->orderBy('nama_skill', 'asc')->get();
 
         $selectedSkillIds = $profil->mahasiswaProfile ? $profil->mahasiswaProfile->skills->pluck('id')->toArray() : [];
 
@@ -83,4 +102,6 @@ class MahasiswaController extends Controller
 
         return redirect()->route('mahasiswa-profil')->with('success', 'Profil berhasil diperbarui.');
     }
+
+
 }
