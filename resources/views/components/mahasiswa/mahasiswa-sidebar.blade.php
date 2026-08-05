@@ -3,7 +3,7 @@
 
     {{-- container dalam --}}
 
-    <section class="h-full w-full container-dalam">
+    <section class="h-full w-full bg-text container-dalam">
 
         {{-- conatiner logo bps --}}
 
@@ -14,7 +14,7 @@
         <nav class="mt-10">
             <ul class="font-montserrat flex flex-col gap-1.5">
                 <!-- Menu Dashboard -->
-                <li class="text-bold font-black text-text/50 text-[10px] ml-[5%] translate-y-2.5 mb-1">Main</li>
+                <li class="text-bold font-black text-white/50 text-[10px] ml-[5%] translate-y-2.5 mb-1">Main</li>
                 <li>
                     <x-nav-link :href="route('mahasiswa-index')" :active="request()->routeIs('mahasiswa-index')">
                         <x-slot name="icon">
@@ -30,7 +30,7 @@
                     </x-nav-link>
                 </li>
 
-                <li class="text-bold font-black text-text/50 text-[10px] ml-[5%] translate-y-2.5 mb-1">Management Tugas
+                <li class="text-bold font-black text-white/50 text-[10px] ml-[5%] translate-y-2.5 mb-1">Management Tugas
                 </li>
                 <!-- Menu Mahasiswa -->
                 <li>

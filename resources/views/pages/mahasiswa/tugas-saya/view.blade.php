@@ -121,16 +121,26 @@
                         <span>Kembali</span>
                     </x-main-button>
 
-                    {{-- href="{{ route('mahasiswa-tugas-undang') }}" --}}
-                    <x-main-button href="{{ route('mahasiswa-tugas-undang', $detailTugas->id) }}"
-                        class="w-full sm:w-auto bg-primary hover:bg-primary-dark text-xs px-4 py-2 rounded-lg text-white transition-colors shadow-sm inline-flex justify-center items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span>Ajak Teman</span>
-                    </x-main-button>
+
+                    <div class="flex gap-4">
+                        <x-main-button href="{{ route('mahasiswa-tugas-undang', $detailTugas->id) }}"
+                            class="w-full sm:w-auto bg-primary hover:bg-primary-dark text-xs px-4 py-2 rounded-lg text-white transition-colors shadow-sm inline-flex justify-center items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>Ajak Teman</span>
+                        </x-main-button>
+                        <x-main-button href="{{ route('mahasiswa-tugas-submit-form', $detailTugas->id) }}"
+                            class="w-full sm:w-auto bg-primary hover:bg-primary-dark text-xs px-4 py-2 rounded-lg text-white transition-colors shadow-sm inline-flex justify-center items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                            </svg>
+                            <span>Kirim Tugas</span>
+                        </x-main-button>
+                    </div>
                 </div>
             </div>
         </section>

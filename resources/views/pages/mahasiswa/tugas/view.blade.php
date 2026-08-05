@@ -4,7 +4,7 @@
     <main class="w-full p-4 md:p-8 bg-background min-h-screen font-montserrat">
         <section class="container-dalam max-w-4xl mx-auto">
 
-            <!-- Alert Sukses (Jika berhasil mengambil tugas) -->
+            <!-- Alert Sukses (Jika berhasil) -->
             @if (session('success'))
                 <div class="mb-6 p-4 bg-success/10 border border-success rounded-lg flex items-center gap-3 shadow-sm">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-success shrink-0" viewBox="0 0 20 20"
@@ -14,6 +14,19 @@
                             clip-rule="evenodd" />
                     </svg>
                     <span class="text-sm font-medium text-success">{{ session('success') }}</span>
+                </div>
+            @endif
+
+            <!-- Alert Error (Jika gagal/ada peringatan) -->
+            @if (session('error'))
+                <div class="mb-6 p-4 bg-danger/10 border border-danger rounded-lg flex items-center gap-3 shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-danger shrink-0" viewBox="0 0 20 20"
+                        fill="currentColor">
+                        <path fill-rule="evenodd"
+                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    <span class="text-sm font-medium text-danger">{{ session('error') }}</span>
                 </div>
             @endif
 

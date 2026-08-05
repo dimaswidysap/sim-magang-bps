@@ -28,6 +28,38 @@ class User extends Authenticatable
     }
 
 
+    public function scopeMahasiswa($query)
+    {
+        return $query->where('role', 'mahasiswa');
+    }
+
+
+    public function scopeMahasiswaAktif($query)
+    {
+        return $query->where('is_active', 1);
+    }
+
+
+    public function scopeMahasiswaNonAktif($query)
+    {
+        return $query->where('is_active', 0);
+    }
+
+    public function scopeAsn($query)
+    {
+        return $query->where('role', 'asn');
+    }
+
+    public function scopeAsnAktif($query)
+    {
+        return $query->where('is_active', 1);
+    }
+
+
+    public function scopeAsnNonAktif($query)
+    {
+        return $query->where('is_active', 0);
+    }
 
     public function mahasiswaProfile()
     {

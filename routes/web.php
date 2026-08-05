@@ -3,15 +3,18 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminController;
-use App\Http\Controllers\Admin\AdminMahasiswa;
-use App\Http\Controllers\Admin\adminAsn;
-use App\Http\Controllers\Admin\AdminAsn as AdminAdminAsn;
-
-use App\Http\Controllers\Admin\PeriodeMagangController;
-use App\Http\Controllers\Admin\AdminSkill;
-use App\Http\Controllers\Asn\TugasController;
+use App\Http\Controllers\TugasSubmissionController;
 use App\Http\Controllers\MahasiswaController;
 use App\Http\Controllers\AsnController;
+//
+use App\Http\Controllers\Admin\AdminMahasiswa;
+use App\Http\Controllers\Admin\adminAsn;
+// use App\Http\Controllers\Admin\AdminAsn as AdminAdminAsn;
+use App\Http\Controllers\Admin\PeriodeMagangController;
+use App\Http\Controllers\Admin\AdminSkill;
+//
+use App\Http\Controllers\Asn\TugasController;
+//
 use App\Http\Controllers\Mahasiswa\MahasiswaTugas;
 use App\Http\Controllers\Mahasiswa\TugasanggotacontrollerInvite;
 use App\Http\Controllers\Mahasiswa\TugasAnggotaControllerRespond;
@@ -45,7 +48,7 @@ Route::prefix('admin')
         // Management ASN
         Route::get('/asn', [AdminController::class, 'adminAsn'])->name('admin-asn');
         Route::get('/asn/detail/{id}', [AdminAsn::class, 'detailAsn'])->name('admin-asn-detail');
-        Route::get('/asn/update/{id}', [AdminAdminAsn::class, 'formUpdateAsn'])->name('form-asn-edit');
+        Route::get('/asn/update/{id}', [AdminAsn::class, 'formUpdateAsn'])->name('form-asn-edit'); //ini yang di edit sebelumnta
         Route::put('/asnUpdate/{id}', [AdminAsn::class, 'updateAsn'])->name('admin-asn-update');
         Route::get('/asn/create', [AdminAsn::class, 'showForm'])->name('asn.mahasiswa.create');
         Route::post('/asnCreate', [AdminAsn::class, 'storeAsn'])->name('admin-asn-store');
@@ -90,8 +93,10 @@ Route::prefix('mahasiswa')
         //
         Route::get('/tugas/tersedia', [TugasMahasiswaControllerAmbil::class, 'daftarTugasTersedia'])->name('mahasiswa-tugas-tersedia');
         Route::post('/tugas/{id}/ambil', [TugasMahasiswaControllerAmbil::class, 'ambilTugas'])->name('mahasiswa-tugas-ambil');
-
-        });
+        //
+        Route::get('/tugas/{id}/submit', [TugasSubmissionController::class, 'formSubmitTugas'])->name('mahasiswa-tugas-submit-form');
+        Route::post('/tugas/{id}/submit', [TugasSubmissionController::class, 'storeSubmission'])->name('mahasiswa-tugas-submit');
+    });
 
 // ASN
 Route::prefix('asn')
@@ -109,6 +114,9 @@ Route::prefix('asn')
         Route::post('/storeTugas', [TugasController::class, 'storeTugas'])->name('asn-store-tugas');
         Route::get('/update-tugas/{id}', [TugasController::class, 'editTugasForm'])->name('edit-tugas-form');
         Route::put('/tugas/{id}', [TugasController::class, 'updateTugas'])->name('asn-update-tugas');
-
-
+        //
+        Route::get('/submission', [TugasSubmissionController::class, 'daftarSubmissionMasuk'])->name('asn-submission-index');
+        Route::get('/submission/{id}', [TugasSubmissionController::class, 'detailSubmission'])->name('asn-submission-detail');
+        Route::post('/submission/{id}/setujui', [TugasSubmissionController::class, 'approveSubmission'])->name('asn-submission-approve');
+        Route::post('/submission/{id}/revisi', [TugasSubmissionController::class, 'mintaRevisi'])->name('asn-submission-revisi');
     });

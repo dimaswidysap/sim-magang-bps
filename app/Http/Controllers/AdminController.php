@@ -10,21 +10,27 @@ use App\Models\User;
 use App\Models\Skill;
 use App\Models\PeriodeMagang;
 
+
 class AdminController extends Controller
 {
     //
 
     public function adminIndex()
     {
-        // Mengambil data user yang sedang login
-        return View('pages.admin.index');
+        $jumlahMahasiswaAktif = User::mahasiswa()->mahasiswaAktif()->count();
+        $jumlahMahasiswaNonAktif = User::mahasiswa()->mahasiswaNonAktif()->count();
+
+        $jumlahAsnAktif=User::asn()->asnAktif()->count();
+        $jumlahAsnNonAktif=User::asn()->asnNonAktif()->count();
+
+        return View('pages.admin.index', compact('jumlahMahasiswaAktif', 'jumlahMahasiswaNonAktif','jumlahAsnAktif','jumlahAsnNonAktif'));
     }
 
     // mengambil semua data ASN
     public function adminAsn()
     {
         $dataAsn = User::query()->where('role', 'asn')->with('AsnProfile')->get();
-        return view('pages.admin.asn.index',compact('dataAsn'));
+        return view('pages.admin.asn.index', compact('dataAsn'));
     }
 
     // mengambil semua data mahasiswa
@@ -36,17 +42,17 @@ class AdminController extends Controller
         return view('pages.admin.mahasiswa.index', compact('dataMahasiswa'));
     }
 
-    public function adminSkill(){
+    public function adminSkill()
+    {
+        $dataSkill = Skill::all();
 
-    $dataSkill= Skill::all();
-
-    return view('pages.admin.skill.index',compact('dataSkill'));
+        return view('pages.admin.skill.index', compact('dataSkill'));
     }
 
-    public function adminPeriodeMagang(){
+    public function adminPeriodeMagang()
+    {
+        $periodeMagang = PeriodeMagang::all();
 
-        $periodeMagang=PeriodeMagang::all();
-
-        return view('pages.admin.periode-magang.index',compact('periodeMagang'));
+        return view('pages.admin.periode-magang.index', compact('periodeMagang'));
     }
 }

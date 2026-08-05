@@ -1,5 +1,5 @@
 <header
-        class="fixed z-100 w-full h-16 bg-surface shadow-xl flex items-center justify-between px-[10%]"
+        class="fixed z-100 w-full h-16 bg-surface border-b border-text/40 shadow-md flex items-center justify-between px-[10%]"
     >
         <!-- icon sim magang bps -->
         <section

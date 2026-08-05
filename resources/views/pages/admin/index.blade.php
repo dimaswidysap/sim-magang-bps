@@ -14,7 +14,9 @@
         @include('components.admin.header-admin')
 
         <section class="w-full p-2">
-            <section class="container-dalam"></section>
+            <section class="container-dalam">
+                @include('components.admin.statistik-user')
+            </section>
         </section>
     </section>
 </main>

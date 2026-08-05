@@ -3,7 +3,7 @@
 
     {{-- container dalam --}}
 
-    <section class="h-full w-full container-dalam">
+    <section class="h-full w-full bg-text container-dalam">
 
         {{-- conatiner logo bps --}}
 
@@ -14,7 +14,7 @@
         <nav class="mt-10">
             <ul class="font-montserrat flex flex-col gap-1.5">
                 <!-- Menu Dashboard -->
-                <li class="text-bold font-black text-text/50 text-[10px] ml-[5%] translate-y-2.5 mb-1">Main</li>
+                <li class="text-bold font-black text-white/50 text-[10px] ml-[5%] translate-y-2.5 mb-1">Main</li>
                 <li>
                     <x-nav-link :href="route('asn-index')" :active="request()->routeIs('asn-index')">
                         <x-slot name="icon">
@@ -30,7 +30,7 @@
                     </x-nav-link>
                 </li>
 
-                <li class="text-bold font-black text-text/50 text-[10px] ml-[5%] translate-y-2.5 mb-1">Management Tugas
+                <li class="text-bold font-black text-white/50 text-[10px] ml-[5%] translate-y-2.5 mb-1">Management Tugas
                 </li>
                 <!-- Menu Mahasiswa -->
                 <li>
@@ -63,7 +63,7 @@
                     </x-nav-link>
                 </li>
                 <li>
-                    <x-nav-link :href="route('pengumpulan-tugas-asn')" :active="request()->routeIs('pengumpulan-tugas-asn')">
+                    <x-nav-link :href="route('asn-submission-index')" :active="request()->routeIs('asn-submission-index')">
                         <x-slot name="icon">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                 stroke="currentColor" stroke-width="2" class="w-5 h-5">

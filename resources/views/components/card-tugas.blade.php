@@ -1,7 +1,7 @@
  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 font-montserrat">
      @forelse ($dataTugas as $tugas)
          <div
-             class="bg-surface border border-border rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col p-5 group">
+             class="bg-surface border border-border rounded-[10px] shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col p-5 group">
 
              <!-- Header Card: Status & Deadline -->
              <div class="flex items-start justify-between gap-2 mb-3">
