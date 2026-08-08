@@ -13,6 +13,8 @@ class MahasiswaTugas extends Controller
     {
         $detailTugas = Tugas::with('asn')->findOrFail($id);
 
+
+
         return view('pages.mahasiswa.tugas.view', compact('detailTugas'));
     }
 

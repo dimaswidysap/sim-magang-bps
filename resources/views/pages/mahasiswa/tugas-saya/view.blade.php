@@ -4,6 +4,9 @@
     <main class="w-full p-4 md:p-8 bg-background min-h-screen font-montserrat">
         <section class="container-dalam max-w-4xl mx-auto">
 
+            {{-- {{ $detailTugas }} --}}
+
+
             <!-- Alert Sukses (Jika berhasil mengambil tugas) -->
             @if (session('success'))
                 <div class="mb-6 p-4 bg-success/10 border border-success rounded-lg flex items-center gap-3 shadow-sm">
@@ -104,6 +107,32 @@
                         <div class="text-sm text-text leading-relaxed bg-surface border border-border p-5 rounded-xl ">
                             {{ $detailTugas->deskripsi }}</div>
                     </div>
+                    @if ($detailTugas->attachments->isNotEmpty())
+                        <div>
+                            <h2 class="text-sm font-semibold text-text-light uppercase tracking-wider mb-3">
+                                Lampiran dari ASN
+                            </h2>
+
+                            <div class="space-y-2">
+                                @foreach ($detailTugas->attachments as $lampiran)
+                                    <a href="{{ Storage::url($lampiran->file_path) }}" target="_blank"
+                                        class="flex items-center gap-3 bg-surface border border-border p-4 rounded-xl hover:border-primary transition-colors">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary shrink-0"
+                                            fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                        <div class="flex-1">
+                                            <p class="text-sm font-medium text-text">{{ $lampiran->file_name }}</p>
+                                            <p class="text-xs text-text-light">
+                                                {{ number_format($lampiran->file_size / 1024, 0) }} KB
+                                            </p>
+                                        </div>
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
 
                 </div>
 
@@ -123,23 +152,39 @@
 
 
                     <div class="flex gap-4">
-                        <x-main-button href="{{ route('mahasiswa-tugas-undang', $detailTugas->id) }}"
-                            class="w-full sm:w-auto bg-primary hover:bg-primary-dark text-xs px-4 py-2 rounded-lg text-white transition-colors shadow-sm inline-flex justify-center items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span>Ajak Teman</span>
-                        </x-main-button>
-                        <x-main-button href="{{ route('mahasiswa-tugas-submit-form', $detailTugas->id) }}"
-                            class="w-full sm:w-auto bg-primary hover:bg-primary-dark text-xs px-4 py-2 rounded-lg text-white transition-colors shadow-sm inline-flex justify-center items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                            </svg>
-                            <span>Kirim Tugas</span>
-                        </x-main-button>
+                        {{-- AJAK TEMAN --}}
+                        @if (
+                            $detailTugas->status !== 'selesai' &&
+                                $detailTugas->status !== 'revisi' &&
+                                auth()->user()->mahasiswaProfile->id == $detailTugas->mahasiswa_profile_id)
+                            <x-main-button href="{{ route('mahasiswa-tugas-undang', $detailTugas->id) }}"
+                                class="w-full sm:w-auto bg-primary hover:bg-primary-dark text-xs px-4 py-2 rounded-lg text-white transition-colors shadow-sm inline-flex justify-center items-center gap-2">
+
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+
+                                </svg>
+
+                                <span>Ajak Teman</span>
+                            </x-main-button>
+                        @endif
+
+
+                        {{-- KIRIM TUGAS --}}
+                        @if ($detailTugas->status !== 'selesai')
+                            <x-main-button href="{{ route('mahasiswa-tugas-submit-form', $detailTugas->id) }}"
+                                class="w-full sm:w-auto bg-primary hover:bg-primary-dark text-xs px-4 py-2 rounded-lg text-white transition-colors shadow-sm inline-flex justify-center items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                </svg>
+                                <span>Kirim Tugas</span>
+                            </x-main-button>
+                        @endif
                     </div>
                 </div>
             </div>

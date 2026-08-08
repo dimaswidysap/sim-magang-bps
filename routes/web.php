@@ -109,6 +109,7 @@ Route::prefix('asn')
         Route::get('/create-task', [AsnController::class, 'createTugasForm'])->name('asn-create-task-form');
         Route::get('/task-not-done', [AsnController::class, 'taskNotDone'])->name('task-not-done');
         Route::get('/task-done', [AsnController::class, 'taskDone'])->name('task-done');
+        Route::get('/tugas-selesai-detail/{id}',[AsnController::class,'tugasSelesaiDetail'])->name('asn-tugas-selesai-detail');
         Route::get('/pengumpulan', [AsnController::class, 'pengumpulanTugas'])->name('pengumpulan-tugas-asn');
         //
         Route::post('/storeTugas', [TugasController::class, 'storeTugas'])->name('asn-store-tugas');

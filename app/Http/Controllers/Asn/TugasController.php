@@ -12,31 +12,44 @@ class TugasController extends Controller
 {
     //
     public function storeTugas(Request $request)
-    {
-        $validated = $request->validate([
-            'judul' => 'required|string|max:255',
-            'deskripsi' => 'required|string',
-            'deadline' => 'required|date|after:now',
-            'skills' => 'nullable|array',
-            'skills.*' => 'exists:skills,id',
-        ]);
+{
+    $validated = $request->validate([
+        'judul' => 'required|string|max:255',
+        'deskripsi' => 'required|string',
+        'deadline' => 'required|date|after:now',
+        'skills' => 'nullable|array',
+        'skills.*' => 'exists:skills,id',
+        'file' => 'nullable|file|max:10240',
+    ]);
 
-        $tugas = Tugas::create([
-            'asn_id' => Auth::id(),
-            'judul' => $validated['judul'],
-            'deskripsi' => $validated['deskripsi'],
-            'deadline' => $validated['deadline'],
-            'status' => 'tersedia',
-            'periode_magang_id' => null,
-            'mahasiswa_profile_id' => null,
-        ]);
+    $tugas = Tugas::create([
+        'asn_id' => Auth::id(),
+        'judul' => $validated['judul'],
+        'deskripsi' => $validated['deskripsi'],
+        'deadline' => $validated['deadline'],
+        'status' => 'tersedia',
+        'periode_magang_id' => null,
+        'mahasiswa_profile_id' => null,
+    ]);
 
-        if (!empty($validated['skills'])) {
-            $tugas->skills()->attach($validated['skills']);
-        }
-
-        return redirect()->route('task-not-done')->with('success', 'Tugas berhasil dibuat dan tersedia untuk diambil mahasiswa.');
+    if (! empty($validated['skills'])) {
+        $tugas->skills()->attach($validated['skills']);
     }
+
+    if ($request->hasFile('file')) {
+        $file = $request->file('file');
+        $path = $file->store('tugas-attachments', 'public');
+
+        $tugas->attachments()->create([
+            'file_path' => $path,
+            'file_name' => $file->getClientOriginalName(),
+            'file_size' => $file->getSize(),
+            'mime_type' => $file->getClientMimeType(),
+        ]);
+    }
+
+    return redirect()->route('task-not-done')->with('success', 'Tugas berhasil dibuat dan tersedia untuk diambil mahasiswa.');
+}
 
     public function editTugasForm($id)
 

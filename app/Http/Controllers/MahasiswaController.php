@@ -20,22 +20,25 @@ class MahasiswaController extends Controller
 
     public function tugas()
     {
-        $dataTugas = Tugas::with('asn')->get();
+        $dataTugas = Tugas::with(['asn', 'attachments'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         return view('pages.mahasiswa.tugas.index', compact('dataTugas'));
     }
     public function tugasSaya()
     {
         $profil = auth()->user()->mahasiswaProfile;
 
-        // Mahasiswa yang belum lengkapi profil belum bisa "punya" tugas apa pun -
-        // tampilkan halaman kosong, bukan error.
+        // Mahasiswa yang belum melengkapi profil belum bisa "punya" tugas apa pun.
         if (!$profil) {
             return view('pages.mahasiswa.tugas-saya.index', ['dataTugas' => collect()])->with('error', 'Lengkapi profil Anda dulu untuk bisa mengambil tugas.');
         }
 
+        // LIFO: tugas yang terakhir masuk akan tampil terlebih dahulu.
         $dataTugas = Tugas::milikMahasiswa($profil->id)
-            ->with(['asn', 'skills', 'anggota.mahasiswaProfile.user']) // biar bisa tampilkan siapa saja tim-nya
-            ->orderBy('deadline')
+            ->with(['asn', 'skills', 'anggota.mahasiswaProfile.user'])
+            ->orderBy('created_at', 'desc')
             ->get();
 
         return view('pages.mahasiswa.tugas-saya.index', compact('dataTugas'));
@@ -43,7 +46,7 @@ class MahasiswaController extends Controller
 
     public function detailTugasSaya($id)
     {
-        $detailTugas = Tugas::findOrFail($id);
+        $detailTugas = Tugas::with('anggota')->findOrFail($id);
 
         return view('pages.mahasiswa.tugas-saya.view', compact('detailTugas'));
     }
@@ -102,6 +105,4 @@ class MahasiswaController extends Controller
 
         return redirect()->route('mahasiswa-profil')->with('success', 'Profil berhasil diperbarui.');
     }
-
-
 }

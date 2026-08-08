@@ -36,7 +36,26 @@ class AsnController extends Controller
     }
     public function taskDone()
     {
-        return view('pages.asn.task-done.index');
+        // Mengambil ID dari user yang sedang login.
+        // Pastikan login menggunakan guard yang sesuai agar Auth::id() mengembalikan asn_id
+        $asnId = Auth::id();
+
+        // Jika asn_id bukan ID utama dari user yang login (misal merelasikan tabel),
+        // gunakan: $asnId = Auth::user()->asn_id;
+
+        // Mengambil data menggunakan Local Scope dari model
+        $tugasSelesai = Tugas::selesaiByAsn($asnId)->get();
+
+        // Me-return data ke view (silakan sesuaikan nama view Anda)
+
+        return view('pages.asn.task-done.index', compact('tugasSelesai'));
+    }
+
+    public function tugasSelesaiDetail($id)
+    {
+        $tugasDetail = Tugas::with(['mahasiswaProfile', 'asn', 'anggota'])->findOrFail($id);
+
+        return view('pages.asn.task-done.view', compact('tugasDetail'));
     }
 
     public function showFormProfil()
@@ -90,8 +109,8 @@ class AsnController extends Controller
         return redirect()->route('task-not-done')->with('success', 'Tugas berhasil dihapus beserta seluruh data terkait.');
     }
 
-     public function pengumpulanTugas(){
-
+    public function pengumpulanTugas()
+    {
         return view('pages.asn.pengumpulan');
     }
 }

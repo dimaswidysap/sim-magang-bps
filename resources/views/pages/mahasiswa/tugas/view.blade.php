@@ -117,6 +117,32 @@
                         <div class="text-sm text-text leading-relaxed bg-surface border border-border p-5 rounded-xl ">
                             {{ $detailTugas->deskripsi }}</div>
                     </div>
+                    @if ($detailTugas->attachments->isNotEmpty())
+                        <div>
+                            <h2 class="text-sm font-semibold text-text-light uppercase tracking-wider mb-3">
+                                Lampiran dari ASN
+                            </h2>
+
+                            <div class="space-y-2">
+                                @foreach ($detailTugas->attachments as $lampiran)
+                                    <a href="{{ Storage::url($lampiran->file_path) }}" target="_blank"
+                                        class="flex items-center gap-3 bg-surface border border-border p-4 rounded-xl hover:border-primary transition-colors">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary shrink-0"
+                                            fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                        <div class="flex-1">
+                                            <p class="text-sm font-medium text-text">{{ $lampiran->file_name }}</p>
+                                            <p class="text-xs text-text-light">
+                                                {{ number_format($lampiran->file_size / 1024, 0) }} KB
+                                            </p>
+                                        </div>
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
 
                 </div>
 

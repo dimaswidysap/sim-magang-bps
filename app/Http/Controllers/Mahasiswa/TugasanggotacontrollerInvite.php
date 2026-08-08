@@ -79,7 +79,7 @@ class TugasanggotacontrollerInvite extends Controller
         // kalau mahasiswa yang diundang buka halaman daftar undangannya sendiri.
         // Fitur notifikasi menyusul setelah alur terima/tolak selesai.
 
-        return redirect()->route('detail-tugas', $tugas->id)->with('success', 'Undangan berhasil dikirim.');
+        return redirect()->route('tugas-saya')->with('success', 'Undangan berhasil dikirim.');
     }
 
     /**

@@ -25,6 +25,12 @@ class Tugas extends Model
         ];
     }
 
+    public function scopeSelesaiByAsn($query, $asnId)
+    {
+        return $query->where('status', 'selesai')
+                     ->where('asn_id', $asnId);
+    }
+
     public function asn()
     {
         return $this->belongsTo(User::class, 'asn_id');
@@ -72,6 +78,11 @@ class Tugas extends Model
     public function submissions()
     {
         return $this->hasMany(TugasSubmission::class);
+    }
+
+    public function attachments()
+    {
+        return $this->hasMany(TugasAttachment::class);
     }
 
     public function skills()
