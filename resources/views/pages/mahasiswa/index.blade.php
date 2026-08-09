@@ -15,7 +15,7 @@
 
         <section class="w-full p-2">
             <section class="container-dalam">
-
+                    @include('components.mahasiswa.statistik-tugas')
             </section>
         </section>
     </section>

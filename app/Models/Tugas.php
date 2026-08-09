@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class Tugas extends Model
 {
@@ -11,10 +12,7 @@ class Tugas extends Model
 
     protected $table = 'tugas';
 
-    protected $fillable = [
-        'asn_id', 'periode_magang_id', 'mahasiswa_profile_id',
-        'judul', 'deskripsi', 'deadline', 'status', 'diambil_at', 'selesai_at',
-    ];
+    protected $fillable = ['asn_id', 'periode_magang_id', 'mahasiswa_profile_id', 'judul', 'deskripsi', 'deadline', 'status', 'diambil_at', 'selesai_at'];
 
     protected function casts(): array
     {
@@ -25,10 +23,41 @@ class Tugas extends Model
         ];
     }
 
+    public static function getJumlahTugasSelesai($mahasiswaProfileId)
+    {
+        return self::query()
+            ->where('status', 'selesai')
+            ->where(function ($query) use ($mahasiswaProfileId) {
+                // 1. Kondisi mahasiswa sebagai PIC Utama (ada di tabel tugas)
+                $query
+                    ->where('mahasiswa_profile_id', $mahasiswaProfileId)
+
+                    // 2. ATAU Kondisi mahasiswa sebagai Anggota (ada di tabel tugas_anggota)
+                    ->orWhereExists(function ($subquery) use ($mahasiswaProfileId) {
+                        $subquery
+                            ->select(DB::raw(1))
+                            ->from('tugas_anggota')
+                            ->whereColumn('tugas_anggota.tugas_id', 'tugas.id')
+                            ->where('tugas_anggota.mahasiswa_profile_id', $mahasiswaProfileId) // Asumsi: Hanya dihitung jika status undangannya "diterima"
+                            ->where('tugas_anggota.status', 'diterima');
+                    });
+            })
+            ->count();
+    }
+    public static function getJumlahTugasBelumSelesai($mahasiswaProfileId)
+    {
+        return self::query()->where('status', 'diambil')
+            ->where(function ($query) use ($mahasiswaProfileId) {
+                $query->where('mahasiswa_profile_id', $mahasiswaProfileId)->orWhereExists(function ($subquery) use ($mahasiswaProfileId) {
+                    $subquery->select(DB::raw(1))->from('tugas_anggota')->whereColumn('tugas_anggota.tugas_id', 'tugas.id')->where('tugas_anggota.mahasiswa_profile_id', $mahasiswaProfileId)->where('tugas_anggota.status', 'diterima');
+                });
+            })
+            ->count();
+    }
+
     public function scopeSelesaiByAsn($query, $asnId)
     {
-        return $query->where('status', 'selesai')
-                     ->where('asn_id', $asnId);
+        return $query->where('status', 'selesai')->where('asn_id', $asnId);
     }
 
     public function asn()
@@ -63,10 +92,7 @@ class Tugas extends Model
      */
     public function timLengkap()
     {
-        $anggotaProfiles = $this->anggotaDiterima()
-            ->with('mahasiswaProfile.user')
-            ->get()
-            ->pluck('mahasiswaProfile');
+        $anggotaProfiles = $this->anggotaDiterima()->with('mahasiswaProfile.user')->get()->pluck('mahasiswaProfile');
 
         if ($this->mahasiswaProfile) {
             return $anggotaProfiles->prepend($this->mahasiswaProfile);
@@ -112,11 +138,9 @@ class Tugas extends Model
     public function scopeMilikMahasiswa($query, $mahasiswaProfileId)
     {
         return $query->where(function ($q) use ($mahasiswaProfileId) {
-            $q->where('mahasiswa_profile_id', $mahasiswaProfileId)
-                ->orWhereHas('anggota', function ($aq) use ($mahasiswaProfileId) {
-                    $aq->where('mahasiswa_profile_id', $mahasiswaProfileId)
-                        ->where('status', 'diterima');
-                });
+            $q->where('mahasiswa_profile_id', $mahasiswaProfileId)->orWhereHas('anggota', function ($aq) use ($mahasiswaProfileId) {
+                $aq->where('mahasiswa_profile_id', $mahasiswaProfileId)->where('status', 'diterima');
+            });
         });
     }
 }

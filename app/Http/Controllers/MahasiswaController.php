@@ -15,9 +15,11 @@ class MahasiswaController extends Controller
     //
     public function mahasiswaIndex()
     {
-
-
-        return view('pages.mahasiswa.index');
+        $user = Auth::user();
+        $mahasiswaProfileId = $user->mahasiswaProfile->id;
+        $jumlahSelesai = Tugas::getJumlahTugasSelesai($mahasiswaProfileId);
+        $jumlahBelumSelesai = Tugas::getJumlahTugasBelumSelesai($mahasiswaProfileId);
+        return view('pages.mahasiswa.index',compact('jumlahSelesai','jumlahBelumSelesai'));
     }
 
     public function tugas()
