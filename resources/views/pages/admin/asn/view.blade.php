@@ -5,7 +5,7 @@
         <section class="container-dalam max-w-4xl mx-auto">
 
             <!-- Tombol Kembali -->
-            <div class="mb-6">
+            <div class="mb-6 flex justify-end w-full">
 
 
 

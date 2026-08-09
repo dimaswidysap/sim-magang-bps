@@ -15,6 +15,8 @@
 
             <section class="w-full p-2">
                 <section class="container-dalam">
+
+                    {{-- {{ $daftarMahasiswa }} --}}
                     @if ($errors->any())
                         <div class="mb-6 p-4 bg-surface border border-danger rounded-lg shadow-sm">
                             <div class="flex items-center gap-2 text-danger font-semibold mb-2">

@@ -15,6 +15,8 @@ class MahasiswaController extends Controller
     //
     public function mahasiswaIndex()
     {
+
+
         return view('pages.mahasiswa.index');
     }
 

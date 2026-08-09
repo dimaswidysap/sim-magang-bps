@@ -12,7 +12,7 @@ class TugasAnggota extends Model
     protected $table = 'tugas_anggota';
 
     protected $fillable = [
-        'tugas_id', 'mahasiswa_profile_id', 'status', 'diundang_oleh',
+        'tugas_id', 'mahasiswa_profile_id', 'status', 'diundang_oleh', 'sumber',
     ];
 
     public function tugas()

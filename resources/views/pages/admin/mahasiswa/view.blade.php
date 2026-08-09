@@ -7,7 +7,7 @@
             {{-- {{ $detailUser }} --}}
 
             <!-- Tombol Kembali -->
-            <div class="mb-6">
+            <div class="mb-6 w-full flex justify-end">
 
 
                 <x-main-button

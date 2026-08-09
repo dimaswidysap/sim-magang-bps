@@ -9,6 +9,7 @@ use App\Models\Skill;
 use App\Models\User;
 use App\Models\AsnProfile;
 use App\Models\Tugas;
+use App\Models\MahasiswaProfile;
 
 class AsnController extends Controller
 {
@@ -21,8 +22,9 @@ class AsnController extends Controller
     public function createTugasForm()
     {
         $skillList = Skill::orderBy('nama_skill', 'asc')->get();
+        $daftarMahasiswa = MahasiswaProfile::whereHas('user', fn($q) => $q->where('is_active', true))->with('user')->get();
 
-        return view('pages.asn.create-task.create', compact('skillList'));
+        return view('pages.asn.create-task.create', compact('skillList','daftarMahasiswa'));
     }
     public function taskNotDone()
     {
