@@ -81,6 +81,7 @@ class AdminMahasiswa extends Controller
             'email' => 'required|email|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:8',
             'nim' => 'required|string|unique:mahasiswa_profiles,nim,' . optional($user->mahasiswaProfile)->id,
+            'is_active'=> 'required',
             'instansi_asal' => 'required|string|max:255',
             'jenjang' => 'nullable|in:SMA/SMK,D3,D4,S1,S2',
             'jurusan' => 'nullable|string|max:255',
@@ -98,6 +99,7 @@ class AdminMahasiswa extends Controller
                 'name' => $validated['name'],
                 'email' => $validated['email'],
                 'phone'=>$validated['phone'],
+                'is_active' =>$validated['is_active'],
                 // Password cuma diganti kalau diisi - kalau dikosongkan,
                 // password lama tetap dipakai (tidak ditimpa jadi kosong/null).
                 'password' => !empty($validated['password']) ? Hash::make($validated['password']) : $user->password,

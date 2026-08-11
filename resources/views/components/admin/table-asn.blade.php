@@ -1,4 +1,6 @@
 <!-- Alert Sukses (Merespons session 'success' dari controller) -->
+@vite(['resources/js/fitur-search.js'])
+
 @if (session('success'))
     <div
         class="mb-6 p-4 bg-success/10 border border-success rounded-lg flex items-center gap-3 shadow-sm font-montserrat mt-4">
@@ -12,7 +14,19 @@
     </div>
 @endif
 
-<section class="w-full flex justify-end mt-4 mb-8">
+<section class="w-full flex justify-between  mb-8">
+    <div class="relative w-full sm:w-72 md:w-80">
+        <!-- Ikon Kaca Pembesar -->
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-text" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+        </div>
+
+        <input type="text" name="search" placeholder="Cari data..."
+            class="input-search w-full pl-9 pr-4 py-2 bg-surface border border-border rounded-lg text-sm text-text focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors shadow-sm">
+    </div>
     <x-main-button
         class="bg-primary hover:bg-primary-dark  text-xs px-4 py-2 rounded-lg text-white transition-colors shadow-sm inline-flex items-center gap-2"
         href="{{ route('asn.mahasiswa.create') }}">
@@ -41,7 +55,7 @@
             <!-- Table Body -->
             <tbody class="divide-y divide-border">
                 @forelse ($dataAsn as $index => $asn)
-                    <tr class="hover:bg-background/50 transition-colors duration-200 group">
+                    <tr class="data-row hover:bg-background/50 transition-colors duration-200 group">
                         <!-- Nomor Urut -->
                         <td class="px-6 py-4 text-sm text-text-light text-center">
                             {{ $index + 1 }}
@@ -110,5 +124,8 @@
                 @endforelse
             </tbody>
         </table>
+        <div id="noDataMessage" class="hidden text-center py-8 text-text-light italic">
+            Data tidak ditemukan.
+        </div>
     </div>
 </div>

@@ -1,3 +1,4 @@
+@vite(['resources/js/fitur-search.js'])
 <section class="w-full p-2 font-montserrat">
     <section class="container-dalam">
 
@@ -14,16 +15,34 @@
             </div>
         @endif
 
-        <section class="w-full flex justify-end mt-4 mb-8">
+        <section class="w-full flex flex-col sm:flex-row justify-between items-center gap-4  mb-8 font-montserrat">
+
+            <!-- Kolom Pencarian (Search) -->
+            <div class="relative w-full sm:w-72 md:w-80">
+                <!-- Ikon Kaca Pembesar -->
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-text" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+
+                <input type="text" name="search" placeholder="Cari data..."
+                    class="input-search w-full pl-9 pr-4 py-2 bg-surface border border-border rounded-lg text-sm text-text focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors shadow-sm">
+            </div>
+
+            <!-- Tombol Tambah Data -->
             <x-main-button
-                class="bg-primary hover:bg-primary-dark  text-xs px-4 py-2 rounded-lg text-white transition-colors shadow-sm inline-flex items-center gap-2"
+                class="w-full sm:w-auto bg-primary hover:bg-primary-dark text-xs px-4 py-2 rounded-lg text-white transition-colors shadow-sm inline-flex justify-center items-center gap-2 shrink-0"
                 href="{{ route('admin.mahasiswa.create') }}">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                    stroke="currentColor" class="w-5 h-5">
+                    stroke="currentColor" class="w-5 h-5 shrink-0">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                 </svg>
                 <span>Tambah data</span>
             </x-main-button>
+
         </section>
 
         {{-- table --}}
@@ -47,7 +66,7 @@
                     <!-- Body Tabel -->
                     <tbody class="divide-y divide-border">
                         @forelse ($dataMahasiswa as $mhs)
-                            <tr class="hover:bg-background/50 transition-colors duration-200 group">
+                            <tr class="data-row hover:bg-background/50 transition-colors duration-200 group">
 
                                 <!-- NIM -->
                                 <td class="px-6 py-4">
@@ -135,6 +154,9 @@
                         @endforelse
                     </tbody>
                 </table>
+                <div id="noDataMessage" class="hidden text-center py-8 text-text-light italic">
+                    Data tidak ditemukan.
+                </div>
             </div>
         </div>
     </section>
