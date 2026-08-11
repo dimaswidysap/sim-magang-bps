@@ -22,13 +22,13 @@ class AsnController extends Controller
     public function createTugasForm()
     {
         $skillList = Skill::orderBy('nama_skill', 'asc')->get();
-        $daftarMahasiswa = MahasiswaProfile::whereHas('user', fn($q) => $q->where('is_active', true))->with('user')->get();
+        $daftarMahasiswa = MahasiswaProfile::query()->where('status', 'aktif')->whereHas('user', fn($q) => $q->where('is_active', true))->with('user')->get();
 
-        return view('pages.asn.create-task.create', compact('skillList','daftarMahasiswa'));
+        return view('pages.asn.create-task.create', compact('skillList', 'daftarMahasiswa'));
     }
     public function taskNotDone()
     {
-        $tugasBelumSelesai = Tugas::milikAsn(auth()->id())
+        $tugasBelumSelesai = Tugas::milikAsn(Auth::id())
             ->belumSelesai()
             ->with(['mahasiswaProfile.user', 'skills'])
             ->orderBy('deadline')
@@ -97,22 +97,22 @@ class AsnController extends Controller
     }
 
     public function destroyTugas($id)
-    {
-        $tugas = Tugas::where('id', $id)
-            ->where('asn_id', auth()->id()) // cuma ASN pembuat yang boleh hapus
-            ->firstOrFail();
+{
+    // 1. Ambil data spesifiknya (atau gagal jika tidak ketemu/bukan miliknya)
+    $tugas = Tugas::query()
+        ->where('id', $id)
+        ->where('asn_id', Auth::id())
+        ->firstOrFail();
 
-        // cascadeOnDelete otomatis menghapus baris terkait di:
-        // - tugas_submissions (semua riwayat upload & review mahasiswa)
-        // - tugas_skill (relasi skill yang dibutuhkan tugas ini)
-        // - tugas_anggota (semua undangan/anggota tim, apapun statusnya)
-        $tugas->delete();
+    // 2. Hapus HANYA data ini
+    $tugas->delete('tugas');
 
-        return redirect()->route('task-not-done')->with('success', 'Tugas berhasil dihapus beserta seluruh data terkait.');
-    }
+    // 3. Return sukses
+    return redirect()->route('task-not-done')->with('success', 'Tugas berhasil dihapus beserta seluruh data terkait.');
+}
 
-    public function pengumpulanTugas()
-    {
-        return view('pages.asn.pengumpulan');
-    }
+    // public function pengumpulanTugas()
+    // {
+    //     return view('pages.asn.pengumpulan');
+    // }
 }

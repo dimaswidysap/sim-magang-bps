@@ -14,8 +14,9 @@
         @include('components.mahasiswa.header-mahasiswa')
 
         <section class="w-full p-2">
-            <section class="container-dalam">
+            <section class="container-dalam flex flex-col gap-2">
                     @include('components.mahasiswa.statistik-tugas')
+                    @include('components.mahasiswa.logbook')
             </section>
         </section>
     </section>

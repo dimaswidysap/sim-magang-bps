@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Illuminate\Support\Facades\Auth;
 use App\Models\Tugas;
 use App\Models\TugasSubmission;
 use Illuminate\Http\Request;
@@ -10,7 +10,7 @@ class TugasSubmissionController extends Controller
 {
     public function formSubmitTugas($tugasId)
     {
-        $profil = auth()->user()->mahasiswaProfile;
+        $profil = Auth::user()->mahasiswaProfile;
 
         $tugas = Tugas::milikMahasiswa($profil?->id ?? 0)
             ->with('submissions')
@@ -25,7 +25,7 @@ class TugasSubmissionController extends Controller
 
     public function storeSubmission(Request $request, $tugasId)
     {
-        $profil = auth()->user()->mahasiswaProfile;
+        $profil = Auth::user()->mahasiswaProfile;
 
         $tugas = Tugas::milikMahasiswa($profil?->id ?? 0)->findOrFail($tugasId);
 
@@ -83,7 +83,7 @@ class TugasSubmissionController extends Controller
         // Semua tugas milik ASN ini yang statusnya menunggu_review,
         // beserta submission TERBARU-nya (kalau ada revisi berkali-kali,
         // yang ditampilkan cukup yang paling baru).
-        $tugasMenungguReview = Tugas::milikAsn(auth()->id())
+        $tugasMenungguReview = Tugas::milikAsn(Auth::id())
             ->where('status', 'menunggu_review')
             ->with(['mahasiswaProfile.user', 'anggotaDiterima.mahasiswaProfile.user', 'submissions' => fn($q) => $q->latest()->limit(1)])
             ->orderBy('deadline')
@@ -94,8 +94,8 @@ class TugasSubmissionController extends Controller
 
     public function detailSubmission($tugasId)
     {
-        $tugas = Tugas::where('id', $tugasId)
-            ->where('asn_id', auth()->id()) // cuma ASN pembuat tugas yang boleh lihat
+        $tugas = Tugas::query()->where('id', $tugasId)
+            ->where('asn_id', Auth::id()) // cuma ASN pembuat tugas yang boleh lihat
             ->with([
                 'mahasiswaProfile.user',
                 'anggotaDiterima.mahasiswaProfile.user',
@@ -110,7 +110,7 @@ class TugasSubmissionController extends Controller
 
     public function approveSubmission($submissionId)
     {
-        $submission = TugasSubmission::with('tugas')->whereHas('tugas', fn($q) => $q->where('asn_id', auth()->id()))->findOrFail($submissionId);
+        $submission = TugasSubmission::with('tugas')->whereHas('tugas', fn($q) => $q->where('asn_id', Auth::id()))->findOrFail($submissionId);
 
         if ($submission->tugas->status !== 'menunggu_review') {
             return back()->with('error', 'Tugas ini tidak sedang menunggu review.');
@@ -118,7 +118,7 @@ class TugasSubmissionController extends Controller
 
         $submission->update([
             'status' => 'disetujui',
-            'direview_oleh' => auth()->id(),
+            'direview_oleh' => Auth::id(),
             'direview_at' => now(),
         ]);
 
@@ -132,7 +132,7 @@ class TugasSubmissionController extends Controller
 
     public function mintaRevisi(Request $request, $submissionId)
     {
-        $submission = TugasSubmission::with('tugas')->whereHas('tugas', fn($q) => $q->where('asn_id', auth()->id()))->findOrFail($submissionId);
+        $submission = TugasSubmission::with('tugas')->whereHas('tugas', fn($q) => $q->where('asn_id', Auth::id()))->findOrFail($submissionId);
 
         if ($submission->tugas->status !== 'menunggu_review') {
             return back()->with('error', 'Tugas ini tidak sedang menunggu review.');
@@ -152,7 +152,7 @@ class TugasSubmissionController extends Controller
         $submission->update([
             'status' => 'revisi',
             'catatan_asn' => $validated['catatan_asn'],
-            'direview_oleh' => auth()->id(),
+            'direview_oleh' => Auth::id(),
             'direview_at' => now(),
         ]);
 

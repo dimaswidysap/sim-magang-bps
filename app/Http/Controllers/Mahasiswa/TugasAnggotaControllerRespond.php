@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Mahasiswa;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Models\TugasAnggota;
 use App\Models\Tugas;
+use App\Models\Logbook;
 
 class TugasAnggotaControllerRespond extends Controller
 {
@@ -46,7 +48,14 @@ class TugasAnggotaControllerRespond extends Controller
             return back()->with('error', 'Anda masih punya tugas aktif lain. Selesaikan dulu sebelum menerima undangan baru.');
         }
 
-        $undangan->update(['status' => 'diterima']);
+        DB::transaction(function () use ($undangan, $mahasiswaProfileSaya) {
+            $undangan->update(['status' => 'diterima']);
+
+            Logbook::create([
+                'tugas_id' => $undangan->tugas_id,
+                'mahasiswa_profile_id' => $mahasiswaProfileSaya->id,
+            ]);
+        });
 
         return redirect()->route('mahasiswa-undangan')->with('success', 'Undangan diterima. Tugas masuk ke logbook Anda.');
     }

@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Models\Tugas;
 use App\Models\TugasAnggota;
+use App\Models\Logbook;
+
 
 class TugasMahasiswaControllerAmbil extends Controller
 {
@@ -54,6 +56,10 @@ class TugasMahasiswaControllerAmbil extends Controller
                     'mahasiswa_profile_id' => $mahasiswaProfileSaya->id,
                     'status' => 'diambil',
                     'diambil_at' => now(),
+                ]);
+                Logbook::create([
+                    'tugas_id' => $tugas->id,
+                    'mahasiswa_profile_id' => $mahasiswaProfileSaya->id,
                 ]);
             });
         } catch (\Exception $e) {

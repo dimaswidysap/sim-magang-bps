@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
@@ -122,7 +123,7 @@ class AdminAsn extends Controller
         ->where('role', 'asn')
         ->firstOrFail();
 
-    if ($user->id === auth()->id()) {
+    if ($user->id === Auth::id()) {
         return back()->with('error', 'Anda tidak bisa menghapus akun sendiri.');
     }
 
@@ -131,7 +132,7 @@ class AdminAsn extends Controller
     // tugas_submissions terkait (karena tugas_submissions cascade ke tugas).
     $jumlahTugas = $user->tugasDibuat()->count();
 
-    $user->delete();
+    $user->delete('destroyAsn');
 
     return redirect()->route('admin-asn')
         ->with('success', "Data ASN berhasil dihapus. {$jumlahTugas} tugas yang pernah dibuat ASN ini ikut terhapus permanen.");

@@ -3,6 +3,7 @@
 @section('content')
 
     <main class=" relative w-full flex bg-background">
+        @include('components.alert')
         {{-- container-sidebar-admin --}}
 
         @include('components.asn.asn-sidebar')
@@ -35,7 +36,7 @@
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ route('asn-store-tugas') }}" class="space-y-8"
+                    <form  method="POST" action="{{ route('asn-store-tugas') }}" id="form-tugas-asn" class="space-y-8"
                         enctype="multipart/form-data">
                         @csrf
 
@@ -123,6 +124,52 @@
                             </div>
                         </div>
 
+                        <div>
+                            <h2 class="text-lg font-semibold text-primary mb-4 flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-2.13a4 4 0 10-8 0 4 4 0 008 0zm6 0a4 4 0 10-8 0 4 4 0 008 0z" />
+                                </svg>
+                                Penugasan Langsung
+                            </h2>
+
+                            <div class="bg-background p-5 rounded-xl border border-border">
+
+                                <!-- Tambahkan select-none di label utama ini -->
+                                <label class="flex items-center gap-2 mb-4 cursor-pointer select-none">
+                                    <input type="checkbox" name="penugasan_langsung" value="1" id="penugasan_langsung"
+                                        onchange="document.getElementById('daftar-mahasiswa-langsung').classList.toggle('hidden', !this.checked)"
+                                        {{ old('penugasan_langsung') ? 'checked' : '' }}
+                                        class="w-4 h-4 text-primary bg-background border-border rounded focus:ring-primary focus:ring-2 cursor-pointer accent-primary">
+                                    <span class="text-sm font-medium text-text">
+                                        Tugaskan langsung ke mahasiswa tertentu
+                                    </span>
+                                </label>
+
+                                <p class="text-xs text-text-light mb-3">
+                                    Langsung berikan tugas ke anak magang
+                                </p>
+
+                                <div id="daftar-mahasiswa-langsung"
+                                    class="{{ old('penugasan_langsung') ? '' : 'hidden' }} flex flex-wrap gap-3">
+                                    @foreach ($daftarMahasiswa as $mhs)
+                                        <!-- Tambahkan select-none di label list mahasiswa ini -->
+                                        <label for="mhs-{{ $mhs->id }}"
+                                            class="flex items-center gap-2 px-4 py-2 bg-surface border border-border rounded-full cursor-pointer hover:border-primary transition-colors select-none">
+                                            <input type="checkbox" name="mahasiswa_ids[]" value="{{ $mhs->id }}"
+                                                id="mhs-{{ $mhs->id }}"
+                                                {{ in_array($mhs->id, old('mahasiswa_ids', [])) ? 'checked' : '' }}
+                                                class="w-4 h-4 text-primary bg-background border-border rounded focus:ring-primary focus:ring-2 cursor-pointer accent-primary">
+                                            <span class="text-sm font-medium text-text">
+                                                {{ $mhs->user->name }} ({{ $mhs->jurusan }})
+                                            </span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+
                         <hr class="border-border mt-8">
 
                         <!-- Footer Buttons -->
@@ -131,8 +178,8 @@
                             <x-main-button
                                 class="bg-primary hover:bg-primary-dark  text-xs px-4 py-2 rounded-lg text-white transition-colors shadow-sm inline-flex items-center gap-2"
                                 type="submit">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                                    stroke="currentColor" stroke-width="2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                                 </svg>
                                 <span>Tambahkan Tugas</span>
@@ -145,4 +192,7 @@
         </section>
     </main>
 
+<script src="{{ asset('js/asn/tugas-alert.js') }}"></script>
 @endsection
+
+

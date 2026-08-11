@@ -96,6 +96,10 @@ Route::prefix('mahasiswa')
         //
         Route::get('/tugas/{id}/submit', [TugasSubmissionController::class, 'formSubmitTugas'])->name('mahasiswa-tugas-submit-form');
         Route::post('/tugas/{id}/submit', [TugasSubmissionController::class, 'storeSubmission'])->name('mahasiswa-tugas-submit');
+        //
+        Route::get('/logbook/{tanggal}', [MahasiswaController::class, 'logbookDetailTanggal'])
+            ->where('tanggal', '[0-9]{4}-[0-9]{2}-[0-9]{2}')
+            ->name('mahasiswa-logbook-tanggal');
     });
 
 // ASN
@@ -109,10 +113,11 @@ Route::prefix('asn')
         Route::get('/create-task', [AsnController::class, 'createTugasForm'])->name('asn-create-task-form');
         Route::get('/task-not-done', [AsnController::class, 'taskNotDone'])->name('task-not-done');
         Route::get('/task-done', [AsnController::class, 'taskDone'])->name('task-done');
-        Route::get('/tugas-selesai-detail/{id}',[AsnController::class,'tugasSelesaiDetail'])->name('asn-tugas-selesai-detail');
+        Route::get('/tugas-selesai-detail/{id}', [AsnController::class, 'tugasSelesaiDetail'])->name('asn-tugas-selesai-detail');
         Route::get('/pengumpulan', [AsnController::class, 'pengumpulanTugas'])->name('pengumpulan-tugas-asn');
         //
         Route::post('/storeTugas', [TugasController::class, 'storeTugas'])->name('asn-store-tugas');
+        Route::post('/tugas/check-aktif', [TugasController::class, 'checkTugasAktif'])->name('tugas.check-aktif');
         Route::get('/update-tugas/{id}', [TugasController::class, 'editTugasForm'])->name('edit-tugas-form');
         Route::put('/tugas/{id}', [TugasController::class, 'updateTugas'])->name('asn-update-tugas');
         //
