@@ -16,6 +16,7 @@
         <section class="w-full p-2">
             <section class="container-dalam">
                 @include('components.asn.statistik-tugas')
+                @include('components.asn.tabel-logbook')
             </section>
         </section>
     </section>

@@ -125,4 +125,9 @@ Route::prefix('asn')
         Route::get('/submission/{id}', [TugasSubmissionController::class, 'detailSubmission'])->name('asn-submission-detail');
         Route::post('/submission/{id}/setujui', [TugasSubmissionController::class, 'approveSubmission'])->name('asn-submission-approve');
         Route::post('/submission/{id}/revisi', [TugasSubmissionController::class, 'mintaRevisi'])->name('asn-submission-revisi');
+        //
+        Route::get('/logbook-mahasiswa/{mahasiswaProfileId}', [AsnController::class, 'logbookMahasiswa'])->name('asn-logbook-mahasiswa-kalender');
+        Route::get('/logbook-mahasiswa/{mahasiswaProfileId}/{tanggal}', [AsnController::class, 'logbookMahasiswaTanggal'])
+            ->where('tanggal', '[0-9]{4}-[0-9]{2}-[0-9]{2}')
+            ->name('asn-logbook-mahasiswa-tanggal');
     });

@@ -10,6 +10,8 @@ use App\Models\User;
 use App\Models\AsnProfile;
 use App\Models\Tugas;
 use App\Models\MahasiswaProfile;
+use App\Models\TugasAnggota;
+use App\Models\Logbook;
 
 class AsnController extends Controller
 {
@@ -19,7 +21,75 @@ class AsnController extends Controller
         $totalSelesai = Tugas::asnGetTugasSelesai()->count();
         $totalBelumSelesai = Tugas::asnGetTugasBelumSelesai()->count();
 
-        return view('pages.asn.index',compact('totalSelesai','totalBelumSelesai'));
+
+        $daftarMahasiswa = MahasiswaProfile::with('user')
+            ->selectRaw(
+                "mahasiswa_profiles.*,
+            (
+                SELECT COUNT(*) FROM tugas
+                WHERE tugas.mahasiswa_profile_id = mahasiswa_profiles.id
+                AND tugas.status != 'selesai'
+            )
+            +
+            (
+                SELECT COUNT(*) FROM tugas_anggota
+                INNER JOIN tugas ON tugas.id = tugas_anggota.tugas_id
+                WHERE tugas_anggota.mahasiswa_profile_id = mahasiswa_profiles.id
+                AND tugas_anggota.status = 'diterima'
+                AND tugas.status != 'selesai'
+            ) AS jumlah_tugas_aktif
+        ",
+            )
+            ->get();
+
+        return view('pages.asn.index', compact('totalSelesai', 'totalBelumSelesai', 'daftarMahasiswa'));
+    }
+    public function logbookMahasiswa($mahasiswaProfileId)
+    {
+        $mahasiswa = MahasiswaProfile::with('user')->findOrFail($mahasiswaProfileId);
+
+        $bulanList = collect();
+        $tanggalAktif = collect();
+
+        if ($mahasiswa->tanggal_mulai && $mahasiswa->tanggal_selesai) {
+            $kursor = $mahasiswa->tanggal_mulai->copy()->startOfMonth();
+            $akhir = $mahasiswa->tanggal_selesai->copy()->startOfMonth();
+
+            while ($kursor->lte($akhir)) {
+                $bulanList->push([
+                    'label' => $kursor->translatedFormat('F Y'),
+                    'tahun' => $kursor->year,
+                    'bulan' => $kursor->month,
+                    'jumlah_hari' => $kursor->daysInMonth,
+                ]);
+                $kursor->addMonth();
+            }
+
+            $tanggalAktif = Logbook::where('mahasiswa_profile_id', $mahasiswa->id)->get()->map(fn($item) => $item->created_at->toDateString())->unique();
+        }
+
+        return view('pages.asn.logbook-magang', compact('mahasiswa', 'bulanList', 'tanggalAktif'));
+    }
+
+    /**
+     * Detail kegiatan mahasiswa tertentu pada tanggal tertentu.
+     * Menampilkan tugas dari ASN manapun, bukan cuma ASN yang login -
+     * makanya nama ASN pemberi tugas ditampilkan jelas di Blade.
+     */
+    public function logbookMahasiswaTanggal($mahasiswaProfileId, $tanggal)
+    {
+        $mahasiswa = MahasiswaProfile::with('user')->findOrFail($mahasiswaProfileId);
+
+        $logbook = Logbook::where('mahasiswa_profile_id', $mahasiswa->id)
+            ->whereDate('created_at', $tanggal)
+            ->with(['tugas.asn', 'tugas.skills'])
+            ->get();
+
+        if ($logbook->isEmpty()) {
+            abort(404, 'Tidak ada kegiatan pada tanggal ini.');
+        }
+
+        return view('pages.asn.logbook-detail', compact('mahasiswa', 'logbook', 'tanggal'));
     }
 
     public function createTugasForm()
@@ -100,19 +170,16 @@ class AsnController extends Controller
     }
 
     public function destroyTugas($id)
-{
-    // 1. Ambil data spesifiknya (atau gagal jika tidak ketemu/bukan miliknya)
-    $tugas = Tugas::query()
-        ->where('id', $id)
-        ->where('asn_id', Auth::id())
-        ->firstOrFail();
+    {
+        // 1. Ambil data spesifiknya (atau gagal jika tidak ketemu/bukan miliknya)
+        $tugas = Tugas::query()->where('id', $id)->where('asn_id', Auth::id())->firstOrFail();
 
-    // 2. Hapus HANYA data ini
-    $tugas->delete('tugas');
+        // 2. Hapus HANYA data ini
+        $tugas->delete('tugas');
 
-    // 3. Return sukses
-    return redirect()->route('task-not-done')->with('success', 'Tugas berhasil dihapus beserta seluruh data terkait.');
-}
+        // 3. Return sukses
+        return redirect()->route('task-not-done')->with('success', 'Tugas berhasil dihapus beserta seluruh data terkait.');
+    }
 
     // public function pengumpulanTugas()
     // {
