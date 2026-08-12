@@ -93,9 +93,11 @@ class MahasiswaController extends Controller
         // Kirim dataTugas ke view
         return view('pages.mahasiswa.tugas.index', compact('dataTugas'));
     }
-    public function tugasSaya()
+    public function tugasSaya(Request $request)
     {
         $profil = Auth::user()->mahasiswaProfile;
+
+        $statusTugas=$request->query('status');
 
         // Mahasiswa yang belum melengkapi profil belum bisa "punya" tugas apa pun.
         if (!$profil) {
@@ -104,6 +106,9 @@ class MahasiswaController extends Controller
 
         // LIFO: tugas yang terakhir masuk akan tampil terlebih dahulu.
         $dataTugas = Tugas::milikMahasiswa($profil->id)
+            ->when($statusTugas,function($query,$statusTugas){
+                return $query->where('status',$statusTugas);
+            })
             ->with(['asn', 'skills', 'anggota.mahasiswaProfile.user'])
             ->orderBy('created_at', 'desc')
             ->get();

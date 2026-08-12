@@ -55,6 +55,17 @@ class Tugas extends Model
             ->count();
     }
 
+    public function scopeAsnGetTugasSelesai($query)
+    {
+        return $query->where('status', 'selesai')
+                     ->where('asn_id', auth()->id());
+    }
+    public function scopeAsnGetTugasBelumSelesai($query)
+    {
+        return $query->whereIn('status', ['diambil', 'menunggu_review'])
+                 ->where('asn_id', auth()->id());
+    }
+
     public function scopeSelesaiByAsn($query, $asnId)
     {
         return $query->where('status', 'selesai')->where('asn_id', $asnId);

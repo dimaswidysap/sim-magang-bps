@@ -14,7 +14,9 @@
         @include('components.asn.header-asn')
 
         <section class="w-full p-2">
-            <section class="container-dalam"></section>
+            <section class="container-dalam">
+                @include('components.asn.statistik-tugas')
+            </section>
         </section>
     </section>
 </main>

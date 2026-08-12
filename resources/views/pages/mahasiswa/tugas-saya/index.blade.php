@@ -16,6 +16,7 @@
         <section class="w-full p-2">
             <section class="container-dalam">
                 {{-- {{ $dataTugas }} --}}
+                @include('components.mahasiswa.tugas-saya-filter')
                 @include('components.card-tugas-saya')
             </section>
         </section>

@@ -16,7 +16,10 @@ class AsnController extends Controller
     //
     public function asnIndex()
     {
-        return view('pages.asn.index');
+        $totalSelesai = Tugas::asnGetTugasSelesai()->count();
+        $totalBelumSelesai = Tugas::asnGetTugasBelumSelesai()->count();
+
+        return view('pages.asn.index',compact('totalSelesai','totalBelumSelesai'));
     }
 
     public function createTugasForm()
