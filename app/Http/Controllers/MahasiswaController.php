@@ -58,7 +58,8 @@ class MahasiswaController extends Controller
             abort(404);
         }
 
-        $logbook = Logbook::query()->where('mahasiswa_profile_id', $profil->id)
+        $logbook = Logbook::query()
+            ->where('mahasiswa_profile_id', $profil->id)
             ->whereDate('created_at', $tanggal)
             ->with(['tugas.asn', 'tugas.skills'])
             ->get();
@@ -76,12 +77,20 @@ class MahasiswaController extends Controller
         ]);
     }
 
-    public function tugas()
+    public function tugas(Request $request)
     {
-        $dataTugas = Tugas::with(['asn', 'attachments'])
-            ->orderBy('created_at', 'desc')
-            ->get();
+        // Tangkap parameter 'status' dari URL (contoh: ?status=tersedia)
+        $status = $request->query('status');
 
+        $dataTugas = Tugas::with(['asn', 'attachments'])
+            // Jika $status ada isinya, jalankan filter where()
+            ->when($status, function ($query, $status) {
+                return $query->where('status', $status);
+            })
+            ->orderBy('created_at', 'desc')
+            ->get(); // Jika data semakin banyak, pertimbangkan mengganti get() dengan paginate(10)
+
+        // Kirim dataTugas ke view
         return view('pages.mahasiswa.tugas.index', compact('dataTugas'));
     }
     public function tugasSaya()

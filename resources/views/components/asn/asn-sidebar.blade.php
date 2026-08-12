@@ -62,6 +62,20 @@
                         Tugas belum selesai
                     </x-nav-link>
                 </li>
+
+                <li>
+                    <x-nav-link :href="route('task-done')" :active="request()->routeIs('task-done')">
+                        <x-slot name="icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="2" class="w-5 h-5">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M9 3h6a1 1 0 011 1v2h2a2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2h2V4a1 1 0 011-1z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 15l2 2 4-5" />
+                            </svg>
+                        </x-slot>
+                        Tugas Selesai
+                    </x-nav-link>
+                </li>
                 <li>
                     <x-nav-link :href="route('asn-submission-index')" :active="request()->routeIs('asn-submission-index')">
                         <x-slot name="icon">
@@ -78,19 +92,6 @@
                             </svg>
                         </x-slot>
                         Pengumpulan
-                    </x-nav-link>
-                </li>
-                <li>
-                    <x-nav-link :href="route('task-done')" :active="request()->routeIs('task-done')">
-                        <x-slot name="icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor" stroke-width="2" class="w-5 h-5">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M9 3h6a1 1 0 011 1v2h2a2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2h2V4a1 1 0 011-1z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 15l2 2 4-5" />
-                            </svg>
-                        </x-slot>
-                        Tugas Selesai
                     </x-nav-link>
                 </li>
                 <li class="text-bold font-black text-danger/50 text-[10px] ml-[5%] translate-y-2.5 mb-1">Logout</li>

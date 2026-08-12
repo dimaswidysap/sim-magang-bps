@@ -1,5 +1,5 @@
 @extends('layouts.app')
-
+{{-- {{ $dataTugas }} --}}
 @section('content')
     <main class=" relative w-full flex bg-background">
         {{-- container-sidebar-admin --}}
@@ -15,6 +15,7 @@
             <section class="w-full p-2">
                 <section class="container-dalam">
                     {{-- {{ $dataTugas }} --}}
+                    @include('components.mahasiswa.tugas-filter')
                     @include('components.card-tugas')
                 </section>
             </section>
