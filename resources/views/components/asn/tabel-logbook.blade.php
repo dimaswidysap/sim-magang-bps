@@ -1,4 +1,5 @@
-<div class="bg-surface mt-4 border border-border rounded-[10px] shadow-sm overflow-hidden font-montserrat">
+{{-- {{ $daftarMahasiswa }} --}}
+<div class="bg-surface border border-border rounded-[10px] shadow-sm overflow-hidden font-montserrat">
 
     <!-- Wrapper dengan overflow-x-auto agar tabel bisa di-scroll horizontal di layar HP -->
     <div class="overflow-x-auto hide-scrollbar">
@@ -11,6 +12,8 @@
                     <th class="px-6 py-4 text-xs font-bold text-text-light uppercase tracking-wider">Jurusan</th>
                     <th class="px-6 py-4 text-xs font-bold text-text-light uppercase tracking-wider text-center">Tugas
                         Aktif</th>
+                    <th class="px-6 py-4 text-xs font-bold text-text-light uppercase tracking-wider text-center">Tugas
+                        Selesai</th>
                     <th class="px-6 py-4 text-xs font-bold text-text-light uppercase tracking-wider text-right">Aksi</th>
                 </tr>
             </thead>
@@ -18,7 +21,7 @@
             <!-- Table Body -->
             <tbody class="divide-y divide-border">
                 @forelse ($daftarMahasiswa as $mhs)
-                    <tr class="hover:bg-primary/5 transition-colors duration-200">
+                    <tr class="data-row hover:bg-primary/5 transition-colors duration-200">
 
                         <!-- Kolom Nama -->
                         <td class="px-6 py-4">
@@ -53,6 +56,21 @@
                                 </span>
                             @endif
                         </td>
+                        <td class="px-6 py-4 text-center">
+                            @if ($mhs->jumlah_tugas_selesai > 0)
+                                <span
+                                    class="inline-flex items-center justify-center min-w-[2rem] px-2 py-1 bg-warning/10 text-warning-dark text-xs font-bold rounded-full border border-warning/20">
+                                    {{ $mhs->jumlah_tugas_selesai }}
+                                </span>
+                            @else
+                                <span
+                                    class="inline-flex items-center justify-center min-w-[2rem] px-2 py-1 bg-background border border-border text-text-light text-xs font-bold rounded-full">
+                                    0
+                                </span>
+                            @endif
+                        </td>
+
+
 
                         <!-- Kolom Aksi -->
                         <td class="px-6 py-4 text-right">
@@ -88,5 +106,8 @@
             </tbody>
 
         </table>
+        <div id="noDataMessage" class="hidden text-center py-8 text-text-light italic">
+            Data tidak ditemukan.
+        </div>
     </div>
 </div>

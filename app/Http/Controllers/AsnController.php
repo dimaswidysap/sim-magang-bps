@@ -10,7 +10,6 @@ use App\Models\User;
 use App\Models\AsnProfile;
 use App\Models\Tugas;
 use App\Models\MahasiswaProfile;
-use App\Models\TugasAnggota;
 use App\Models\Logbook;
 
 class AsnController extends Controller
@@ -21,26 +20,7 @@ class AsnController extends Controller
         $totalSelesai = Tugas::asnGetTugasSelesai()->count();
         $totalBelumSelesai = Tugas::asnGetTugasBelumSelesai()->count();
 
-
-        $daftarMahasiswa = MahasiswaProfile::with('user')
-            ->selectRaw(
-                "mahasiswa_profiles.*,
-            (
-                SELECT COUNT(*) FROM tugas
-                WHERE tugas.mahasiswa_profile_id = mahasiswa_profiles.id
-                AND tugas.status != 'selesai'
-            )
-            +
-            (
-                SELECT COUNT(*) FROM tugas_anggota
-                INNER JOIN tugas ON tugas.id = tugas_anggota.tugas_id
-                WHERE tugas_anggota.mahasiswa_profile_id = mahasiswa_profiles.id
-                AND tugas_anggota.status = 'diterima'
-                AND tugas.status != 'selesai'
-            ) AS jumlah_tugas_aktif
-        ",
-            )
-            ->get();
+        $daftarMahasiswa = MahasiswaProfile::with('user')->aktif()->denganStatistikTugas()->get();
 
         return view('pages.asn.index', compact('totalSelesai', 'totalBelumSelesai', 'daftarMahasiswa'));
     }
@@ -65,7 +45,7 @@ class AsnController extends Controller
                 $kursor->addMonth();
             }
 
-            $tanggalAktif = Logbook::where('mahasiswa_profile_id', $mahasiswa->id)->get()->map(fn($item) => $item->created_at->toDateString())->unique();
+            $tanggalAktif = Logbook::query()->where('mahasiswa_profile_id', $mahasiswa->id)->get()->map(fn($item) => $item->created_at->toDateString())->unique();
         }
 
         return view('pages.asn.logbook-magang', compact('mahasiswa', 'bulanList', 'tanggalAktif'));
@@ -80,7 +60,7 @@ class AsnController extends Controller
     {
         $mahasiswa = MahasiswaProfile::with('user')->findOrFail($mahasiswaProfileId);
 
-        $logbook = Logbook::where('mahasiswa_profile_id', $mahasiswa->id)
+        $logbook = Logbook::query()->where('mahasiswa_profile_id', $mahasiswa->id)
             ->whereDate('created_at', $tanggal)
             ->with(['tugas.asn', 'tugas.skills'])
             ->get();

@@ -54,4 +54,53 @@ class MahasiswaProfile extends Model
     {
         return $this->hasMany(TugasAnggota::class)->where('status', 'diundang');
     }
+
+    /**
+     * Filter mahasiswa yang akunnya masih aktif (users.is_active = 1).
+     * Mahasiswa yang dinonaktifkan admin tidak akan ikut terambil.
+     */
+    public function scopeAktif($query)
+    {
+        return $query->whereHas('user', function ($q) {
+            $q->where('is_active', true);
+        });
+    }
+
+    /**
+     * 1 query tunggal - tambahkan 2 kolom hitungan (jumlah_tugas_aktif dan
+     * jumlah_tugas_selesai) ke setiap baris mahasiswa_profiles, mencakup
+     * peran sebagai KETUA (tugas.mahasiswa_profile_id) maupun ANGGOTA
+     * (tugas_anggota dengan status diterima).
+     */
+    public function scopeDenganStatistikTugas($query)
+    {
+        return $query->selectRaw("mahasiswa_profiles.*,
+            (
+                SELECT COUNT(*) FROM tugas
+                WHERE tugas.mahasiswa_profile_id = mahasiswa_profiles.id
+                AND tugas.status != 'selesai'
+            )
+            +
+            (
+                SELECT COUNT(*) FROM tugas_anggota
+                INNER JOIN tugas ON tugas.id = tugas_anggota.tugas_id
+                WHERE tugas_anggota.mahasiswa_profile_id = mahasiswa_profiles.id
+                AND tugas_anggota.status = 'diterima'
+                AND tugas.status != 'selesai'
+            ) AS jumlah_tugas_aktif,
+            (
+                SELECT COUNT(*) FROM tugas
+                WHERE tugas.mahasiswa_profile_id = mahasiswa_profiles.id
+                AND tugas.status = 'selesai'
+            )
+            +
+            (
+                SELECT COUNT(*) FROM tugas_anggota
+                INNER JOIN tugas ON tugas.id = tugas_anggota.tugas_id
+                WHERE tugas_anggota.mahasiswa_profile_id = mahasiswa_profiles.id
+                AND tugas_anggota.status = 'diterima'
+                AND tugas.status = 'selesai'
+            ) AS jumlah_tugas_selesai
+        ");
+    }
 }

@@ -19,6 +19,8 @@ use App\Http\Controllers\Mahasiswa\MahasiswaTugas;
 use App\Http\Controllers\Mahasiswa\TugasanggotacontrollerInvite;
 use App\Http\Controllers\Mahasiswa\TugasAnggotaControllerRespond;
 use App\Http\Controllers\Mahasiswa\TugasMahasiswaControllerAmbil;
+//
+use App\Http\Controllers\BeritaController;
 
 Route::get('/', function () {
     return view('home.index');
@@ -29,6 +31,29 @@ Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])
     ->middleware('auth')
     ->name('logout');
+
+
+// Tambahkan di web.php, DI LUAR grup prefix admin/asn/mahasiswa yang sudah ada.
+// PERHATIKAN URUTANNYA: /berita/create HARUS di atas /berita/{id},
+// kalau tidak, Laravel akan salah baca "create" sebagai nilai {id}.
+
+// Cuma admin & ASN - BUAT/UBAH/HAPUS
+// (kepemilikan tetap dicek di controller, middleware ini cuma filter role)
+Route::middleware(['auth', 'role:admin,asn'])->group(function () {
+    Route::get('/berita/create', [BeritaController::class, 'create'])->name('berita-create');
+    Route::post('/berita', [BeritaController::class, 'store'])->name('berita-store');
+    Route::get('/berita/{id}/edit', [BeritaController::class, 'edit'])->name('berita-edit');
+    Route::put('/berita/{id}', [BeritaController::class, 'update'])->name('berita-update');
+    Route::delete('/berita/{id}', [BeritaController::class, 'destroy'])->name('berita-destroy');
+});
+
+// Bisa diakses admin, ASN, mahasiswa - LIHAT saja
+// PERHATIKAN: /berita/{id} ditaruh SETELAH /berita/create di atas,
+// supaya /berita/create tidak pernah ketangkap sebagai {id}.
+Route::middleware(['auth', 'role:admin,asn,mahasiswa'])->group(function () {
+    Route::get('/berita', [BeritaController::class, 'index'])->name('berita-index');
+    Route::get('/berita/{id}', [BeritaController::class, 'show'])->name('berita-show');
+});
 
 // SUPER ADMIN
 Route::prefix('admin')
