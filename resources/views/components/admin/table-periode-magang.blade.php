@@ -122,7 +122,7 @@
                                 <!-- Tombol Hapus -->
                                 <form method="POST" action="{{ route('admin-periode-destroy', $periode->id) }}"
                                     class="m-0 inline-block"
-                                    onsubmit="return confirm('Yakin ingin menghapus periode ini? Mahasiswa yang terhubung akan kehilangan keterkaitan periodenya.')">
+                                    data-confirm="Yakin ingin menghapus periode ini? Mahasiswa yang terhubung akan kehilangan keterkaitan periodenya.">
                                     @csrf
                                     @method('DELETE')
 

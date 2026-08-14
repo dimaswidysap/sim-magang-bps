@@ -140,7 +140,7 @@
                                         <!-- Tombol Hapus -->
                                         <form method="POST" action="{{ route('berita-destroy', $berita->id) }}"
                                             class="m-0"
-                                            onsubmit="return confirm('Yakin ingin menghapus berita ini secara permanen?')">
+                                            data-confirm="Yakin ingin menghapus berita ini secara permanen?">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" title="Hapus Berita"

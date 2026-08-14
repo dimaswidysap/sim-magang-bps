@@ -82,7 +82,7 @@
 
                                 <!-- Tombol Hapus (Berada di dalam Form) -->
                                 <form action="{{ route('admin-skill-destroy', $skill->id) }}" method="POST" class="m-0 inline-block"
-                                    onsubmit="return confirm('Yakin ingin menghapus skill ini? Semua data terkait akan ikut terhapus dan tidak bisa dikembalikan.')">
+                                    data-confirm="Yakin ingin menghapus skill ini? Semua data terkait akan ikut terhapus dan tidak bisa dikembalikan.">
                                     @csrf
                                     @method('DELETE')
 

@@ -199,7 +199,7 @@
                 <!-- Footer Actions -->
                 <div class="bg-footer  px-6 md:px-10 py-5 flex  flex-col md:flex-row gap-3 justify-end items-center">
                     <form action="{{ route('admin-mahasiswa-destroy', $detailUser->id) }}" method="POST"
-                        onsubmit="return confirm('Yakin ingin menghapus data mahasiswa ini? Semua data terkait (absensi, tugas) ikut terhapus dan tidak bisa dikembalikan.')">
+                        data-confirm="Yakin ingin menghapus data mahasiswa ini? Semua data terkait (absensi, tugas) ikut terhapus dan tidak bisa dikembalikan.">
                         @csrf
                         @method('DELETE')
 

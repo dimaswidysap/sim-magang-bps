@@ -157,7 +157,7 @@
                 <div class="bg-footer px-6 md:px-10 py-5 flex flex-col md:flex-row gap-3 justify-end items-center">
 
                     <form method="POST" action="{{ route('admin-asn-destroy', $detailAsn->id) }}"
-                        onsubmit="return confirm('Yakin ingin menghapus data asn ini? Semua data terkait ikut terhapus dan tidak bisa dikembalikan.')">
+                        data-confirm="Yakin ingin menghapus data asn ini? Semua data terkait ikut terhapus dan tidak bisa dikembalikan.">
                         @csrf
                         @method('DELETE')
 
