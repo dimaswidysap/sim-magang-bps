@@ -154,36 +154,38 @@
                 </div>
 
                 <!-- Footer Actions -->
-                <div class="bg-footer px-6 md:px-10 py-5 flex flex-col md:flex-row gap-3 justify-end items-center">
+                <div
+                    class="bg-footer border-t border-border px-6 md:px-10 py-5 flex flex-col-reverse sm:flex-row gap-3 sm:justify-end items-center font-montserrat">
 
-                    <form method="POST" action="{{ route('admin-asn-destroy', $detailAsn->id) }}"
-                        data-confirm="Yakin ingin menghapus data asn ini? Semua data terkait ikut terhapus dan tidak bisa dikembalikan.">
+                    <!-- Form Hapus Data ASN -->
+                    <form action="{{ route('admin-asn-destroy', $detailAsn->id) }}" method="POST"
+                        data-confirm="Yakin ingin menghapus data asn ini? Semua data terkait ikut terhapus dan tidak bisa dikembalikan."
+                        class="w-full sm:w-auto m-0">
                         @csrf
                         @method('DELETE')
 
-
-                        <x-main-button
-                            class="border border-danger text-danger! text-xs px-4 py-2 rounded-lg  transition-colors shadow-sm inline-flex items-center gap-2"
-                            type="submit">
+                        <x-main-button type="submit"
+                            class="w-full sm:w-auto bg-surface border  text-danger hover:bg-danger hover:text-white text-xs px-5 py-2.5 rounded-lg transition-all shadow-sm inline-flex justify-center items-center gap-2 group">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                                stroke-width="2" class="w-5 h-5">
+                                stroke-width="2" class="w-4 h-4 transition-colors">
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M6 7h12M9 7V5h6v2m-8 0v12a2 2 0 002 2h6a2 2 0 002-2V7M10 11l4 4M14 11l-4 4" />
                             </svg>
-                            <span>Hapus data</span>
-                        </x-main-button>>
-
+                            <span>Hapus Data</span>
+                        </x-main-button>
                     </form>
-                    <x-main-button
-                        class="bg-primary hover:bg-primary-dark  text-xs px-4 py-2 rounded-lg text-white transition-colors shadow-sm inline-flex items-center gap-2"
-                        href="{{ route('form-asn-edit', $detailAsn->id) }}">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+
+                    <!-- Tombol Edit Data ASN -->
+                    <x-main-button href="{{ route('form-asn-edit', $detailAsn->id) }}"
+                        class="w-full sm:w-auto bg-primary hover:bg-primary-dark text-xs px-5 py-2.5 rounded-lg text-white transition-colors shadow-sm inline-flex justify-center items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                         </svg>
-                        <span>Edit data</span>
+                        <span>Edit Data</span>
                     </x-main-button>
+
                 </div>
 
             </div>
