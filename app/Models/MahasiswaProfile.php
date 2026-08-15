@@ -9,11 +9,7 @@ class MahasiswaProfile extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'user_id', 'periode_magang_id', 'nim', 'instansi_asal', 'jenjang',
-        'jurusan', 'tanggal_mulai', 'tanggal_selesai', 'status',
-        'surat_pengantar_path', 'catatan',
-    ];
+    protected $fillable = ['user_id', 'periode_magang_id', 'nim', 'instansi_asal', 'jenjang', 'jurusan', 'tanggal_mulai', 'tanggal_selesai', 'status', 'surat_pengantar_path', 'catatan'];
 
     protected function casts(): array
     {
@@ -26,6 +22,11 @@ class MahasiswaProfile extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function scopeMahasiswaAktif($query)
+    {
+        return $query->where('status', 'aktif');
     }
 
     public function periodeMagang()
@@ -61,9 +62,12 @@ class MahasiswaProfile extends Model
      */
     public function scopeAktif($query)
     {
-        return $query->whereHas('user', function ($q) {
-            $q->where('is_active', true);
-        });
+        return $query
+            ->where('status', 'aktif') // <-- Filter status di table mahasiswaProfile
+            ->whereHas('user', function ($q) {
+                $q->where('is_active', true); // <-- Filter is_active di table users
+                // Opsional: $q->where('role', 'mahasiswa'); jika ingin memastikan rolenya
+            });
     }
 
     /**

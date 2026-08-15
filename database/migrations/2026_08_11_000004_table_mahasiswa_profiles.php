@@ -8,7 +8,6 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // 1. table_mahasiswa_profiles
         Schema::create('mahasiswa_profiles', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->unique()->constrained('users')->cascadeOnDelete();
@@ -25,34 +24,16 @@ return new class extends Migration
             $table->text('catatan')->nullable();
             $table->timestamps();
 
-            $table->index('nim');
-        });
-
-        // 2. table_asn_profiles
-        Schema::create('asn_profiles', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->unique()->constrained('users')->cascadeOnDelete();
-            $table->string('nip')->unique();
-            $table->string('jabatan')->nullable();
-            $table->string('unit_kerja')->nullable();
-            $table->timestamps();
-        });
-
-        // 3. table_mahasiswa_profile_skill
-        Schema::create('mahasiswa_profile_skill', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('mahasiswa_profile_id')->constrained('mahasiswa_profiles')->cascadeOnDelete();
-            $table->foreignId('skill_id')->constrained('skills')->cascadeOnDelete();
-            $table->timestamps();
-
-            $table->unique(['mahasiswa_profile_id', 'skill_id']);
+            // FIX: NIM unik PER KOMBINASI dengan instansi_asal, bukan unik
+            // secara global. NIM ditentukan masing-masing kampus/sekolah,
+            // jadi wajar kalau NIM yang sama muncul di 2 instansi berbeda -
+            // itu BUKAN duplikat data, itu kebetulan format penomoran.
+            $table->unique(['nim', 'instansi_asal']);
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('mahasiswa_profile_skill');
-        Schema::dropIfExists('asn_profiles');
         Schema::dropIfExists('mahasiswa_profiles');
     }
 };

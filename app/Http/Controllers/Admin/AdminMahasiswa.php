@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Controllers\Controller;
@@ -63,7 +64,7 @@ class AdminMahasiswa extends Controller
         $periodeList = PeriodeMagang::query()->orderBy('tanggal_mulai', 'desc')->get();
 
         // Tambahkan query() setelah Skill
-        $skillList = Skill::query()->orderBy('nama_skill','asc')->get();
+        $skillList = Skill::query()->orderBy('nama_skill', 'asc')->get();
 
         // Ambil daftar id skill yang sudah dipilih mahasiswa ini, buat mempermudah
         // cek "checked" di form. Kalau belum punya profile, otomatis array kosong.
@@ -80,9 +81,17 @@ class AdminMahasiswa extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:8',
-            'nim' => 'required|string|unique:mahasiswa_profiles,nim,' . optional($user->mahasiswaProfile)->id,
-            'is_active'=> 'required',
+            'is_active' => 'required',
             'instansi_asal' => 'required|string|max:255',
+            'nim' => [
+                'required',
+                'string',
+                Rule::unique('mahasiswa_profiles', 'nim')
+                    ->where(function ($query) use ($request) {
+                        return $query->where('instansi_asal', $request->instansi_asal);
+                    })
+                    ->ignore(optional($user->mahasiswaProfile)->id),
+            ],
             'jenjang' => 'nullable|in:SMA/SMK,D3,D4,S1,S2',
             'jurusan' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:13',
@@ -98,8 +107,8 @@ class AdminMahasiswa extends Controller
             $user->update([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
-                'phone'=>$validated['phone'],
-                'is_active' =>$validated['is_active'],
+                'phone' => $validated['phone'],
+                'is_active' => $validated['is_active'],
                 // Password cuma diganti kalau diisi - kalau dikosongkan,
                 // password lama tetap dipakai (tidak ditimpa jadi kosong/null).
                 'password' => !empty($validated['password']) ? Hash::make($validated['password']) : $user->password,

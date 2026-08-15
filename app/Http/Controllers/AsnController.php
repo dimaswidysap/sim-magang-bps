@@ -24,6 +24,7 @@ class AsnController extends Controller
 
         return view('pages.asn.index', compact('totalSelesai', 'totalBelumSelesai', 'daftarMahasiswa'));
     }
+
     public function logbookMahasiswa($mahasiswaProfileId)
     {
         $mahasiswa = MahasiswaProfile::with('user')->findOrFail($mahasiswaProfileId);
@@ -161,8 +162,5 @@ class AsnController extends Controller
         return redirect()->route('task-not-done')->with('success', 'Tugas berhasil dihapus beserta seluruh data terkait.');
     }
 
-    // public function pengumpulanTugas()
-    // {
-    //     return view('pages.asn.pengumpulan');
-    // }
+
 }

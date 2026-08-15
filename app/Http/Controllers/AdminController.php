@@ -17,13 +17,15 @@ class AdminController extends Controller
 
     public function adminIndex()
     {
-        $jumlahMahasiswaAktif = User::mahasiswa()->mahasiswaAktif()->count();
-        $jumlahMahasiswaNonAktif = User::mahasiswa()->mahasiswaNonAktif()->count();
+        $jumlahMahasiswaAktif = User::mahasiswa()->profileAktif()->with('mahasiswaProfile')->count();
+        $jumlahMahasiswaNonAktif = User::mahasiswa()->profileNonAktif()->with('mahasiswaProfile')->count();
+        $jumlahMahasiswaSelesai = User::mahasiswa()->profileSelesai()->with('mahasiswaProfile')->count();
+        $jumlahMahasiswaBatal = User::mahasiswa()->profileBatal()->with('mahasiswaProfile')->count();
 
         $jumlahAsnAktif=User::asn()->asnAktif()->count();
         $jumlahAsnNonAktif=User::asn()->asnNonAktif()->count();
 
-        return View('pages.admin.index', compact('jumlahMahasiswaAktif', 'jumlahMahasiswaNonAktif','jumlahAsnAktif','jumlahAsnNonAktif'));
+        return View('pages.admin.index', compact('jumlahMahasiswaAktif', 'jumlahMahasiswaNonAktif','jumlahMahasiswaSelesai','jumlahMahasiswaBatal','jumlahAsnAktif','jumlahAsnNonAktif'));
     }
 
     // mengambil semua data ASN

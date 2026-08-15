@@ -10,13 +10,9 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
-    protected $fillable = [
-        'name', 'email', 'password', 'role', 'phone', 'avatar', 'is_active',
-    ];
+    protected $fillable = ['name', 'email', 'password', 'role', 'phone', 'avatar', 'is_active'];
 
-    protected $hidden = [
-        'password', 'remember_token',
-    ];
+    protected $hidden = ['password', 'remember_token'];
 
     protected function casts(): array
     {
@@ -27,23 +23,38 @@ class User extends Authenticatable
         ];
     }
 
-
     public function scopeMahasiswa($query)
     {
         return $query->where('role', 'mahasiswa');
     }
 
-
-    public function scopeMahasiswaAktif($query)
+    // Scope baru untuk filter dari tabel relasi
+    public function scopeProfileAktif($query)
     {
-        return $query->where('is_active', 1);
+        return $query->whereHas('mahasiswaProfile', function ($q) {
+            $q->where('status', 'aktif');
+        });
+    }
+    public function scopeProfileNonAktif($query)
+    {
+        return $query->whereHas('mahasiswaProfile', function ($q) {
+            $q->where('status', 'pending');
+        });
     }
 
-
-    public function scopeMahasiswaNonAktif($query)
+     public function scopeProfileSelesai($query)
     {
-        return $query->where('is_active', 0);
+        return $query->whereHas('mahasiswaProfile', function ($q) {
+            $q->where('status', 'selesai');
+        });
     }
+     public function scopeProfileBatal($query)
+    {
+        return $query->whereHas('mahasiswaProfile', function ($q) {
+            $q->where('status', 'dibatalkan');
+        });
+    }
+
 
     public function scopeAsn($query)
     {
@@ -54,7 +65,6 @@ class User extends Authenticatable
     {
         return $query->where('is_active', 1);
     }
-
 
     public function scopeAsnNonAktif($query)
     {

@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+
 <main class="w-full p-4 md:p-8 bg-background min-h-screen font-montserrat">
     <section class="max-w-5xl mx-auto space-y-6">
 
@@ -13,6 +14,8 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
                     {{ $mahasiswa->user->name }}
+                    -
+                    {{ $mahasiswa->jurusan }}
                 </p>
             </div>
 
