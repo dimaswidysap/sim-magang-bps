@@ -108,11 +108,24 @@ class AsnController extends Controller
     }
 
     public function tugasSelesaiDetail($id)
-    {
-        $tugasDetail = Tugas::with(['mahasiswaProfile', 'asn', 'anggota'])->findOrFail($id);
+{
+    $tugasDetail = Tugas::where('id', $id)
+        ->where('asn_id', Auth::id()) // FIX: pastikan cuma tugas milik ASN yang login
+        ->with([
+            'mahasiswaProfile.user',
+            'asn',
+            'anggota.mahasiswaProfile.user',
+            // Ambil submission yang SUDAH disetujui saja, terbaru duluan.
+            // Kalau ada riwayat revisi berkali-kali, yang ditampilkan
+            // cuma yang final disetujui, bukan seluruh riwayat.
+            'submissions' => function ($q) {
+                $q->where('status', 'disetujui')->latest();
+            },
+        ])
+        ->firstOrFail();
 
-        return view('pages.asn.task-done.view', compact('tugasDetail'));
-    }
+    return view('pages.asn.task-done.view', compact('tugasDetail'));
+}
 
     public function showFormProfil()
     {

@@ -11,7 +11,7 @@
                     <p class="text-sm font-semibold text-primary mt-1">{{ $tugas->judul }}</p>
                 </div>
 
-                <x-main-button href="{{ url()->previous() }}"
+                <x-main-button href="{{ route('tugas-saya') }}"
                     class="w-full sm:w-auto bg-surface text-text border border-border hover:bg-background text-xs px-4 py-2 rounded-lg transition-colors shadow-sm inline-flex justify-center items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="2">
@@ -57,7 +57,7 @@
                     </h2>
                 </div>
 
-                <form method="POST" action="{{ route('mahasiswa-tugas-submit', $tugas->id) }}"
+                <form method="POST" action="{{ route('mahasiswa-tugas-submit', $tugas->id) }}" data-confirm="Apakah anda yakin ingin mengirimkan tugas?"
                     enctype="multipart/form-data" class="m-0">
                     @csrf
                     <div class="p-6 md:p-8 space-y-6">
@@ -221,7 +221,7 @@
                                                         class="text-[10px] font-semibold text-text-light uppercase tracking-wider mb-1.5">
                                                         Pesan Anda</p>
                                                     <div
-                                                        class="text-xs text-text leading-relaxed bg-[#F8FAFC] border border-border p-3 rounded-lg whitespace-pre-wrap">
+                                                        class="text-xs text-text leading-relaxed bg-[#F8FAFC] border border-border p-3 rounded-lg ">
                                                         {{ $submission->catatan_mahasiswa }}</div>
                                                 </div>
                                             @endif
@@ -241,7 +241,7 @@
                                                     Catatan / Feedback ASN
                                                 </p>
                                                 <div
-                                                    class="text-xs text-text leading-relaxed bg-primary/5 border border-primary/20 p-3 rounded-lg whitespace-pre-wrap">
+                                                    class="text-xs text-text leading-relaxed bg-primary/5 border border-primary/20 p-3 rounded-lg ">
                                                     {{ $submission->catatan_asn }}</div>
                                             </div>
                                         @endif

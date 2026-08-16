@@ -39,7 +39,7 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('admin-periode-update', $periode->id) }}">
+            <form method="POST" action="{{ route('admin-periode-update', $periode->id) }}" data-confirm="Apakah anda yakin ingin menerapkan perubahan?">
                 @csrf
                 @method('PUT')
 

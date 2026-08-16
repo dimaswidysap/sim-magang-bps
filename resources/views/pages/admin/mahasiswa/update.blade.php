@@ -42,7 +42,7 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('admin-mahasiswa-update', $dataUser->id) }}" class="space-y-8">
+            <form method="POST" action="{{ route('admin-mahasiswa-update', $dataUser->id) }}" class="space-y-8" data-confirm="Apakah anda yakin ingin melakukan perubahan?">
                 @csrf
                 @method('PUT')
 

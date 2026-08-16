@@ -12,7 +12,7 @@
                         diselesaikan.</p>
                 </div>
 
-                <x-main-button href="{{ url()->previous() }}"
+                <x-main-button href="{{ route('task-done') }}"
                     class="w-full sm:w-auto bg-surface text-text border border-border hover:bg-background text-xs px-4 py-2 rounded-lg transition-colors shadow-sm inline-flex justify-center items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="2">
@@ -70,10 +70,61 @@
                             </svg>
                             Deskripsi Pekerjaan
                         </h2>
-                        <div
-                            class="text-sm text-text leading-relaxed bg-[#F8FAFC] border border-border p-5 rounded-xl">
+                        <div class="text-sm text-text leading-relaxed bg-[#F8FAFC] border border-border p-5 rounded-xl">
                             {{ $tugasDetail->deskripsi }}</div>
                     </div>
+                    @php
+                        $submissionDisetujui = $tugasDetail->submissions->first();
+                    @endphp
+
+                    @if ($submissionDisetujui)
+                        <div>
+                            <h2
+                                class="text-sm font-semibold text-text-light uppercase tracking-wider mb-3 flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                                Hasil Kerja yang Disetujui
+                            </h2>
+
+                            <div class="p-5 bg-background border border-border rounded-xl space-y-3">
+                                @if ($submissionDisetujui->file_path)
+                                    <a href="{{ Storage::url($submissionDisetujui->file_path) }}" target="_blank"
+                                        class="flex items-center gap-3 bg-surface border border-border p-4 rounded-xl hover:border-primary transition-colors">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary shrink-0"
+                                            fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                        <div class="flex-1">
+                                            <p class="text-sm font-medium text-text">{{ $submissionDisetujui->file_name }}
+                                            </p>
+                                            <p class="text-xs text-text-light">
+                                                {{ number_format($submissionDisetujui->file_size / 1024, 0) }} KB
+                                            </p>
+                                        </div>
+                                    </a>
+                                @else
+                                    <p class="text-sm text-text-light italic">Tidak ada file - mahasiswa hanya mengirim
+                                        pesan.</p>
+                                @endif
+
+                                @if ($submissionDisetujui->catatan_mahasiswa)
+                                    <div>
+                                        <p class="text-[11px] font-semibold text-text-light uppercase tracking-wider mb-1">
+                                            Pesan Mahasiswa</p>
+                                        <p class="text-sm text-text">{{ $submissionDisetujui->catatan_mahasiswa }}</p>
+                                    </div>
+                                @endif
+
+                                <p class="text-xs text-text-light">
+                                    Dikumpulkan pada: {{ $submissionDisetujui->created_at->translatedFormat('d F Y, H:i') }}
+                                </p>
+                            </div>
+                        </div>
+                    @endif
 
                     <!-- Timeline / Riwayat Waktu -->
                     <div>
@@ -141,7 +192,8 @@
                                     </div>
                                     <div>
                                         <p class="text-sm font-bold text-text">{{ $tugasDetail->asn->name ?? '-' }}</p>
-                                        <p class="text-[11px] text-text-light mt-0.5">{{ $tugasDetail->asn->email ?? '-' }}
+                                        <p class="text-[11px] text-text-light mt-0.5">
+                                            {{ $tugasDetail->asn->email ?? '-' }}
                                         </p>
                                     </div>
                                 </div>

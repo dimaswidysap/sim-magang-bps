@@ -24,6 +24,7 @@ class MahasiswaProfile extends Model
         return $this->belongsTo(User::class);
     }
 
+
     public function scopeMahasiswaAktif($query)
     {
         return $query->where('status', 'aktif');

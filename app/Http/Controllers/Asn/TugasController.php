@@ -135,37 +135,45 @@ class TugasController extends Controller
 
     public function updateTugas(Request $request, $id)
     {
-        // 1. Cari tugas berdasarkan ID
-        $tugas = Tugas::findOrFail($id);
+        // FIX: tambahkan where('asn_id', Auth::id()) - tanpa ini, ASN mana pun
+        // bisa edit tugas ASN lain lewat URL, bukan cuma tugas miliknya sendiri.
+        $tugas = Tugas::where('id', $id)->where('asn_id', Auth::id())->firstOrFail();
 
-        // 2. Validasi Input
         $validated = $request->validate([
             'judul' => 'required|string|max:255',
             'deskripsi' => 'required|string',
-            // Gunakan date saja jika deadline boleh diset ke hari yang sama,
-            // atau biarkan after:now jika tidak boleh mundur dari waktu saat mengedit
             'deadline' => 'required|date|after:now',
             'skills' => 'nullable|array',
             'skills.*' => 'exists:skills,id',
+            'file' => 'nullable|file|max:10240', // 10 MB, konsisten dengan batas lain
         ]);
 
-        // 3. Update data pada tabel tugas
         $tugas->update([
             'judul' => $validated['judul'],
             'deskripsi' => $validated['deskripsi'],
             'deadline' => $validated['deadline'],
         ]);
 
-        // 4. Update relasi skills menggunakan sync()
-        // sync() akan menghapus skill yang tidak dicentang dan menambah yang baru dicentang
         if (!empty($validated['skills'])) {
             $tugas->skills()->sync($validated['skills']);
         } else {
-            // Jika tidak ada skill yang dicentang, hapus semua relasi skill
             $tugas->skills()->detach();
         }
 
-        // 5. Redirect dengan pesan sukses
+        // Tambah file BARU tanpa menghapus yang lama - pakai create() biasa
+        // (menambah baris baru di tugas_attachments), BUKAN sync/replace apa pun.
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+            $path = $file->store('tugas-attachments', 'public');
+
+            $tugas->attachments()->create([
+                'file_path' => $path,
+                'file_name' => $file->getClientOriginalName(),
+                'file_size' => $file->getSize(),
+                'mime_type' => $file->getClientMimeType(),
+            ]);
+        }
+
         return redirect()->route('task-not-done')->with('success', 'Tugas berhasil diperbarui.');
     }
 }

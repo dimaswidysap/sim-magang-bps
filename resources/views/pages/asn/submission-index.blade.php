@@ -17,9 +17,6 @@
                     @include('components.submission-card')
                 </section>
             </section>
-
-
-
         </section>
         </section>
         </section>

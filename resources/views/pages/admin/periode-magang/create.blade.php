@@ -31,7 +31,7 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('admin-periode-store') }}">
+            <form method="POST" action="{{ route('admin-periode-store') }}" data-confirm="Apakah anda yakin ingin menambah data?">
                 @csrf
 
                 <!-- Form Inputs -->

@@ -23,6 +23,51 @@ class User extends Authenticatable
         ];
     }
 
+    /**
+     * Relasi ke tabel mahasiswa_profiles
+     */
+    public function mahasiswaProfileCheckWarning()
+    {
+        return $this->hasOne(MahasiswaProfile::class, 'user_id');
+    }
+
+    /**
+     * Fungsi untuk mengecek apakah data mahasiswa sudah lengkap
+     */
+    public function isProfileComplete(): bool
+    {
+        // Pengecekan ini hanya berlaku untuk role 'mahasiswa'
+        if ($this->role !== 'mahasiswa') {
+            return true;
+        }
+
+        $profile = $this->mahasiswaProfile;
+
+        // Skenario 1: Data di tabel mahasiswa_profiles belum ada (relasi kosong)
+        if (!$profile) {
+            return false;
+        }
+
+        // Skenario 2: Data ada, tapi kolom-kolom penting masih kosong (null)
+        // Silakan sesuaikan kolom apa saja yang Anda anggap wajib
+        if (
+            empty($profile->nim) ||
+            empty($profile->instansi_asal) ||
+            empty($profile->jenjang) ||
+            empty($profile->jurusan) ||
+            empty($profile->tanggal_mulai) ||
+            empty($profile->tanggal_selesai)
+        ) {
+            return false;
+        }
+
+        // Jika relasi ada dan semua kolom penting sudah terisi
+        return true;
+    }
+
+
+
+
     public function scopeMahasiswa($query)
     {
         return $query->where('role', 'mahasiswa');

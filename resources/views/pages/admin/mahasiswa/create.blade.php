@@ -30,7 +30,7 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('admin.mahasiswa.store') }}" class="space-y-8">
+            <form method="POST" action="{{ route('admin.mahasiswa.store') }}" class="space-y-8" data-confirm="Apakah anda yakin ingin menambahkan data?">
                 @csrf
 
                 <!-- SECTION 1: Data Akun -->
