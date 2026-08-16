@@ -17,13 +17,6 @@ class TugasanggotacontrollerInvite extends Controller
 
         $mahasiswaProfileSaya = auth()->user()->mahasiswaProfile;
 
-        // dd([
-        //     'tugas_id' => $tugas->id,
-        //     'tugas_mahasiswa_profile_id' => $tugas->mahasiswa_profile_id,
-        //     'saya_mahasiswa_profile_id' => $mahasiswaProfileSaya?->id,
-        //     'saya_null' => is_null($mahasiswaProfileSaya),
-        // ]);
-
         if (!$this->bolehUndang($tugas, $mahasiswaProfileSaya)) {
             abort(403, 'Anda bukan bagian dari tugas ini, tidak bisa mengundang orang lain.');
         }
@@ -32,7 +25,11 @@ class TugasanggotacontrollerInvite extends Controller
         // apapun statusnya) - supaya tidak muncul lagi di daftar undangan
         $idSudahTerlibat = $tugas->anggota->pluck('mahasiswa_profile_id')->push($tugas->mahasiswa_profile_id)->filter()->toArray();
 
-        $daftarMahasiswa = MahasiswaProfile::whereNotIn('id', $idSudahTerlibat)->whereHas('user', fn($q) => $q->where('is_active', true))->with('user')->get();
+        $daftarMahasiswa = MahasiswaProfile::whereNotIn('id', $idSudahTerlibat)
+            ->where('status', 'aktif') // Menambahkan kondisi status aktif
+            ->whereHas('user', fn($q) => $q->where('is_active', true))
+            ->with('user')
+            ->get();
 
         return view('pages.mahasiswa.tugas-saya.invite', compact('tugas', 'daftarMahasiswa'));
     }

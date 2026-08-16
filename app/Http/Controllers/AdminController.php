@@ -25,7 +25,12 @@ class AdminController extends Controller
         $jumlahAsnAktif=User::asn()->asnAktif()->count();
         $jumlahAsnNonAktif=User::asn()->asnNonAktif()->count();
 
-        return View('pages.admin.index', compact('jumlahMahasiswaAktif', 'jumlahMahasiswaNonAktif','jumlahMahasiswaSelesai','jumlahMahasiswaBatal','jumlahAsnAktif','jumlahAsnNonAktif'));
+        $daftarMahasiswaProfilWarning = User::query()->where('role', 'mahasiswa')
+        ->whereDoesntHave('mahasiswaProfile')
+        ->orderBy('created_at', 'desc')
+        ->get();
+
+        return View('pages.admin.index', compact('daftarMahasiswaProfilWarning','jumlahMahasiswaAktif', 'jumlahMahasiswaNonAktif','jumlahMahasiswaSelesai','jumlahMahasiswaBatal','jumlahAsnAktif','jumlahAsnNonAktif'));
     }
 
     // mengambil semua data ASN

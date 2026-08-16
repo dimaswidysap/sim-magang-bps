@@ -14,8 +14,9 @@
         @include('components.admin.header-admin')
 
         <section class="w-full p-2">
-            <section class="container-dalam">
+            <section class="container-dalam flex flex-col gap-4">
                 @include('components.admin.statistik-user')
+                @include('components.admin.table-profil-magang-warning')
             </section>
         </section>
     </section>

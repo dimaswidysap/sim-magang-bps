@@ -1,8 +1,8 @@
-<section class="w-full grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 font-montserrat">
+<section class="w-full flex flex-col md:flex-col lg:flex-row gap-4 md:gap-6 font-montserrat">
 
     <!-- Card Statistik Mahasiswa -->
     <div
-        class="bg-surface border border-border rounded-[10px] shadow-sm p-5 md:p-6 flex items-center gap-4 md:gap-6 hover:shadow-md transition-shadow duration-300">
+        class="flex-1 bg-surface border border-border rounded-[10px] shadow-sm p-5 md:p-6 flex flex-col sm:flex-row sm:items-center gap-4 md:gap-6 hover:shadow-md transition-shadow duration-300">
 
         <!-- Ikon Mahasiswa -->
         <figure
@@ -20,7 +20,8 @@
                 Mahasiswa Magang
             </h3>
 
-            <div class="flex items-center gap-4 md:gap-6">
+            <!-- Ditambahkan flex-wrap agar responsif di layar HP kecil -->
+            <div class="flex flex-wrap items-center gap-3 md:gap-6">
                 <!-- Data Aktif -->
                 <div>
                     <h2 class="text-2xl md:text-3xl font-bold text-text leading-none">{{ $jumlahMahasiswaAktif }}</h2>
@@ -30,7 +31,7 @@
                 </div>
 
                 <!-- Garis Pemisah -->
-                <div class="h-8 w-px bg-border"></div>
+                <div class="hidden sm:block h-8 w-px bg-border"></div>
 
                 <!-- Data Pending -->
                 <div>
@@ -42,7 +43,8 @@
                 </div>
 
                 <!-- Garis Pemisah -->
-                <div class="h-8 w-px bg-border"></div>
+                <div class="hidden sm:block h-8 w-px bg-border"></div>
+
                 {{-- data selesai --}}
                 <div>
                     <h2 class="text-2xl md:text-3xl font-bold text-text leading-none">{{ $jumlahMahasiswaSelesai }}
@@ -51,8 +53,10 @@
                         <span class="w-1.5 h-1.5 rounded-full bg-primary"></span> Selesai
                     </p>
                 </div>
+
                 <!-- Garis Pemisah -->
-                <div class="h-8 w-px bg-border"></div>
+                <div class="hidden sm:block h-8 w-px bg-border"></div>
+
                 {{-- data dibatalkan --}}
                 <div>
                     <h2 class="text-2xl md:text-3xl font-bold text-text leading-none">{{ $jumlahMahasiswaBatal }}
@@ -67,7 +71,7 @@
 
     <!-- Card Statistik ASN -->
     <div
-        class="bg-surface border border-border rounded-2xl shadow-sm p-5 md:p-6 flex items-center gap-4 md:gap-6 hover:shadow-md transition-shadow duration-300">
+        class="flex-1 bg-surface border border-border rounded-2xl shadow-sm p-5 md:p-6 flex flex-col sm:flex-row sm:items-center gap-4 md:gap-6 hover:shadow-md transition-shadow duration-300">
 
         <!-- Ikon ASN / Pegawai -->
         <figure
@@ -85,7 +89,8 @@
                 Pegawai ASN
             </h3>
 
-            <div class="flex items-center gap-4 md:gap-6">
+            <!-- Ditambahkan flex-wrap agar responsif di layar HP kecil -->
+            <div class="flex flex-wrap items-center gap-4 md:gap-6">
                 <!-- Data Aktif -->
                 <div>
                     <h2 class="text-2xl md:text-3xl font-bold text-text leading-none">{{ $jumlahAsnAktif }}</h2>
@@ -95,7 +100,7 @@
                 </div>
 
                 <!-- Garis Pemisah -->
-                <div class="h-8 w-px bg-border"></div>
+                <div class="hidden sm:block h-8 w-px bg-border"></div>
 
                 <!-- Data Nonaktif -->
                 <div>
