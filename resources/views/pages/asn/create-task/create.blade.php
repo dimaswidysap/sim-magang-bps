@@ -9,9 +9,10 @@
         @include('components.asn.asn-sidebar')
 
         {{-- container-content --}}
-        <section class="flex flex-col flex-1 pl-60">
+        <section class="flex flex-col flex-1 md:pl-60 container-content-mobile">
 
             {{-- header --}}
+            @include('components.header-mobile')
             @include('components.asn.header-asn')
 
             <section class="w-full p-2">

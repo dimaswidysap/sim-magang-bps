@@ -1,5 +1,5 @@
 {{-- container luar --}}
-<section class="fixed w-60 h-full p-2 ">
+<section class="fixed w-60 h-full p-2 sidebar-mobile z-20">
 
     {{-- container dalam --}}
 
@@ -16,8 +16,8 @@
                 <li>
                     <x-nav-link :href="route('mahasiswa-index')" :active="request()->routeIs('mahasiswa-index')">
                         <x-slot name="icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor" stroke-width="2" class="w-5 h-5">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                stroke-width="2" class="w-5 h-5">
                                 <rect x="3" y="3" width="7" height="7" rx="1" />
                                 <rect x="14" y="3" width="7" height="7" rx="1" />
                                 <rect x="3" y="14" width="7" height="7" rx="1" />
@@ -97,5 +97,7 @@
             </ul>
         </nav>
     </section>
+
+    @include('components.button-close-sidebar')
 
 </section>

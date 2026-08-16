@@ -1,5 +1,5 @@
 {{-- container luar --}}
-<section class="fixed w-60 h-full p-2 ">
+<section class="fixed w-60 h-full p-2 sidebar-mobile z-10">
 
     {{-- container dalam --}}
 
@@ -111,5 +111,7 @@
             </ul>
         </nav>
     </section>
+
+    @include('components.button-close-sidebar')
 
 </section>
