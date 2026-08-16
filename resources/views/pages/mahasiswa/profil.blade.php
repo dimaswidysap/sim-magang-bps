@@ -92,7 +92,7 @@
             </div>
 
             <!-- Form Update Profil -->
-            <form method="POST" action="{{ route('mahasiswa-profil-update', $profil->id) }}" class="space-y-8">
+            <form method="POST" action="{{ route('mahasiswa-profil-update', $profil->id) }}" class="space-y-8" data-confirm="Apakah Anda yakin ingin update profil anda?">
                 @csrf
                 @method('PUT')
 

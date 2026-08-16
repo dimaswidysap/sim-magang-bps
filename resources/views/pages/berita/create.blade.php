@@ -55,7 +55,7 @@
                     </h2>
                 </div>
 
-                <form method="POST" action="{{ route('berita-store') }}" enctype="multipart/form-data" class="m-0">
+                <form method="POST" action="{{ route('berita-store') }}" enctype="multipart/form-data" class="m-0" data-confirm="Apakah Anda yakin ingin mempublikasikan berita?">
                     @csrf
                     <div class="p-6 md:p-8 space-y-6">
 

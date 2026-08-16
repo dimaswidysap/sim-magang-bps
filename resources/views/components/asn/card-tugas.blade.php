@@ -67,26 +67,25 @@
             <!-- Footer: Button Aksi -->
             <div class="flex justify-end gap-4">
                 {{-- action="{{ route('admin-asn-destroy', $detailAsn->id) }}" --}}
-                    <form method="POST"
+                <form method="POST"
+                    data-confirm="Yakin ingin menghapus data asn ini? Semua data terkait ikut terhapus dan tidak bisa dikembalikan!"
+                    action="{{ route('asn-tugas-destroy', $tugas->id) }}">
+                    @csrf
+                    @method('DELETE')
 
-                    action="{{ route('asn-tugas-destroy', $tugas->id) }}"
-                        onsubmit="return confirm('Yakin ingin menghapus data asn ini? Semua data terkait ikut terhapus dan tidak bisa dikembalikan.')">
-                        @csrf
-                        @method('DELETE')
 
+                    <x-main-button
+                        class="border border-danger text-danger! text-xs px-4 py-2 rounded-lg  transition-colors shadow-sm inline-flex items-center gap-2"
+                        type="submit">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            stroke-width="2" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M6 7h12M9 7V5h6v2m-8 0v12a2 2 0 002 2h6a2 2 0 002-2V7M10 11l4 4M14 11l-4 4" />
+                        </svg>
+                        <span>Hapus tugas</span>
+                    </x-main-button>
 
-                        <x-main-button
-                            class="border border-danger text-danger! text-xs px-4 py-2 rounded-lg  transition-colors shadow-sm inline-flex items-center gap-2"
-                            type="submit">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                                stroke-width="2" class="w-5 h-5">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M6 7h12M9 7V5h6v2m-8 0v12a2 2 0 002 2h6a2 2 0 002-2V7M10 11l4 4M14 11l-4 4" />
-                            </svg>
-                            <span>Hapus tugas</span>
-                        </x-main-button>
-
-                    </form>
+                </form>
                 {{-- href="{{ route('edit-tugas-form', $tugas->id) }}" --}}
                 <x-main-button href="{{ route('edit-tugas-form', $tugas->id) }}"
                     class="bg-primary hover:bg-primary-dark  text-xs px-4 py-2 rounded-lg text-white transition-colors shadow-sm inline-flex items-center gap-2">

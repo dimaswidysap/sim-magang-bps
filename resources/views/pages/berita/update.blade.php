@@ -55,7 +55,7 @@
                     </h2>
                 </div>
 
-                <form method="POST" action="{{ route('berita-update', $berita->id) }}" enctype="multipart/form-data"
+                <form method="POST" action="{{ route('berita-update', $berita->id) }}" enctype="multipart/form-data" data-confirm="Apakah Anda yakin ingin menerapkah perubahan?"
                     class="m-0">
                     @csrf
                     @method('PUT')

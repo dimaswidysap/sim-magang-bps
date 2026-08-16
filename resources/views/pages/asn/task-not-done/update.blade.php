@@ -22,7 +22,7 @@
         @endif
 
         <div class="bg-surface border border-border rounded-2xl shadow-sm p-6 md:p-8">
-            <form method="POST" action="{{ route('asn-update-tugas', $tugas->id) }}">
+            <form method="POST" action="{{ route('asn-update-tugas', $tugas->id) }}" data-confirm="Apakah anda yakin ingin menerapkan perubahan?">
                 @csrf
                 @method('PUT')
 

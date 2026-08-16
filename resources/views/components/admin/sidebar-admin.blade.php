@@ -7,9 +7,7 @@
 
         {{-- conatiner logo bps --}}
 
-        <figure class="w-16 aspect-square flex justify-center items-center">
-            <img src="{{ asset('images/assets/logo-bps.png') }}" alt="">
-        </figure>
+        @include('components.icon-sidebar')
 
         <nav class="mt-10">
             <ul class="font-montserrat flex flex-col gap-1.5">
