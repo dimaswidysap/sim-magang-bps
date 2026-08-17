@@ -10,7 +10,6 @@
 
             {{-- header --}}
             @include('components.admin.header-admin')
-
             @include('components.admin.table-mahasiswa')
         </section>
     </main>

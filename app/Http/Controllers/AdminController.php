@@ -9,7 +9,6 @@ use App\Models\MahasiswaProfile;
 use App\Models\User;
 use App\Models\Skill;
 use App\Models\PeriodeMagang;
-    
 
 class AdminController extends Controller
 {
@@ -22,15 +21,24 @@ class AdminController extends Controller
         $jumlahMahasiswaSelesai = User::mahasiswa()->profileSelesai()->with('mahasiswaProfile')->count();
         $jumlahMahasiswaBatal = User::mahasiswa()->profileBatal()->with('mahasiswaProfile')->count();
 
-        $jumlahAsnAktif=User::asn()->asnAktif()->count();
-        $jumlahAsnNonAktif=User::asn()->asnNonAktif()->count();
+        $jumlahAsnAktif = User::asn()->asnAktif()->count();
+        $jumlahAsnNonAktif = User::asn()->asnNonAktif()->count();
 
-        $daftarMahasiswaProfilWarning = User::query()->where('role', 'mahasiswa')
-        ->whereDoesntHave('mahasiswaProfile')
-        ->orderBy('created_at', 'desc')
-        ->get();
+        $daftarMahasiswaProfilWarning = User::query()
+            ->where('role', 'mahasiswa')
+            ->where(function ($query) {
+                // Kondisi 1: Tidak punya profil sama sekali (jaga-jaga jika ada data lama)
+                $query
+                    ->whereDoesntHave('mahasiswaProfile')
+                    // Kondisi 2: Punya profil, tapi kolom penting belum diisi (masih NULL)
+                    ->orWhereHas('mahasiswaProfile', function ($subQuery) {
+                        $subQuery->whereNull('nim')->orWhereNull('instansi_asal')->orWhereNull('jurusan');
+                    });
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-        return View('pages.admin.index', compact('daftarMahasiswaProfilWarning','jumlahMahasiswaAktif', 'jumlahMahasiswaNonAktif','jumlahMahasiswaSelesai','jumlahMahasiswaBatal','jumlahAsnAktif','jumlahAsnNonAktif'));
+        return View('pages.admin.index', compact('daftarMahasiswaProfilWarning', 'jumlahMahasiswaAktif', 'jumlahMahasiswaNonAktif', 'jumlahMahasiswaSelesai', 'jumlahMahasiswaBatal', 'jumlahAsnAktif', 'jumlahAsnNonAktif'));
     }
 
     // mengambil semua data ASN

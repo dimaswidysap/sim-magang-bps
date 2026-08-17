@@ -13,8 +13,8 @@ return new class extends Migration
             $table->foreignId('user_id')->unique()->constrained('users')->cascadeOnDelete();
             $table->foreignId('periode_magang_id')->nullable()->constrained('periode_magang')->nullOnDelete();
 
-            $table->string('nim');
-            $table->string('instansi_asal');
+            $table->string('nim')->nullable();
+            $table->string('instansi_asal')->nullable();
             $table->enum('jenjang', ['SMA/SMK', 'D3', 'D4', 'S1', 'S2'])->nullable();
             $table->string('jurusan')->nullable();
             $table->date('tanggal_mulai')->nullable();

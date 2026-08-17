@@ -44,13 +44,23 @@ class AdminMahasiswa extends Controller
             'password' => 'required|string|min:8',
         ]);
 
-        User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'role' => 'mahasiswa',
-            'is_active' => true,
-        ]);
+        // Menggunakan DB transaction untuk memastikan kedua tabel berhasil diisi
+        DB::transaction(function () use ($validated) {
+            // 1. Buat User dan simpan ke variabel $user
+            $user = User::create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'password' => Hash::make($validated['password']),
+                'role' => 'mahasiswa',
+                'is_active' => true,
+            ]);
+
+            // 2. Buat otomatis Mahasiswa Profile berdasarkan user_id
+            MahasiswaProfile::create([
+                'user_id' => $user->id,
+                'status' => 'pending', // Sesuai permintaan, set status ke pending
+            ]);
+        });
 
         return redirect()->route('admin-mahasiswa')->with('success', 'Data mahasiswa berhasil ditambahkan. Mahasiswa perlu melengkapi profil (NIM, instansi, dll) setelah login.');
     }
