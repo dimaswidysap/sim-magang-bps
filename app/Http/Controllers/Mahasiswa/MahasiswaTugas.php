@@ -12,9 +12,6 @@ class MahasiswaTugas extends Controller
     public function detailTugas($id)
     {
         $detailTugas = Tugas::with('asn')->findOrFail($id);
-
-
-
         return view('pages.mahasiswa.tugas.view', compact('detailTugas'));
     }
 

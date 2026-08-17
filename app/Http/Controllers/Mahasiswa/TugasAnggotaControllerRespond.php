@@ -12,27 +12,27 @@ use App\Models\Logbook;
 class TugasAnggotaControllerRespond extends Controller
 {
     //
-   public function daftarUndangan()
-{
-    // Ambil data profil mahasiswa
-    $mahasiswaProfileSaya = auth()->user()->mahasiswaProfile;
+    public function daftarUndangan()
+    {
+        // Ambil data profil mahasiswa
+        $mahasiswaProfileSaya = auth()->user()->mahasiswaProfile;
 
-    // Cek apakah profil mahasiswa sudah ada di database
-    if ($mahasiswaProfileSaya) {
-        // Jika ada, ambil data undangannya
-        $undangan = $mahasiswaProfileSaya
-            ->undanganMenunggu()
-            ->with(['tugas.asn', 'pengundang.user'])
-            ->latest()
-            ->get();
-    } else {
-        // Jika belum ada/null, jadikan $undangan sebagai koleksi (array) kosong
-        // Sehingga view tidak akan error saat mencoba melakukan looping (foreach)
-        $undangan = collect();
+        // Cek apakah profil mahasiswa sudah ada di database
+        if ($mahasiswaProfileSaya) {
+            // Jika ada, ambil data undangannya
+            $undangan = $mahasiswaProfileSaya
+                ->undanganMenunggu()
+                ->with(['tugas.asn', 'pengundang.user'])
+                ->latest()
+                ->get();
+        } else {
+            // Jika belum ada/null, jadikan $undangan sebagai koleksi (array) kosong
+            // Sehingga view tidak akan error saat mencoba melakukan looping (foreach)
+            $undangan = collect();
+        }
+
+        return view('pages.mahasiswa.invitation', compact('undangan'));
     }
-
-    return view('pages.mahasiswa.invitation', compact('undangan'));
-}
 
     public function terimaUndangan($id)
     {

@@ -80,11 +80,12 @@ class MahasiswaController extends Controller
 
     public function tugas(Request $request)
     {
-        // Tangkap parameter 'status' dari URL (contoh: ?status=tersedia)
-        $status = $request->query('status');
+        // Tambahkan 'tersedia' sebagai parameter kedua (nilai default)
+        $status = $request->query('status', 'tersedia');
 
         $dataTugas = Tugas::with(['asn', 'attachments'])
-            // Jika $status ada isinya, jalankan filter where()
+            // Karena $status sekarang memiliki default, filter ini akan otomatis
+            // menjalankan where('status', 'tersedia') jika tidak ada parameter di URL
             ->when($status, function ($query, $status) {
                 return $query->where('status', $status);
             })
@@ -98,7 +99,8 @@ class MahasiswaController extends Controller
     {
         $profil = Auth::user()->mahasiswaProfile;
 
-        $statusTugas=$request->query('status');
+        // Tambahkan 'diambil' sebagai parameter kedua (nilai default)
+        $statusTugas = $request->query('status', 'diambil');
 
         // Mahasiswa yang belum melengkapi profil belum bisa "punya" tugas apa pun.
         if (!$profil) {
@@ -107,8 +109,10 @@ class MahasiswaController extends Controller
 
         // LIFO: tugas yang terakhir masuk akan tampil terlebih dahulu.
         $dataTugas = Tugas::milikMahasiswa($profil->id)
-            ->when($statusTugas,function($query,$statusTugas){
-                return $query->where('status',$statusTugas);
+            // Fungsi when() akan otomatis menjalankan filter where('status', 'diambil')
+            // jika tidak ada parameter status di URL
+            ->when($statusTugas, function ($query, $statusTugas) {
+                return $query->where('status', $statusTugas);
             })
             ->with(['asn', 'skills', 'anggota.mahasiswaProfile.user'])
             ->orderBy('created_at', 'desc')
@@ -136,51 +140,50 @@ class MahasiswaController extends Controller
         return view('pages.mahasiswa.profil', compact('profil', 'periodeList', 'skillList', 'selectedSkillIds'));
     }
 
-   public function updateProfil(Request $request)
-{
-    $user = Auth::user();
+    public function updateProfil(Request $request)
+    {
+        $user = Auth::user();
 
-    $validated = $request->validate([
-        'name' => 'required|string|max:255',
-        'phone' => 'nullable|string|max:20',
-        'instansi_asal' => 'required|string|max:255',
-        'nim' => [
-            'required',
-            'string',
-            Rule::unique('mahasiswa_profiles', 'nim')
-                ->where(fn ($query) => $query->where('instansi_asal', $request->instansi_asal))
-                ->ignore(optional($user->mahasiswaProfile)->id),
-        ],
-        'jenjang' => 'nullable|in:SMA/SMK,D3,D4,S1,S2',
-        'jurusan' => 'nullable|string|max:255',
-        'tanggal_mulai' => 'nullable|date',
-        'tanggal_selesai' => 'nullable|date|after_or_equal:tanggal_mulai',
-        'periode_magang_id' => 'nullable|exists:periode_magang,id',
-        'skills' => 'nullable|array',
-        'skills.*' => 'exists:skills,id',
-    ]);
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'phone' => 'nullable|string|max:20',
+            'instansi_asal' => 'required|string|max:255',
+            'nim' => [
+                'required',
+                'string',
+                Rule::unique('mahasiswa_profiles', 'nim')
+                    ->where(fn($query) => $query->where('instansi_asal', $request->instansi_asal))
+                    ->ignore(optional($user->mahasiswaProfile)->id),
+            ],
+            'jenjang' => 'nullable|in:SMA/SMK,D3,D4,S1,S2',
+            'jurusan' => 'nullable|string|max:255',
+            'tanggal_mulai' => 'nullable|date',
+            'tanggal_selesai' => 'nullable|date|after_or_equal:tanggal_mulai',
+            'periode_magang_id' => 'nullable|exists:periode_magang,id',
+            'skills' => 'nullable|array',
+            'skills.*' => 'exists:skills,id',
+        ]);
 
-    $user->update([
-        'name' => $validated['name'],
-        'phone' => $validated['phone'] ?? null,
-    ]);
+        $user->update([
+            'name' => $validated['name'],
+            'phone' => $validated['phone'] ?? null,
+        ]);
 
-    $profile = MahasiswaProfile::updateOrCreate(
-        ['user_id' => $user->id],
-        [
-            'periode_magang_id' => $validated['periode_magang_id'] ?? null,
-            'nim' => $validated['nim'],
-            'instansi_asal' => $validated['instansi_asal'],
-            'jenjang' => $validated['jenjang'] ?? null,
-            'jurusan' => $validated['jurusan'] ?? null,
-            'tanggal_mulai' => $validated['tanggal_mulai'] ?? null,
-            'tanggal_selesai' => $validated['tanggal_selesai'] ?? null,
-        ]
-    );
+        $profile = MahasiswaProfile::updateOrCreate(
+            ['user_id' => $user->id],
+            [
+                'periode_magang_id' => $validated['periode_magang_id'] ?? null,
+                'nim' => $validated['nim'],
+                'instansi_asal' => $validated['instansi_asal'],
+                'jenjang' => $validated['jenjang'] ?? null,
+                'jurusan' => $validated['jurusan'] ?? null,
+                'tanggal_mulai' => $validated['tanggal_mulai'] ?? null,
+                'tanggal_selesai' => $validated['tanggal_selesai'] ?? null,
+            ],
+        );
 
-    $profile->skills()->sync($validated['skills'] ?? []);
+        $profile->skills()->sync($validated['skills'] ?? []);
 
-    return redirect()->route('mahasiswa-profil')
-        ->with('success', 'Profil berhasil diperbarui.');
-}
+        return redirect()->route('mahasiswa-profil')->with('success', 'Profil berhasil diperbarui.');
+    }
 }

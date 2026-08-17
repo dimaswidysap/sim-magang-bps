@@ -48,7 +48,7 @@ class TugasController extends Controller
                 'deadline' => 'required|date|after:now',
                 'skills' => 'nullable|array',
                 'skills.*' => 'exists:skills,id',
-                'file' => 'nullable|file|max:10240',
+                'file' => 'nullable|file|max:10240|mimes:doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png,gif,svg,webp,bmp,pdf,zip',
                 'penugasan_langsung' => 'nullable|boolean',
                 // required_if: mahasiswa_ids WAJIB diisi kalau checkbox dicentang
                 'mahasiswa_ids' => 'required_if:penugasan_langsung,1|nullable|array|min:1',
@@ -145,7 +145,7 @@ class TugasController extends Controller
             'deadline' => 'required|date|after:now',
             'skills' => 'nullable|array',
             'skills.*' => 'exists:skills,id',
-            'file' => 'nullable|file|max:10240', // 10 MB, konsisten dengan batas lain
+            'file' => 'nullable|file|max:10240|mimes:doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png,gif,svg,webp,bmp,pdf,zip',
         ]);
 
         $tugas->update([

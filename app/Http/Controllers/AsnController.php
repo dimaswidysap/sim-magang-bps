@@ -61,7 +61,8 @@ class AsnController extends Controller
     {
         $mahasiswa = MahasiswaProfile::with('user')->findOrFail($mahasiswaProfileId);
 
-        $logbook = Logbook::query()->where('mahasiswa_profile_id', $mahasiswa->id)
+        $logbook = Logbook::query()
+            ->where('mahasiswa_profile_id', $mahasiswa->id)
             ->whereDate('created_at', $tanggal)
             ->with(['tugas.asn', 'tugas.skills'])
             ->get();
@@ -108,24 +109,24 @@ class AsnController extends Controller
     }
 
     public function tugasSelesaiDetail($id)
-{
-    $tugasDetail = Tugas::where('id', $id)
-        ->where('asn_id', Auth::id()) // FIX: pastikan cuma tugas milik ASN yang login
-        ->with([
-            'mahasiswaProfile.user',
-            'asn',
-            'anggota.mahasiswaProfile.user',
-            // Ambil submission yang SUDAH disetujui saja, terbaru duluan.
-            // Kalau ada riwayat revisi berkali-kali, yang ditampilkan
-            // cuma yang final disetujui, bukan seluruh riwayat.
-            'submissions' => function ($q) {
-                $q->where('status', 'disetujui')->latest();
-            },
-        ])
-        ->firstOrFail();
+    {
+        $tugasDetail = Tugas::where('id', $id)
+            ->where('asn_id', Auth::id()) // FIX: pastikan cuma tugas milik ASN yang login
+            ->with([
+                'mahasiswaProfile.user',
+                'asn',
+                'anggota.mahasiswaProfile.user',
+                // Ambil submission yang SUDAH disetujui saja, terbaru duluan.
+                // Kalau ada riwayat revisi berkali-kali, yang ditampilkan
+                // cuma yang final disetujui, bukan seluruh riwayat.
+                'submissions' => function ($q) {
+                    $q->where('status', 'disetujui')->latest();
+                },
+            ])
+            ->firstOrFail();
 
-    return view('pages.asn.task-done.view', compact('tugasDetail'));
-}
+        return view('pages.asn.task-done.view', compact('tugasDetail'));
+    }
 
     public function showFormProfil()
     {
@@ -174,6 +175,4 @@ class AsnController extends Controller
         // 3. Return sukses
         return redirect()->route('task-not-done')->with('success', 'Tugas berhasil dihapus beserta seluruh data terkait.');
     }
-
-
 }

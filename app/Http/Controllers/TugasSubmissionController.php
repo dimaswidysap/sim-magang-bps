@@ -37,7 +37,7 @@ class TugasSubmissionController extends Controller
             [
                 // required_without: file wajib diisi HANYA KALAU catatan_mahasiswa kosong,
                 // begitu juga sebaliknya - jadi minimal salah satu harus ada.
-                'file' => 'nullable|file|max:10240|required_without:catatan_mahasiswa',
+                'file' => 'nullable|file|max:10240|required_without:catatan_mahasiswa|mimes:doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png,gif,svg,webp,bmp,pdf,zip',
                 'catatan_mahasiswa' => 'nullable|string|required_without:file',
             ],
             [

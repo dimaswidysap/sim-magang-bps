@@ -36,7 +36,7 @@ class BeritaController extends Controller
             'judul' => 'required|string|max:255',
             'konten' => 'required|string',
             'lampiran' => 'nullable|array',
-            'lampiran.*' => 'file|max:10240', // 10 MB per file, konsisten dengan batas lain di sistem
+            'lampiran.*' => 'file|max:10240|mimes:doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png,gif,svg,webp,bmp,pdf,zip',
         ]);
 
         $berita = Berita::create([
@@ -87,7 +87,7 @@ class BeritaController extends Controller
             'judul' => 'required|string|max:255',
             'konten' => 'required|string',
             'lampiran' => 'nullable|array',
-            'lampiran.*' => 'file|max:10240',
+            'lampiran.*' => 'file|max:10240|mimes:doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png,gif,svg,webp,bmp,pdf,zip',
             'hapus_lampiran' => 'nullable|array', // id attachment lama yang mau dihapus
             'hapus_lampiran.*' => 'exists:berita_attachments,id',
         ]);

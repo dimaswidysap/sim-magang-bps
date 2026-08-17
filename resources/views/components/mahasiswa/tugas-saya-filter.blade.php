@@ -1,23 +1,12 @@
 @php
-    $currentStatus = request('status', 'semua');
+    // Default-nya adalah 'diambil'
+    $currentStatus = request('status', 'diambil');
 @endphp
 
 <!-- Wrapper Filter -->
 <div class="mb-6 font-montserrat w-full">
     <!-- Menggunakan flex-wrap agar tombol otomatis turun dan menyesuaikan ukuran di layar sempit -->
     <div class="flex flex-wrap items-center gap-2 md:gap-3">
-
-        <!-- Tombol Semua (Menghapus parameter status dari URL) -->
-        <a href="{{ request()->fullUrlWithQuery(['status' => null]) }}"
-            class="px-3 sm:px-4 py-2 sm:py-2.5 text-[11px] sm:text-xs md:text-sm font-semibold rounded-xl border transition-all duration-200 flex items-center justify-center gap-1.5 sm:gap-2 grow sm:grow-0
-            {{ $currentStatus === 'semua'
-                ? 'bg-primary border-primary text-white shadow-sm'
-                : 'bg-surface border-border text-text-light hover:bg-primary/5 hover:border-primary/50 hover:text-primary shadow-sm transition-colors' }}">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-            </svg>
-            <span>Semua</span>
-        </a>
 
         <!-- Tombol Diambil -->
         <a href="{{ request()->fullUrlWithQuery(['status' => 'diambil']) }}"
