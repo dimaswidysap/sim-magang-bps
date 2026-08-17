@@ -9,7 +9,7 @@ use App\Models\MahasiswaProfile;
 use App\Models\User;
 use App\Models\Skill;
 use App\Models\PeriodeMagang;
-
+    
 
 class AdminController extends Controller
 {
