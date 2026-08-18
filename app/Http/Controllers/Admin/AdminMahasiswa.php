@@ -92,9 +92,9 @@ class AdminMahasiswa extends Controller
             'email' => 'required|email|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:8',
             'is_active' => 'required',
-            'instansi_asal' => 'required|string|max:255',
+            'instansi_asal' => 'nullable|string|max:255',
             'nim' => [
-                'required',
+                'nullable',
                 'string',
                 Rule::unique('mahasiswa_profiles', 'nim')
                     ->where(function ($query) use ($request) {

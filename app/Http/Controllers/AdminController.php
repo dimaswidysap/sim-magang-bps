@@ -14,12 +14,22 @@ class AdminController extends Controller
 {
     //
 
+    // Tambahkan fungsi private ini di dalam Controller Anda
+    private function getStatistikMahasiswa()
+    {
+        return [
+            'aktif' => User::mahasiswa()->profileAktif()->with('mahasiswaProfile')->get(),
+            'nonAktif' => User::mahasiswa()->profileNonAktif()->with('mahasiswaProfile')->get(),
+            'selesai' => User::mahasiswa()->profileSelesai()->with('mahasiswaProfile')->get(),
+            'batal' => User::mahasiswa()->profileBatal()->with('mahasiswaProfile')->get(),
+            'pending' => User::mahasiswa()->profilePending()->with('mahasiswaProfile')->get(),
+        ];
+    }
+
     public function adminIndex()
     {
-        $jumlahMahasiswaAktif = User::mahasiswa()->profileAktif()->with('mahasiswaProfile')->count();
-        $jumlahMahasiswaNonAktif = User::mahasiswa()->profileNonAktif()->with('mahasiswaProfile')->count();
-        $jumlahMahasiswaSelesai = User::mahasiswa()->profileSelesai()->with('mahasiswaProfile')->count();
-        $jumlahMahasiswaBatal = User::mahasiswa()->profileBatal()->with('mahasiswaProfile')->count();
+        // Panggil fungsi private
+        $statistik = $this->getStatistikMahasiswa();
 
         $jumlahAsnAktif = User::asn()->asnAktif()->count();
         $jumlahAsnNonAktif = User::asn()->asnNonAktif()->count();
@@ -27,18 +37,37 @@ class AdminController extends Controller
         $daftarMahasiswaProfilWarning = User::query()
             ->where('role', 'mahasiswa')
             ->where(function ($query) {
-                // Kondisi 1: Tidak punya profil sama sekali (jaga-jaga jika ada data lama)
-                $query
-                    ->whereDoesntHave('mahasiswaProfile')
-                    // Kondisi 2: Punya profil, tapi kolom penting belum diisi (masih NULL)
-                    ->orWhereHas('mahasiswaProfile', function ($subQuery) {
-                        $subQuery->whereNull('nim')->orWhereNull('instansi_asal')->orWhereNull('jurusan');
-                    });
+                $query->whereDoesntHave('mahasiswaProfile')->orWhereHas('mahasiswaProfile', function ($subQuery) {
+                    $subQuery->whereNull('nim')->orWhereNull('instansi_asal')->orWhereNull('jurusan');
+                });
             })
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return View('pages.admin.index', compact('daftarMahasiswaProfilWarning', 'jumlahMahasiswaAktif', 'jumlahMahasiswaNonAktif', 'jumlahMahasiswaSelesai', 'jumlahMahasiswaBatal', 'jumlahAsnAktif', 'jumlahAsnNonAktif'));
+        return view('pages.admin.index', [
+            'daftarMahasiswaProfilWarning' => $daftarMahasiswaProfilWarning,
+            'jumlahMahasiswaAktif' => $statistik['aktif'],
+            'jumlahMahasiswaNonAktif' => $statistik['nonAktif'],
+            'jumlahMahasiswaSelesai' => $statistik['selesai'],
+            'jumlahMahasiswaBatal' => $statistik['batal'],
+            'jumlahMahasiswaPending' => $statistik['pending'],
+            'jumlahAsnAktif' => $jumlahAsnAktif,
+            'jumlahAsnNonAktif' => $jumlahAsnNonAktif,
+        ]);
+    }
+
+    public function statistikUser()
+    {
+        // Panggil fungsi yang sama
+        $statistik = $this->getStatistikMahasiswa();
+
+        return view('pages.admin.statistik-mahasiswa.index', [
+            'jumlahMahasiswaAktif' => $statistik['aktif'],
+            'jumlahMahasiswaNonAktif' => $statistik['nonAktif'],
+            'jumlahMahasiswaSelesai' => $statistik['selesai'],
+            'jumlahMahasiswaBatal' => $statistik['batal'],
+            'jumlahMahasiswaPending' => $statistik['pending'],
+        ]);
     }
 
     // mengambil semua data ASN

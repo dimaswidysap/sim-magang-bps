@@ -50,23 +50,13 @@ class User extends Authenticatable
 
         // Skenario 2: Data ada, tapi kolom-kolom penting masih kosong (null)
         // Silakan sesuaikan kolom apa saja yang Anda anggap wajib
-        if (
-            empty($profile->nim) ||
-            empty($profile->instansi_asal) ||
-            empty($profile->jenjang) ||
-            empty($profile->jurusan) ||
-            empty($profile->tanggal_mulai) ||
-            empty($profile->tanggal_selesai)
-        ) {
+        if (empty($profile->nim) || empty($profile->instansi_asal) || empty($profile->jenjang) || empty($profile->jurusan) || empty($profile->tanggal_mulai) || empty($profile->tanggal_selesai)) {
             return false;
         }
 
         // Jika relasi ada dan semua kolom penting sudah terisi
         return true;
     }
-
-
-
 
     public function scopeMahasiswa($query)
     {
@@ -87,19 +77,24 @@ class User extends Authenticatable
         });
     }
 
-     public function scopeProfileSelesai($query)
+    public function scopeProfileSelesai($query)
     {
         return $query->whereHas('mahasiswaProfile', function ($q) {
             $q->where('status', 'selesai');
         });
     }
-     public function scopeProfileBatal($query)
+    public function scopeProfileBatal($query)
     {
         return $query->whereHas('mahasiswaProfile', function ($q) {
             $q->where('status', 'dibatalkan');
         });
     }
-
+    public function scopeProfilePending($query)
+    {
+        return $query->whereHas('mahasiswaProfile', function ($q) {
+            $q->where('status', 'pending');
+        });
+    }
 
     public function scopeAsn($query)
     {

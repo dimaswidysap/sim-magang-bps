@@ -48,20 +48,18 @@
                     </div>
 
                     <!-- Status Badge -->
-                    <div class="flex justify-end pt-4">
-                        @if ($detailUser->is_active)
-                            <span
-                                class="px-4 py-1.5 bg-success text-surface text-sm font-semibold rounded-full flex items-center gap-2 shadow-sm">
-                                <span class="w-2 h-2 rounded-full bg-surface animate-pulse"></span>
-                                Aktif
-                            </span>
-                        @else
-                            <span
-                                class="px-4 py-1.5 bg-danger text-surface text-sm font-semibold rounded-full flex items-center gap-2 shadow-sm">
-                                <span class="w-2 h-2 rounded-full bg-surface animate-pulse"></span>
-                                Nonaktif
-                            </span>
-                        @endif
+                    <div class="flex items-center justify-end gap-3 pt-4 font-montserrat">
+
+                        <!-- Label Status -->
+                        <span class="text-[11px] md:text-xs font-bold text-text-light uppercase tracking-wider">
+                            Status Magang:
+                        </span>
+
+                        <!-- Badge Status (Gaya Netral/Primary) -->
+                        <span
+                            class="inline-flex px-3 py-1.5 bg-primary/10 border border-primary/20 text-primary-dark text-xs font-bold rounded-full items-center shadow-sm capitalize">
+                            {{ $detailUser->mahasiswaProfile->status ?? 'Belum ada status' }}
+                        </span>
 
                     </div>
 

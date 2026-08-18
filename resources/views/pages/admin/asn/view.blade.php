@@ -6,9 +6,6 @@
 
             <!-- Tombol Kembali -->
             <div class="mb-6 flex justify-end w-full">
-
-
-
                 <x-main-button
                     class="bg-primary text-white text-xs px-4 py-2 rounded-lg  transition-colors shadow-sm inline-flex items-center gap-2"
                     href="{{ route('admin-asn') }}">
@@ -48,20 +45,28 @@
                     </div>
 
                     <!-- Status Badge -->
-                    <div class="flex justify-end pt-4">
+                    <div class="flex items-center justify-end gap-3 pt-4 font-montserrat">
+
+                        <!-- Label Status -->
+                        <span class="text-[11px] md:text-xs font-bold text-text-light uppercase tracking-wider">
+                            Status Akun:
+                        </span>
+
+                        <!-- Badge Status -->
                         @if ($detailAsn->is_active)
                             <span
-                                class="px-4 py-1.5 bg-success text-surface text-sm font-semibold rounded-full flex items-center gap-2 shadow-sm">
-                                <span class="w-2 h-2 rounded-full bg-surface animate-pulse"></span>
-                                ASN Aktif
+                                class="inline-flex px-3 py-1.5 bg-success/10 border border-success/20 text-success-dark text-xs font-bold rounded-full items-center gap-1.5 shadow-sm">
+                                <span class="w-1.5 h-1.5 rounded-full bg-success animate-pulse"></span>
+                                Aktif
                             </span>
                         @else
                             <span
-                                class="px-4 py-1.5 bg-danger text-surface text-sm font-semibold rounded-full flex items-center gap-2 shadow-sm">
-                                <span class="w-2 h-2 rounded-full bg-surface"></span>
+                                class="inline-flex px-3 py-1.5 bg-danger/10 border border-danger/20 text-danger-dark text-xs font-bold rounded-full items-center gap-1.5 shadow-sm">
+                                <span class="w-1.5 h-1.5 rounded-full bg-danger"></span>
                                 Nonaktif
                             </span>
                         @endif
+
                     </div>
 
                     <!-- Nama dan NIP -->

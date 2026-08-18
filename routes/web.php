@@ -94,6 +94,8 @@ Route::prefix('admin')
         Route::get('/periode/edit/{id}', [PeriodeMagangController::class, 'formPeriodeEdit'])->name('admin-periode-edit');
         Route::put('/periode/{id}', [PeriodeMagangController::class, 'updatePeriode'])->name('admin-periode-update');
         Route::delete('/periode/destroy/{id}', [PeriodeMagangController::class, 'destroyPeriode'])->name('admin-periode-destroy');
+        // statistik user
+        Route::get('/statistik-user',[AdminController::class,'statistikUser'])->name('statistik-user');
     });
 
 // MAHASISWA
