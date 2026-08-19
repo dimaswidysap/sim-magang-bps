@@ -23,16 +23,18 @@ class AdminController extends Controller
             'selesai' => User::mahasiswa()->profileSelesai()->with('mahasiswaProfile')->get(),
             'batal' => User::mahasiswa()->profileBatal()->with('mahasiswaProfile')->get(),
             'pending' => User::mahasiswa()->profilePending()->with('mahasiswaProfile')->get(),
+            'asnAktif'=> User::asn()->asnAktif()->get(),
+            'asnNonAktif'=> User::asn()->asnNonAktif()->get()
         ];
     }
 
     public function adminIndex()
     {
-        // Panggil fungsi private
+
         $statistik = $this->getStatistikMahasiswa();
 
-        $jumlahAsnAktif = User::asn()->asnAktif()->count();
-        $jumlahAsnNonAktif = User::asn()->asnNonAktif()->count();
+
+
 
         $daftarMahasiswaProfilWarning = User::query()
             ->where('role', 'mahasiswa')
@@ -51,8 +53,8 @@ class AdminController extends Controller
             'jumlahMahasiswaSelesai' => $statistik['selesai'],
             'jumlahMahasiswaBatal' => $statistik['batal'],
             'jumlahMahasiswaPending' => $statistik['pending'],
-            'jumlahAsnAktif' => $jumlahAsnAktif,
-            'jumlahAsnNonAktif' => $jumlahAsnNonAktif,
+            'jumlahAsnAktif' => $statistik['asnAktif'],
+            'jumlahAsnNonAktif' => $statistik['asnNonAktif'],
         ]);
     }
 
@@ -67,6 +69,16 @@ class AdminController extends Controller
             'jumlahMahasiswaSelesai' => $statistik['selesai'],
             'jumlahMahasiswaBatal' => $statistik['batal'],
             'jumlahMahasiswaPending' => $statistik['pending'],
+        ]);
+    }
+
+
+    public function statistikAsn(){
+    $statistik = $this->getStatistikMahasiswa();
+
+        return view('pages.admin.statistik-asn.index',[
+            'aktif' => $statistik['asnAktif'],
+            'nonAktif' => $statistik['asnNonAktif'],
         ]);
     }
 

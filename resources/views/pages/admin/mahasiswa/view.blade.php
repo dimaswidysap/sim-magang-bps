@@ -98,7 +98,7 @@
                             <div>
                                 <p class="text-sm text-text-light mb-1">Jenjang</p>
                                 <p class="font-medium text-text">
-                                    {{ $detailUser->mahasiswaProfile?->tanggal_mulai?->format('Y-m-d') ?? '-' }}</p>
+                                    {{ $detailUser->mahasiswaProfile->jenjang }} - {{ $detailUser->mahasiswaProfile->instansi_asal }}</p>
                             </div>
                             <div>
                                 <p class="text-sm text-text-light mb-1">Tanggal mulai</p>

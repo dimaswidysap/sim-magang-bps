@@ -86,7 +86,7 @@
 
                         <!-- Kolom Aksi -->
                         <td
-                            class="block md:table-cell md:px-6 md:py-4 md:text-center pt-3 md:pt-0 border-t border-border md:border-0">
+                            class="block md:table-cell md:px-6 md:py-0 md:text-center pt-3 md:pt-0 border-t border-border md:border-0">
                             <div class="flex items-center justify-end md:justify-center gap-2">
 
                                 <!-- Tombol Edit (Outline) -->

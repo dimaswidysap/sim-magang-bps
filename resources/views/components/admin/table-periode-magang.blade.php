@@ -11,7 +11,7 @@
 @endif
 
 <!-- Komponen Card Tabel -->
-<div class="bg-surface rounded-xl shadow-sm border border-border overflow-hidden font-montserrat w-full mb-8">
+<div class="bg-surface rounded-xl shadow-sm border border-border overflow-hidden font-montserrat w-full ">
 
     <!-- Header Tabel -->
     <div class="p-5 md:p-6 border-b border-border bg-background flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -58,7 +58,7 @@
                         </td>
 
                         <!-- Nama Periode -->
-                        <td class="block md:table-cell md:px-6 md:py-4 mb-3 md:mb-0 border-b border-border border-dashed md:border-none pb-3 md:pb-0">
+                        <td class="block md:table-cell md:px-6 md:py-0 mb-3 md:mb-0 border-b border-border border-dashed md:border-none pb-3 md:pb-0">
                             <div class="flex justify-between items-start md:block">
                                 <span class="md:hidden text-[10px] font-bold text-text-light uppercase mt-0.5">Nama:</span>
                                 <div>
@@ -122,7 +122,7 @@
                         </td>
 
                         <!-- Kolom Aksi -->
-                        <td class="block md:table-cell md:px-6 md:py-4 md:text-center pt-4 md:pt-0 border-t border-border md:border-0">
+                        <td class="block md:table-cell md:px-6 md:py-0 md:text-center pt-4 md:pt-0 border-t border-border md:border-0">
                             <div class="flex items-center justify-end md:justify-center gap-2">
 
                                 <!-- Tombol Edit (Outline to Solid) -->

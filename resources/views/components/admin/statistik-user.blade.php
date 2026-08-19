@@ -67,7 +67,7 @@
     </a>
 
     <!-- Card Statistik ASN (Full Clickable Area) -->
-    <a href="#"
+    <a href="{{ route('statistik-user-asn') }}"
         class="flex-1 bg-surface border border-border rounded-xl shadow-sm p-5 md:p-6 flex flex-col sm:flex-row sm:items-center gap-4 md:gap-5 hover:shadow-md hover:border-warning/50 transition-all duration-300 group">
 
         <!-- Ikon ASN / Pegawai -->
@@ -89,7 +89,7 @@
 
                 <!-- Data Aktif -->
                 <div>
-                    <h2 class="text-2xl md:text-3xl font-bold text-text leading-none">{{ $jumlahAsnAktif }}</h2>
+                    <h2 class="text-2xl md:text-3xl font-bold text-text leading-none">{{ $jumlahAsnAktif->count() }}</h2>
                     <p class="text-[10px] md:text-[11px] text-success-dark font-bold flex items-center gap-1.5 mt-1.5 uppercase tracking-wide">
                         <span class="w-1.5 h-1.5 rounded-full bg-success animate-pulse"></span> Aktif
                     </p>
@@ -100,7 +100,7 @@
 
                 <!-- Data Nonaktif -->
                 <div>
-                    <h2 class="text-2xl md:text-3xl font-bold text-text leading-none">{{ $jumlahAsnNonAktif }}</h2>
+                    <h2 class="text-2xl md:text-3xl font-bold text-text leading-none">{{ $jumlahAsnNonAktif->count() }}</h2>
                     <p class="text-[10px] md:text-[11px] text-danger-dark font-bold flex items-center gap-1.5 mt-1.5 uppercase tracking-wide">
                         <span class="w-1.5 h-1.5 rounded-full bg-danger"></span> Nonaktif
                     </p>

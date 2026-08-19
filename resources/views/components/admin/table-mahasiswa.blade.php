@@ -172,7 +172,7 @@
 
                                 <!-- Aksi -->
                                 <td
-                                    class="block md:table-cell md:px-6 md:py-4 md:text-center mt-4 md:mt-0 pt-4 md:pt-0 border-t border-border md:border-0">
+                                    class="block md:table-cell md:px-6 md:py-0 md:text-center mt-4 md:mt-0  pt-4 md:pt-0 border-t border-border md:border-0">
                                     <x-main-button href="{{ route('admin-mahasiswa-detail', $mhs->id) }}"
                                         class="w-full md:w-auto bg-surface hover:bg-primary text-text hover:text-white border border-border hover:border-primary text-xs px-4 py-2 rounded-lg transition-all shadow-sm inline-flex justify-center items-center gap-1.5">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
