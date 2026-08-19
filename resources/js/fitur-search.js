@@ -4,29 +4,27 @@ document.addEventListener("DOMContentLoaded", function () {
     const dataRows = document.querySelectorAll(".data-row");
     const noDataMessage = document.getElementById("noDataMessage");
 
-    // console.log(searchInput);
-
     // Pastikan elemen input ada sebelum menjalankan event
     if (searchInput) {
-        // 2. Gunakan event "input" dan tangkap event object (e) seperti yang sudah dipelajari
+        // 2. Gunakan event "input" dan tangkap event object (e)
         searchInput.addEventListener("input", function (e) {
-            // Ambil teks pencarian dan ubah ke huruf kecil untuk pencarian yang tidak case-sensitive
+            // Ambil teks pencarian dan ubah ke huruf kecil
             const query = e.target.value.toLowerCase();
             let matchCount = 0;
 
             // 3. Looping ke setiap baris data
             dataRows.forEach(function (row) {
-                // Ambil semua teks di dalam baris tersebut (nama, peran, dll)
+                // Ambil semua teks di dalam baris tersebut
                 const rowText = row.textContent.toLowerCase();
 
                 // 4. Cocokkan teks baris dengan input pencarian
                 if (rowText.includes(query)) {
-                    // Jika cocok, tampilkan baris (hilangkan class 'hidden' dari Tailwind)
-                    row.classList.remove("hidden");
+                    // JIKA COCOK: Hapus inline style display agar kembali ke class Tailwind bawaannya (block / md:table-row)
+                    row.style.display = "";
                     matchCount++;
                 } else {
-                    // Jika tidak cocok, sembunyikan baris
-                    row.classList.add("hidden");
+                    // JIKA TIDAK COCOK: Paksa sembunyikan dengan inline style (mengalahkan md:table-row)
+                    row.style.display = "none";
                 }
             });
 
