@@ -38,11 +38,22 @@ class AdminMahasiswa extends Controller
 
     public function storeMahasiswa(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:8',
-        ]);
+        $validated = $request->validate(
+            [
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|unique:users,email',
+                'password' => 'required|string|min:8',
+            ],
+            [
+                'name.required' => 'Silakan isi nama lengkap Anda.',
+                'name.max' => 'Nama terlalu panjang, maksimal 255 huruf.',
+                'email.required' => 'Silakan isi alamat email.',
+                'email.email' => 'Mohon masukkan alamat email yang valid (contoh: user@domain.com).',
+                'email.unique' => 'Email ini sudah digunakan. Silakan gunakan email yang berbeda.',
+                'password.required' => 'Silakan buat kata sandi.',
+                'password.min' => 'Kata sandi harus memiliki minimal 8 karakter untuk keamanan.',
+            ],
+        );
 
         // Menggunakan DB transaction untuk memastikan kedua tabel berhasil diisi
         DB::transaction(function () use ($validated) {
@@ -87,31 +98,88 @@ class AdminMahasiswa extends Controller
     {
         $user = User::query()->where('id', $id)->where('role', 'mahasiswa')->firstOrFail();
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
-            'password' => 'nullable|string|min:8',
-            'is_active' => 'required',
-            'instansi_asal' => 'nullable|string|max:255',
-            'nim' => [
-                'nullable',
-                'string',
-                Rule::unique('mahasiswa_profiles', 'nim')
-                    ->where(function ($query) use ($request) {
-                        return $query->where('instansi_asal', $request->instansi_asal);
-                    })
-                    ->ignore(optional($user->mahasiswaProfile)->id),
+        $validated = $request->validate(
+            [
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|unique:users,email,' . $user->id,
+                'password' => 'nullable|string|min:8',
+                'is_active' => 'required',
+                'instansi_asal' => 'nullable|string|max:255',
+                'nim' => [
+                    'nullable',
+                    'string',
+                    Rule::unique('mahasiswa_profiles', 'nim')
+                        ->where(function ($query) use ($request) {
+                            return $query->where('instansi_asal', $request->instansi_asal);
+                        })
+                        ->ignore(optional($user->mahasiswaProfile)->id),
+                ],
+                'jenjang' => 'nullable|in:SMA/SMK,D3,D4,S1,S2',
+                'jurusan' => 'nullable|string|max:255',
+                'phone' => 'nullable|string|max:13',
+                'tanggal_mulai' => 'nullable|date',
+                'tanggal_selesai' => 'nullable|date|after_or_equal:tanggal_mulai',
+                'status' => 'required|in:pending,aktif,selesai,dibatalkan',
+                'periode_magang_id' => 'nullable|exists:periode_magang,id',
+                'skills' => 'nullable|array',
+                'skills.*' => 'exists:skills,id',
             ],
-            'jenjang' => 'nullable|in:SMA/SMK,D3,D4,S1,S2',
-            'jurusan' => 'nullable|string|max:255',
-            'phone' => 'nullable|string|max:13',
-            'tanggal_mulai' => 'nullable|date',
-            'tanggal_selesai' => 'nullable|date|after_or_equal:tanggal_mulai',
-            'status' => 'required|in:pending,aktif,selesai,dibatalkan',
-            'periode_magang_id' => 'nullable|exists:periode_magang,id',
-            'skills' => 'nullable|array',
-            'skills.*' => 'exists:skills,id',
-        ]);
+            [
+                // Pesan error untuk field name
+                'name.required' => 'Nama lengkap wajib diisi.',
+                'name.string' => 'Nama lengkap harus berupa teks.',
+                'name.max' => 'Nama lengkap maksimal 255 karakter.',
+
+                // Pesan error untuk field email
+                'email.required' => 'Alamat email wajib diisi.',
+                'email.email' => 'Format email tidak valid. Contoh: nama@domain.com',
+                'email.unique' => 'Alamat email sudah digunakan oleh pengguna lain. Silakan gunakan email lain.',
+
+                // Pesan error untuk field password
+                'password.string' => 'Kata sandi harus berupa teks.',
+                'password.min' => 'Kata sandi minimal 8 karakter.',
+
+                // Pesan error untuk field is_active
+                'is_active.required' => 'Status aktif wajib dipilih.',
+
+                // Pesan error untuk field instansi_asal
+                'instansi_asal.string' => 'Instansi asal harus berupa teks.',
+                'instansi_asal.max' => 'Instansi asal maksimal 255 karakter.',
+
+                // Pesan error untuk field nim
+                'nim.string' => 'NIM harus berupa teks.',
+                'nim.unique' => 'NIM dengan instansi asal yang sama sudah terdaftar. Silakan gunakan NIM lain.',
+
+                // Pesan error untuk field jenjang
+                'jenjang.in' => 'Jenjang harus salah satu dari: SMA/SMK, D3, D4, S1, S2.',
+
+                // Pesan error untuk field jurusan
+                'jurusan.string' => 'Jurusan harus berupa teks.',
+                'jurusan.max' => 'Jurusan maksimal 255 karakter.',
+
+                // Pesan error untuk field phone
+                'phone.string' => 'Nomor telepon harus berupa angka.',
+                'phone.max' => 'Nomor telepon maksimal 13 karakter.',
+
+                // Pesan error untuk field tanggal_mulai
+                'tanggal_mulai.date' => 'Format tanggal mulai tidak valid.',
+
+                // Pesan error untuk field tanggal_selesai
+                'tanggal_selesai.date' => 'Format tanggal selesai tidak valid.',
+                'tanggal_selesai.after_or_equal' => 'Tanggal selesai harus sama dengan atau setelah tanggal mulai.',
+
+                // Pesan error untuk field status
+                'status.required' => 'Status wajib dipilih.',
+                'status.in' => 'Status harus salah satu dari: pending, aktif, selesai, atau dibatalkan.',
+
+                // Pesan error untuk field periode_magang_id
+                'periode_magang_id.exists' => 'Periode magang yang dipilih tidak terdaftar dalam sistem.',
+
+                // Pesan error untuk field skills
+                'skills.array' => 'Format skills tidak valid.',
+                'skills.*.exists' => 'Skill yang dipilih tidak terdaftar dalam sistem.',
+            ],
+        );
 
         DB::transaction(function () use ($validated, $user) {
             $user->update([

@@ -1,5 +1,5 @@
 @extends('layouts.app')
-
+@vite(['resources/js/validasi-number.js'])
 @section('content')
     <main class="w-full p-4 md:p-8 bg-background min-h-screen font-montserrat">
         <section class="container-dalam max-w-5xl mx-auto bg-surface rounded-2xl shadow-sm border border-border p-6 md:p-10">
@@ -53,15 +53,15 @@
 
                         <div>
                             <label class="block text-sm font-medium text-text-light mb-1.5">Email</label>
-                            <input type="email" name="email" value="{{ old('email') }}" placeholder="contoh@bps.go.id"
+                            <input type="email" name="email" value="{{ old('email') }}" placeholder="contoh@gmail.com"
                                 class="w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors">
                         </div>
 
                         <div>
                             <label class="block text-sm font-medium text-text-light mb-1.5">No. HP</label>
-                            <input type="text" name="phone" value="{{ old('phone') }}"
+                            <input  type="text" name="phone" value="{{ old('phone') }}"
                                 placeholder="Contoh: 08123456789"
-                                class="w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors">
+                                class="hanya-angka w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors">
                         </div>
 
                         <div class="md:col-span-2">
@@ -84,11 +84,11 @@
                     </h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-background p-5 rounded-xl border border-border">
                         <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-text-light mb-1.5">Nomor Induk Pegawai
+                            <label min="0" class="block text-sm font-medium text-text-light mb-1.5">Nomor Induk Pegawai
                                 (NIP)</label>
-                            <input type="text" name="nip" value="{{ old('nip') }}"
+                            <input type="number" name="nip" value="{{ old('nip') }}"
                                 placeholder="Masukkan 18 digit NIP"
-                                class="w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors font-mono tracking-wider">
+                                class="hanya-angka w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors font-mono tracking-wider">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-text-light mb-1.5">Jabatan</label>
@@ -139,4 +139,9 @@
             </form>
         </section>
     </main>
+
+
+
 @endsection
+
+

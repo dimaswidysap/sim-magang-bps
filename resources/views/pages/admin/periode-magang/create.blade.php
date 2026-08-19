@@ -1,5 +1,5 @@
 @extends('layouts.app')
-
+@vite(['resources/js/validasi-number.js'])
 @section('content')
     <main class="w-full p-4 md:p-8 bg-background min-h-screen font-montserrat">
         <section class="container-dalam max-w-3xl mx-auto bg-surface rounded-2xl shadow-sm border border-border p-6 md:p-10">
@@ -62,9 +62,9 @@
                     <!-- Kuota -->
                     <div>
                         <label class="block text-sm font-medium text-text-light mb-1.5">Kuota (Jumlah Mahasiswa)</label>
-                        <input type="number" name="kuota" min="1" value="{{ old('kuota') }}"
+                        <input type="text" name="kuota" min="1" value="{{ old('kuota') }}"
                             placeholder="Contoh: 20"
-                            class="w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors">
+                            class="hanya-angka w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors">
                     </div>
 
                     <!-- Status -->

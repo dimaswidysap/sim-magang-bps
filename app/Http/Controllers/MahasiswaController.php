@@ -144,25 +144,69 @@ class MahasiswaController extends Controller
     {
         $user = Auth::user();
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'phone' => 'nullable|string|max:20',
-            'instansi_asal' => 'required|string|max:255',
-            'nim' => [
-                'required',
-                'string',
-                Rule::unique('mahasiswa_profiles', 'nim')
-                    ->where(fn($query) => $query->where('instansi_asal', $request->instansi_asal))
-                    ->ignore(optional($user->mahasiswaProfile)->id),
+        $validated = $request->validate(
+            [
+                'name' => 'required|string|max:255',
+                // 'phone' => 'nullable|integer|max:13',
+                'phone' => 'nullable|string|max:13',
+                'instansi_asal' => 'required|string|max:255',
+                'nim' => [
+                    'required',
+                    'string',
+                    Rule::unique('mahasiswa_profiles', 'nim')
+                        ->where(fn($query) => $query->where('instansi_asal', $request->instansi_asal))
+                        ->ignore(optional($user->mahasiswaProfile)->id),
+                ],
+                'jenjang' => 'nullable|in:SMA/SMK,D3,D4,S1,S2',
+                'jurusan' => 'nullable|string|max:255',
+                'tanggal_mulai' => 'nullable|date',
+                'tanggal_selesai' => 'nullable|date|after_or_equal:tanggal_mulai',
+                'periode_magang_id' => 'nullable|exists:periode_magang,id',
+                'skills' => 'nullable|array',
+                'skills.*' => 'exists:skills,id',
             ],
-            'jenjang' => 'nullable|in:SMA/SMK,D3,D4,S1,S2',
-            'jurusan' => 'nullable|string|max:255',
-            'tanggal_mulai' => 'nullable|date',
-            'tanggal_selesai' => 'nullable|date|after_or_equal:tanggal_mulai',
-            'periode_magang_id' => 'nullable|exists:periode_magang,id',
-            'skills' => 'nullable|array',
-            'skills.*' => 'exists:skills,id',
-        ]);
+            [
+                // Pesan error untuk field name
+                'name.required' => 'Nama lengkap wajib diisi.',
+                'name.string' => 'Nama lengkap harus berupa teks.',
+                'name.max' => 'Nama lengkap maksimal 255 karakter.',
+
+                // Pesan error untuk field phone
+                'phone.string' => 'Nomor telepon harus berupa teks angka.', // Ubah phone.integer menjadi phone.string
+                'phone.max' => 'Nomor telepon maksimal 13 karakter.',
+
+                // Pesan error untuk field instansi_asal
+                'instansi_asal.required' => 'Instansi asal wajib diisi.',
+                'instansi_asal.string' => 'Instansi asal harus berupa teks.',
+                'instansi_asal.max' => 'Instansi asal maksimal 255 karakter.',
+
+                // Pesan error untuk field nim
+                'nim.required' => 'NIM wajib diisi.',
+                'nim.string' => 'NIM harus berupa teks.',
+                'nim.unique' => 'NIM dengan instansi asal yang sama sudah terdaftar. Silakan gunakan NIM lain.',
+
+                // Pesan error untuk field jenjang
+                'jenjang.in' => 'Jenjang harus salah satu dari: SMA/SMK, D3, D4, S1, S2.',
+
+                // Pesan error untuk field jurusan
+                'jurusan.string' => 'Jurusan harus berupa teks.',
+                'jurusan.max' => 'Jurusan maksimal 255 karakter.',
+
+                // Pesan error untuk field tanggal_mulai
+                'tanggal_mulai.date' => 'Format tanggal mulai tidak valid.',
+
+                // Pesan error untuk field tanggal_selesai
+                'tanggal_selesai.date' => 'Format tanggal selesai tidak valid.',
+                'tanggal_selesai.after_or_equal' => 'Tanggal selesai harus sama dengan atau setelah tanggal mulai.',
+
+                // Pesan error untuk field periode_magang_id
+                'periode_magang_id.exists' => 'Periode magang yang dipilih tidak terdaftar dalam sistem.',
+
+                // Pesan error untuk field skills
+                'skills.array' => 'Format skills tidak valid.',
+                'skills.*.exists' => 'Skill yang dipilih tidak terdaftar dalam sistem.',
+            ],
+        );
 
         $user->update([
             'name' => $validated['name'],

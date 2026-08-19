@@ -1,5 +1,5 @@
 @extends('layouts.app')
-
+@vite(['resources/js/validasi-number.js'])
 @section('content')
 
     {{-- {{ $dataUser }} --}}
@@ -161,7 +161,7 @@
                         <div>
                             <label class="block text-sm font-medium text-text-light mb-1.5">NO HP</label>
                             <input type="number" name="phone" value="{{ old('phone', $dataUser->phone ?? '') }}"
-                                class="appearance-none w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors">
+                                class="hanya-angka appearance-none w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors">
                         </div>
                     </div>
                 </div>

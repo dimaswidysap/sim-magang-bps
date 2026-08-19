@@ -139,13 +139,38 @@ class AsnController extends Controller
     {
         $user = Auth::user();
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'phone' => 'nullable|string|max:20',
-            'nip' => 'required|string|unique:asn_profiles,nip,' . optional($user->asnProfile)->id,
-            'jabatan' => 'nullable|string|max:255',
-            'unit_kerja' => 'nullable|string|max:255',
-        ]);
+        $validated = $request->validate(
+            [
+                'name' => 'required|string|max:255',
+                'phone' => 'nullable|string|max:20',
+                'nip' => 'required|string|unique:asn_profiles,nip,' . optional($user->asnProfile)->id,
+                'jabatan' => 'nullable|string|max:255',
+                'unit_kerja' => 'nullable|string|max:255',
+            ],
+            [
+                // Pesan error untuk field name
+                'name.required' => 'Nama lengkap wajib diisi.',
+                'name.string' => 'Nama lengkap harus berupa teks.',
+                'name.max' => 'Nama lengkap maksimal 255 karakter.',
+
+                // Pesan error untuk field phone
+                'phone.string' => 'Nomor telepon harus berupa teks.',
+                'phone.max' => 'Nomor telepon maksimal 13 karakter.',
+
+                // Pesan error untuk field nip
+                'nip.required' => 'NIP wajib diisi.',
+                'nip.string' => 'NIP harus berupa teks.',
+                'nip.unique' => 'NIP sudah digunakan oleh ASN lain. Silakan gunakan NIP lain.',
+
+                // Pesan error untuk field jabatan
+                'jabatan.string' => 'Jabatan harus berupa teks.',
+                'jabatan.max' => 'Jabatan maksimal 255 karakter.',
+
+                // Pesan error untuk field unit_kerja
+                'unit_kerja.string' => 'Unit kerja harus berupa teks.',
+                'unit_kerja.max' => 'Unit kerja maksimal 255 karakter.',
+            ],
+        );
 
         $user->update([
             'name' => $validated['name'],

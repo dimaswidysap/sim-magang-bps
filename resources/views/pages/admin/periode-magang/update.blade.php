@@ -1,5 +1,5 @@
 @extends('layouts.app')
-
+@vite(['resources/js/validasi-number.js'])
 @section('content')
     <main class="w-full p-4 md:p-8 bg-background min-h-screen font-montserrat">
         <section class="container-dalam max-w-3xl mx-auto bg-surface rounded-2xl shadow-sm border border-border p-6 md:p-10">
@@ -73,8 +73,8 @@
                     <!-- Kuota -->
                     <div>
                         <label class="block text-sm font-medium text-text-light mb-1.5">Kuota (Jumlah Mahasiswa)</label>
-                        <input type="number" name="kuota" min="1" value="{{ old('kuota', $periode->kuota) }}"
-                            class="w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors">
+                        <input type="text" min="1" max="50" name="kuota" min="1" value="{{ old('kuota', $periode->kuota) }}"
+                            class="hanya-angka w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors">
                     </div>
 
                     <!-- Status -->
@@ -106,7 +106,7 @@
                 <div class="flex justify-end items-center gap-2">
 
                     <!-- Tombol Batal -->
-                    <x-main-button href="{{ url()->previous() }}"
+                    <x-main-button href="{{ route('admin-periode-magang') }}"
                         class="bg-background text-text border border-border hover:bg-surface text-xs px-4 py-2 rounded-lg transition-colors shadow-sm inline-flex items-center gap-2">
                         <span>Batal</span>
                     </x-main-button>

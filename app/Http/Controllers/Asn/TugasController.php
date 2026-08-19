@@ -50,12 +50,31 @@ class TugasController extends Controller
                 'skills.*' => 'exists:skills,id',
                 'file' => 'nullable|file|max:10240|mimes:doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png,gif,svg,webp,bmp,pdf,zip',
                 'penugasan_langsung' => 'nullable|boolean',
-                // required_if: mahasiswa_ids WAJIB diisi kalau checkbox dicentang
                 'mahasiswa_ids' => 'required_if:penugasan_langsung,1|nullable|array|min:1',
                 'mahasiswa_ids.*' => 'exists:mahasiswa_profiles,id',
             ],
             [
-                'mahasiswa_ids.required_if' => 'Pilih minimal 1 mahasiswa untuk ditugaskan langsung.',
+                'required' => ':attribute wajib diisi.',
+                'string' => ':attribute harus berupa teks.',
+                'max' => ':attribute maksimal :max karakter.',
+                'date' => 'Format :attribute tidak valid.',
+                'after' => ':attribute harus lebih besar dari waktu sekarang.',
+                'array' => 'Format :attribute tidak valid.',
+                'exists' => ':attribute yang dipilih tidak terdaftar.',
+                'file' => 'File yang diunggah tidak valid.',
+                'mimes' => 'Format file tidak didukung. Gunakan format: doc, docx, xls, xlsx, ppt, pptx, jpg, jpeg, png, gif, svg, webp, bmp, pdf, atau zip.',
+                'min' => ':attribute minimal :min item.',
+                'boolean' => 'Format :attribute tidak valid.',
+                'required_if' => 'Pilih minimal 1 mahasiswa untuk ditugaskan langsung.',
+            ],
+            [
+                'judul' => 'Judul Tugas',
+                'deskripsi' => 'Deskripsi Tugas',
+                'deadline' => 'Deadline',
+                'skills' => 'Skill',
+                'file' => 'File',
+                'penugasan_langsung' => 'Penugasan Langsung',
+                'mahasiswa_ids' => 'Mahasiswa',
             ],
         );
 
