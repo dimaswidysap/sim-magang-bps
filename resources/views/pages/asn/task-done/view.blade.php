@@ -12,14 +12,14 @@
                         diselesaikan.</p>
                 </div>
 
-                <x-main-button href="{{ route('task-done') }}"
-                    class="w-full sm:w-auto bg-surface text-text border border-border hover:bg-background text-xs px-4 py-2 rounded-lg transition-colors shadow-sm inline-flex justify-center items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor" stroke-width="2">
+
+                <x-buttonv2 href="{{ route('task-done') }}" color="accent-dark" class="w-full sm:w-auto">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 aspect-square" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="3">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                     </svg>
-                    <span>Kembali</span>
-                </x-main-button>
+                    Kembali
+                </x-buttonv2>
             </div>
 
             <div class="bg-surface rounded-xl shadow-sm border border-border overflow-hidden">

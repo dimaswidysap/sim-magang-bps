@@ -5,7 +5,7 @@
 ])
 
 @php
-    $baseClasses = 'self-center cursor-pointer inline-flex items-center border border-text/20 justify-center py-1 gap-2 px-4 rounded-md font-montserrat font-bold text-[12px] tracking-[2px] transition-all duration-200 focus:outline-none';
+    $baseClasses = 'font-montserrat self-center cursor-pointer inline-flex items-center border border-text/20 justify-center py-1 gap-2 px-4 rounded-md font-montserrat font-bold text-[12px] tracking-[2px] transition-all duration-200 focus:outline-none';
 
     $colorClasses = match ($color) {
         'primary' => 'bg-primary text-white hover:bg-primary/80 shadow-md',
