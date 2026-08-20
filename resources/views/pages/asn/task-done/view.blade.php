@@ -52,7 +52,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        Tugas dibuat pada: {{ \Carbon\Carbon::parse($tugasDetail->created_at)->translatedFormat('d F Y') }}
+                        Tugas dibuat pada: {{ $tugasDetail->created_at->translatedFormat('d F Y') }}
                     </p>
                 </div>
 
@@ -71,8 +71,10 @@
                             Deskripsi Pekerjaan
                         </h2>
                         <div class="text-sm text-text leading-relaxed bg-[#F8FAFC] border border-border p-5 rounded-xl">
-                            {{ $tugasDetail->deskripsi }}</div>
+                            {{ $tugasDetail->deskripsi }}
+                        </div>
                     </div>
+
                     @php
                         $submissionDisetujui = $tugasDetail->submissions->first();
                     @endphp
@@ -144,7 +146,7 @@
                                 <p class="text-[11px] font-semibold text-text-light uppercase tracking-wider mb-1">Mulai
                                     Dikerjakan</p>
                                 <p class="text-sm font-bold text-text">
-                                    {{ $tugasDetail->diambil_at ? \Carbon\Carbon::parse($tugasDetail->diambil_at)->translatedFormat('d M Y, H:i') : '-' }}
+                                    {{ $tugasDetail->diambil_at ? $tugasDetail->diambil_at->translatedFormat('d M Y, H:i') : '-' }}
                                 </p>
                             </div>
 
@@ -153,7 +155,7 @@
                                 <p class="text-[11px] font-semibold text-text-light uppercase tracking-wider mb-1">
                                     Diselesaikan Pada</p>
                                 <p class="text-sm font-bold text-success">
-                                    {{ $tugasDetail->selesai_at ? \Carbon\Carbon::parse($tugasDetail->selesai_at)->translatedFormat('d M Y, H:i') : '-' }}
+                                    {{ $tugasDetail->selesai_at ? $tugasDetail->selesai_at->translatedFormat('d M Y, H:i') : '-' }}
                                 </p>
                             </div>
 
@@ -162,7 +164,7 @@
                                 <p class="text-[11px] font-semibold text-text-light uppercase tracking-wider mb-1">Tenggat
                                     Waktu Asli</p>
                                 <p class="text-sm font-bold text-danger">
-                                    {{ $tugasDetail->deadline ? \Carbon\Carbon::parse($tugasDetail->deadline)->translatedFormat('d M Y, H:i') : '-' }}
+                                    {{ $tugasDetail->deadline ? $tugasDetail->deadline->translatedFormat('d M Y, H:i') : '-' }}
                                 </p>
                             </div>
                         </div>
@@ -188,12 +190,12 @@
                                 <div class="flex items-center gap-3">
                                     <div
                                         class="w-10 h-10 rounded-full bg-primary/10 text-primary-dark flex items-center justify-center font-bold text-sm shrink-0 border border-primary/20">
-                                        {{ strtoupper(substr($tugasDetail->asn->name ?? 'A', 0, 1)) }}
+                                        {{ strtoupper(substr($tugasDetail->asn?->name ?? 'A', 0, 1)) }}
                                     </div>
                                     <div>
-                                        <p class="text-sm font-bold text-text">{{ $tugasDetail->asn->name ?? '-' }}</p>
+                                        <p class="text-sm font-bold text-text">{{ $tugasDetail->asn?->name ?? '-' }}</p>
                                         <p class="text-[11px] text-text-light mt-0.5">
-                                            {{ $tugasDetail->asn->email ?? '-' }}
+                                            {{ $tugasDetail->asn?->email ?? '-' }}
                                         </p>
                                     </div>
                                 </div>
@@ -209,30 +211,29 @@
                                     <div class="flex items-start gap-3">
                                         <div
                                             class="w-8 h-8 rounded-full bg-success/20 text-success-dark flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
-                                            K</div>
+                                            K
+                                        </div>
                                         <div>
                                             <p class="text-sm font-bold text-text">
-                                                <!-- Mengakses relasi user untuk nama jika ada, jika tidak fallback ke NIM -->
-                                                {{ $tugasDetail->mahasiswaProfile->user->name ?? 'NIM: ' . ($tugasDetail->mahasiswaProfile->nim ?? '-') }}
+                                                {{ $tugasDetail->mahasiswaProfile?->user?->name ?? 'NIM: ' . ($tugasDetail->mahasiswaProfile?->nim ?? '-') }}
                                             </p>
                                             <p class="text-[11px] text-text-light mt-0.5">
-                                                {{ $tugasDetail->mahasiswaProfile->jurusan ?? '-' }} -
-                                                {{ $tugasDetail->mahasiswaProfile->instansi_asal ?? '-' }}
+                                                {{ $tugasDetail->mahasiswaProfile?->jurusan ?? '-' }} -
+                                                {{ $tugasDetail->mahasiswaProfile?->instansi_asal ?? '-' }}
                                             </p>
                                         </div>
                                     </div>
 
                                     <!-- Anggota Tambahan -->
-                                    @if (isset($tugasDetail->anggota) && count($tugasDetail->anggota) > 0)
+                                    @if ($tugasDetail->anggotaDiterima && $tugasDetail->anggotaDiterima->count() > 0)
                                         <div class="pt-3 border-t border-border border-dashed">
                                             <p class="text-[11px] text-text-light mb-2">Anggota Tim
-                                                ({{ count($tugasDetail->anggota) }} orang):</p>
+                                                ({{ $tugasDetail->anggotaDiterima->count() }} orang):</p>
                                             <ul class="space-y-2">
-                                                @foreach ($tugasDetail->anggota as $anggota)
+                                                @foreach ($tugasDetail->anggotaDiterima as $anggota)
                                                     <li class="flex items-center gap-2 text-sm text-text">
                                                         <span class="w-1.5 h-1.5 rounded-full bg-border"></span>
-                                                        <!-- Jika objek anggota memiliki relasi ke mahasiswaProfile->user->name -->
-                                                        {{ $anggota->mahasiswaProfile->user->name ?? 'Anggota ID: ' . $anggota->mahasiswa_profile_id }}
+                                                        {{ $anggota->mahasiswaProfile?->user?->name ?? 'Anggota ID: ' . $anggota->mahasiswa_profile_id }}
                                                     </li>
                                                 @endforeach
                                             </ul>

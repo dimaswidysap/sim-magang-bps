@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use Illuminate\Support\Facades\Auth;
 use App\Models\Tugas;
 use App\Models\TugasSubmission;
@@ -35,15 +36,13 @@ class TugasSubmissionController extends Controller
 
         $validated = $request->validate(
             [
-                // required_without: file wajib diisi HANYA KALAU catatan_mahasiswa kosong,
-                // begitu juga sebaliknya - jadi minimal salah satu harus ada.
                 'file' => 'nullable|file|max:10240|required_without:catatan_mahasiswa|mimes:doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png,gif,svg,webp,bmp,pdf,zip',
                 'catatan_mahasiswa' => 'nullable|string|required_without:file',
             ],
             [
                 'file.required_without' => 'Isi salah satu: upload file atau tulis pesan.',
                 'catatan_mahasiswa.required_without' => 'Isi salah satu: upload file atau tulis pesan.',
-            ],
+            ]
         );
 
         $path = null;
@@ -80,12 +79,16 @@ class TugasSubmissionController extends Controller
 
     public function daftarSubmissionMasuk()
     {
-        // Semua tugas milik ASN ini yang statusnya menunggu_review,
-        // beserta submission TERBARU-nya (kalau ada revisi berkali-kali,
-        // yang ditampilkan cukup yang paling baru).
         $tugasMenungguReview = Tugas::milikAsn(Auth::id())
             ->where('status', 'menunggu_review')
-            ->with(['mahasiswaProfile.user', 'anggotaDiterima.mahasiswaProfile.user', 'submissions' => fn($q) => $q->latest()->limit(1)])
+            ->with([
+                'mahasiswaProfile.user',
+                // PERBAIKAN UTAMA: Memaksa relasi 'anggota' HANYA memuat yang statusnya 'diterima'
+                // Ini mencegah mahasiswa yang menolak muncul jika Blade memanggil relasi anggota
+                'anggota' => fn($q) => $q->where('status', 'diterima')->with('mahasiswaProfile.user'),
+                'anggotaDiterima.mahasiswaProfile.user',
+                'submissions' => fn($q) => $q->latest()->limit(1)
+            ])
             ->orderBy('deadline')
             ->get();
 
@@ -95,18 +98,18 @@ class TugasSubmissionController extends Controller
     public function detailSubmission($tugasId)
     {
         $tugas = Tugas::query()->where('id', $tugasId)
-            ->where('asn_id', Auth::id()) // cuma ASN pembuat tugas yang boleh lihat
+            ->where('asn_id', Auth::id())
             ->with([
                 'mahasiswaProfile.user',
+                // PERBAIKAN UTAMA: Diterapkan juga di halaman detail submission
+                'anggota' => fn($q) => $q->where('status', 'diterima')->with('mahasiswaProfile.user'),
                 'anggotaDiterima.mahasiswaProfile.user',
-                'submissions' => fn($q) => $q->latest(), // seluruh riwayat submission, terbaru duluan
+                'submissions' => fn($q) => $q->latest(),
             ])
             ->firstOrFail();
 
         return view('pages.asn.submission-detail', compact('tugas'));
     }
-
-    //saidbasiohioashiohdaiohdoiashodjwioj
 
     public function approveSubmission($submissionId)
     {
@@ -138,15 +141,13 @@ class TugasSubmissionController extends Controller
             return back()->with('error', 'Tugas ini tidak sedang menunggu review.');
         }
 
-        // Catatan WAJIB diisi saat minta revisi - mahasiswa perlu tahu apa
-        // yang harus diperbaiki, tidak boleh cuma ditolak tanpa penjelasan.
         $validated = $request->validate(
             [
                 'catatan_asn' => 'required|string',
             ],
             [
                 'catatan_asn.required' => 'Jelaskan apa yang perlu diperbaiki sebelum minta revisi.',
-            ],
+            ]
         );
 
         $submission->update([

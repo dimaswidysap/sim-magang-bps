@@ -10,7 +10,6 @@ use App\Models\TugasAnggota;
 
 class TugasanggotacontrollerInvite extends Controller
 {
-    //
     public function formUndangAnggota($tugasId)
     {
         $tugas = Tugas::with(['anggota.mahasiswaProfile.user', 'mahasiswaProfile.user'])->findOrFail($tugasId);
@@ -21,15 +20,22 @@ class TugasanggotacontrollerInvite extends Controller
             abort(403, 'Anda bukan bagian dari tugas ini, tidak bisa mengundang orang lain.');
         }
 
-        // id mahasiswa yang SUDAH terlibat (ketua + semua yang pernah diundang,
-        // apapun statusnya) - supaya tidak muncul lagi di daftar undangan
-        $idSudahTerlibat = $tugas->anggota->pluck('mahasiswa_profile_id')->push($tugas->mahasiswa_profile_id)->filter()->toArray();
+        // PERBAIKAN 1: Filter siapa saja yang disembunyikan dari daftar undangan
+        // Kumpulkan ID ketua tugas
+        $idSudahTerlibat = collect([$tugas->mahasiswa_profile_id]);
 
-        $daftarMahasiswa = MahasiswaProfile::whereNotIn('id', $idSudahTerlibat)
-            ->where('status', 'aktif') // Menambahkan kondisi status aktif
-            ->whereHas('user', fn($q) => $q->where('is_active', true))
-            ->with('user')
-            ->get();
+        // Kumpulkan ID anggota yang statusnya 'diundang' atau 'diterima'
+        // Yang statusnya 'ditolak' TIDAK dimasukkan ke sini agar muncul lagi di form
+        $idAnggotaTerlibat = $tugas
+            ->anggota()
+            ->whereIn('status', ['diundang', 'diterima'])
+            ->pluck('mahasiswa_profile_id');
+
+        // Gabungkan ID ketua dan anggota aktif
+        $idSudahTerlibat = $idSudahTerlibat->merge($idAnggotaTerlibat)->filter()->toArray();
+
+        // Ambil daftar mahasiswa yang belum terlibat
+        $daftarMahasiswa = MahasiswaProfile::whereNotIn('id', $idSudahTerlibat)->where('status', 'aktif')->whereHas('user', fn($q) => $q->where('is_active', true))->with('user')->get();
 
         return view('pages.mahasiswa.tugas-saya.invite', compact('tugas', 'daftarMahasiswa'));
     }
@@ -56,21 +62,33 @@ class TugasanggotacontrollerInvite extends Controller
             return back()->with('error', 'Tidak bisa mengundang diri sendiri.');
         }
 
-        // Cegah undang orang yang sudah jadi ketua atau sudah pernah diundang
-        // (unique constraint di database juga menjaga ini, tapi dicek dulu di
-        // sini supaya pesan errornya rapi, bukan error SQL mentah)
-        $sudahTerlibat = $tugas->mahasiswa_profile_id == $validated['mahasiswa_profile_id'] || $tugas->anggota()->where('mahasiswa_profile_id', $validated['mahasiswa_profile_id'])->exists();
+        // PERBAIKAN 2: Validasi apakah dia sedang diundang atau sudah jadi anggota
+        $isKetua = $tugas->mahasiswa_profile_id == $validated['mahasiswa_profile_id'];
 
-        if ($sudahTerlibat) {
+        $isAnggotaAktif = $tugas
+            ->anggota()
+            ->where('mahasiswa_profile_id', $validated['mahasiswa_profile_id'])
+            ->whereIn('status', ['diundang', 'diterima']) // Cek hanya yang aktif/menunggu
+            ->exists();
+
+        if ($isKetua || $isAnggotaAktif) {
             return back()->with('error', 'Mahasiswa ini sudah terlibat di tugas ini.');
         }
 
-        TugasAnggota::create([
-            'tugas_id' => $tugas->id,
-            'mahasiswa_profile_id' => $validated['mahasiswa_profile_id'],
-            'status' => 'diundang',
-            'diundang_oleh' => $mahasiswaProfileSaya->id,
-        ]);
+        // PERBAIKAN 3: Gunakan updateOrCreate, bukan create!
+        // Jika sebelumnya dia menolak (ada di database dgn status 'ditolak'), datanya cukup di-update.
+        // Jika belum ada sama sekali, data baru akan dibuat (create).
+        TugasAnggota::updateOrCreate(
+            [
+                'tugas_id' => $tugas->id,
+                'mahasiswa_profile_id' => $validated['mahasiswa_profile_id'],
+            ],
+            [
+                'status' => 'diundang',
+                'diundang_oleh' => $mahasiswaProfileSaya->id,
+                'sumber' => 'undangan_teman',
+            ],
+        );
 
         // Catatan: belum ada tabel notifikasi - undangan ini baru "terlihat"
         // kalau mahasiswa yang diundang buka halaman daftar undangannya sendiri.
