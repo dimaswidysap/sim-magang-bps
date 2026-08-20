@@ -12,14 +12,14 @@
                     </p>
                 </div>
 
-                <x-main-button href="{{ url()->previous() }}"
-                    class="w-full sm:w-auto bg-surface text-text border border-border hover:bg-background text-xs px-4 py-2.5 rounded-lg transition-colors shadow-sm inline-flex justify-center items-center gap-2">
+
+                <x-buttonv2 href="{{ route('berita-index') }}" color="accent-dark" class="w-full sm:w-auto">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor" stroke-width="2">
+                        stroke="currentColor" stroke-width="3">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                     </svg>
-                    <span>Kembali</span>
-                </x-main-button>
+                    Kembali
+                </x-buttonv2>
             </div>
 
             <!-- Alert Error (Validasi) -->
@@ -55,8 +55,8 @@
                     </h2>
                 </div>
 
-                <form method="POST" action="{{ route('berita-update', $berita->id) }}" enctype="multipart/form-data" data-confirm="Apakah Anda yakin ingin menerapkah perubahan?"
-                    class="m-0">
+                <form method="POST" action="{{ route('berita-update', $berita->id) }}" enctype="multipart/form-data"
+                    data-confirm="Apakah Anda yakin ingin menerapkah perubahan?" class="m-0">
                     @csrf
                     @method('PUT')
 
@@ -153,15 +153,15 @@
 
                     <!-- Footer Form (Tombol Submit) -->
                     <div class="p-6 md:px-8 md:py-5 bg-background border-t border-border flex justify-end">
-                        <x-main-button type="submit"
-                            class="w-full sm:w-auto bg-primary hover:bg-primary-dark text-xs px-6 py-2.5 rounded-lg text-white transition-colors shadow-sm inline-flex justify-center items-center gap-2">
+
+                        <x-buttonv2 type="submit" color="accent-dark" class="w-full sm:w-auto">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor" stroke-width="2">
+                                stroke="currentColor" stroke-width="3">
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
                             </svg>
-                            <span>Simpan Perubahan</span>
-                        </x-main-button>
+                            Simpan Perubahan
+                        </x-buttonv2>
                     </div>
                 </form>
             </div>

@@ -24,25 +24,27 @@
                     @endphp
 
                     <!-- Tombol Kembali -->
-                    <x-main-button href="{{ route($rutePulang) }}"
-                        class="w-full sm:w-auto bg-surface text-text border border-border hover:bg-background text-xs px-4 py-2.5 rounded-lg transition-colors shadow-sm inline-flex justify-center items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                        </svg>
-                        <span>Kembali</span>
-                    </x-main-button>
+                    <x-buttonv2 href="{{ route($rutePulang) }}" color="secondary" class="w-full sm:w-auto">
+                        <x-slot name="icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                stroke-width="3">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                            </svg>
+                        </x-slot>
+                        Kembali
+                    </x-buttonv2>
 
                     <!-- Tombol Tulis Berita (Hanya Admin/ASN) -->
                     @if (in_array(auth()->user()->role, ['admin', 'asn']))
-                        <x-main-button href="{{ route('berita-create') }}"
-                            class="w-full sm:w-auto bg-primary hover:bg-primary-dark text-xs px-4 py-2.5 rounded-lg text-white transition-colors shadow-sm inline-flex justify-center items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                            </svg>
-                            <span>Tulis Berita</span>
-                        </x-main-button>
+                        <x-buttonv2 href="{{ route('berita-create') }}" color="accent-dark" class="w-full sm:w-auto">
+                            <x-slot name="icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor" stroke-width="3">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                                </svg>
+                            </x-slot>
+                            Tulis Berita
+                        </x-buttonv2>
                     @endif
 
                 </div>
@@ -139,8 +141,7 @@
 
                                         <!-- Tombol Hapus -->
                                         <form method="POST" action="{{ route('berita-destroy', $berita->id) }}"
-                                            class="m-0"
-                                            data-confirm="Yakin ingin menghapus berita ini secara permanen?">
+                                            class="m-0" data-confirm="Yakin ingin menghapus berita ini secara permanen?">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" title="Hapus Berita"

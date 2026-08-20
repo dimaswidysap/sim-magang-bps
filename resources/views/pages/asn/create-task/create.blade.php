@@ -37,7 +37,7 @@
                         </div>
                     @endif
 
-                    <form  method="POST" action="{{ route('asn-store-tugas') }}" id="form-tugas-asn" class="space-y-8"
+                    <form method="POST" action="{{ route('asn-store-tugas') }}" id="form-tugas-asn" class="space-y-8"
                         enctype="multipart/form-data">
                         @csrf
 
@@ -155,6 +155,7 @@
                                 <div id="daftar-mahasiswa-langsung"
                                     class="{{ old('penugasan_langsung') ? '' : 'hidden' }} flex flex-wrap gap-3">
                                     @foreach ($daftarMahasiswa as $mhs)
+                                        {{-- {{ $mhs }} --}}
                                         <!-- Tambahkan select-none di label list mahasiswa ini -->
                                         <label for="mhs-{{ $mhs->id }}"
                                             class="flex items-center gap-2 px-4 py-2 bg-surface border border-border rounded-full cursor-pointer hover:border-primary transition-colors select-none">
@@ -163,7 +164,8 @@
                                                 {{ in_array($mhs->id, old('mahasiswa_ids', [])) ? 'checked' : '' }}
                                                 class="w-4 h-4 text-primary bg-background border-border rounded focus:ring-primary focus:ring-2 cursor-pointer accent-primary">
                                             <span class="text-sm font-medium text-text">
-                                                {{ $mhs->user->name }} ({{ $mhs->jurusan }})
+
+                                                {{ $mhs->user->name }} ({{ $mhs->jenjang }}-{{ $mhs->jurusan }})
                                             </span>
                                         </label>
                                     @endforeach
@@ -174,17 +176,19 @@
                         <hr class="border-border mt-8">
 
                         <!-- Footer Buttons -->
-                        <div class="flex flex-col sm:flex-row justify-end items-center gap-4 pt-4">
+                        <div class="flex flex-col sm:flex-row justify-end items-center gap-4 pt-4 pb-10 md:px-4">
 
-                            <x-main-button
-                                class="bg-primary hover:bg-primary-dark  text-xs px-4 py-2 rounded-lg text-white transition-colors shadow-sm inline-flex items-center gap-2"
-                                type="submit">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                                </svg>
-                                <span>Tambahkan Tugas</span>
-                            </x-main-button>
+                            <x-buttonv2 type="submit" color="accent-dark">
+                                <x-slot name="icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="5" stroke-linecap="round"
+                                        stroke-linejoin="round" class="w-5 h-5">
+                                        <path d="M12 5v14"></path>
+                                        <path d="M5 12h14"></path>
+                                    </svg>
+                                </x-slot>
+                                Tambahkan Tugas
+                            </x-buttonv2>
                         </div>
 
                     </form>
@@ -193,7 +197,5 @@
         </section>
     </main>
 
-<script src="{{ asset('js/asn/tugas-alert.js') }}"></script>
+    <script src="{{ asset('js/asn/tugas-alert.js') }}"></script>
 @endsection
-
-

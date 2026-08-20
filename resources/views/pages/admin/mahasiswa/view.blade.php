@@ -10,16 +10,19 @@
             <div class="mb-6 w-full flex justify-end">
 
 
-                <x-main-button
-                    class="bg-primary text-white text-xs px-4 py-2 rounded-lg  transition-colors shadow-sm inline-flex items-center gap-2"
-                    href="{{ route('admin-mahasiswa') }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+
+
+                <x-buttonv2 href="{{ route('admin-mahasiswa') }}" color="accent-dark" class="w-full sm:w-auto">
+                    <svg xmlns="http://www.w3.org/2000/svg" stroke-width="3" class="h-4 w-4" viewBox="0 0 20 20"
+                        fill="currentColor">
                         <path fill-rule="evenodd"
                             d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
                             clip-rule="evenodd" />
                     </svg>
-                    <span>Kembali</span>
-                </x-main-button>
+                    kembali
+                </x-buttonv2>
+
+
             </div>
 
             <!-- Card Detail Profil -->
@@ -98,7 +101,8 @@
                             <div>
                                 <p class="text-sm text-text-light mb-1">Jenjang</p>
                                 <p class="font-medium text-text">
-                                    {{ $detailUser->mahasiswaProfile->jenjang }} - {{ $detailUser->mahasiswaProfile->instansi_asal }}</p>
+                                    {{ $detailUser->mahasiswaProfile->jenjang }} -
+                                    {{ $detailUser->mahasiswaProfile->instansi_asal }}</p>
                             </div>
                             <div>
                                 <p class="text-sm text-text-light mb-1">Tanggal mulai</p>
@@ -205,27 +209,30 @@
                         @csrf
                         @method('DELETE')
 
-                        <x-main-button type="submit"
-                            class="w-full sm:w-auto bg-surface border  text-danger hover:bg-danger hover:text-white text-xs px-5 py-2.5 rounded-lg transition-all shadow-sm inline-flex justify-center items-center gap-2 group">
+
+
+                        <x-buttonv2 type="submit" color="danger" class="w-full sm:w-auto">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
                                 stroke-width="2" class="w-4 h-4 transition-colors">
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M6 7h12M9 7V5h6v2m-8 0v12a2 2 0 002 2h6a2 2 0 002-2V7M10 11l4 4M14 11l-4 4" />
                             </svg>
-                            <span>Hapus Data</span>
-                        </x-main-button>
+                            Hapus Data
+                        </x-buttonv2>
                     </form>
 
                     <!-- Tombol Edit Data -->
-                    <x-main-button href="{{ route('form-mahasiswa-edit', $detailUser->id) }}"
-                        class="w-full sm:w-auto bg-primary hover:bg-primary-dark text-xs px-5 py-2.5 rounded-lg text-white transition-colors shadow-sm inline-flex justify-center items-center gap-2">
+
+
+                    <x-buttonv2 href="{{ route('form-mahasiswa-edit', $detailUser->id) }}" color="accent-dark"
+                        class="w-full sm:w-auto">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                            stroke-width="2" class="w-4 h-4">
+                            stroke-width="3" class="w-4 h-4">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M16.862 3.487a2.25 2.25 0 113.182 3.182L8.25 18.463 3 21l2.537-5.25L16.862 3.487z" />
                         </svg>
-                        <span>Edit Data</span>
-                    </x-main-button>
+                        Edit Data
+                    </x-buttonv2>
 
                 </div>
 

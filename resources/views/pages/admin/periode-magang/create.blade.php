@@ -31,7 +31,8 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('admin-periode-store') }}" data-confirm="Apakah anda yakin ingin menambah data?">
+            <form method="POST" action="{{ route('admin-periode-store') }}"
+                data-confirm="Apakah anda yakin ingin menambah data?">
                 @csrf
 
                 <!-- Form Inputs -->
@@ -96,21 +97,23 @@
                 <div class="flex justify-end items-center gap-2">
 
                     <!-- Tombol Batal -->
-                    <x-main-button href="{{ url()->previous() }}"
-                        class="bg-background text-text border border-border hover:bg-surface text-xs px-4 py-2 rounded-lg transition-colors shadow-sm inline-flex items-center gap-2">
-                        <span>Batal</span>
-                    </x-main-button>
 
-                    <!-- Tombol Simpan -->
-                    <x-main-button
-                        class="bg-primary text-xs px-4 py-2 rounded-lg text-white transition-colors shadow-sm inline-flex items-center gap-2"
-                        type="submit">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor" stroke-width="2">
+
+
+                    <x-buttonv2 href="{{ route('admin-periode-magang') }}" color="primary" class="w-full sm:w-auto">
+
+                        Batal
+                    </x-buttonv2>
+
+
+
+                    <x-buttonv2 type="submit" color="accent-dark" class="w-full sm:w-auto">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="3">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                         </svg>
-                        <span>Simpan Periode</span>
-                    </x-main-button>
+                        Simpan Periode
+                    </x-buttonv2>
 
                 </div>
             </form>

@@ -16,9 +16,18 @@ class AdminSkill extends Controller
 
     public function storeSkill(Request $request)
     {
-        $validated = $request->validate([
-            'nama_skill' => 'required|string|max:255|unique:skills,nama_skill',
-        ]);
+        $validated = $request->validate(
+            [
+                'nama_skill' => 'required|string|max:255|unique:skills,nama_skill',
+            ],
+            [
+                // Pesan error untuk field nama_skill
+                'nama_skill.required' => 'Nama skill wajib diisi.',
+                'nama_skill.string' => 'Nama skill harus berupa teks.',
+                'nama_skill.max' => 'Nama skill maksimal 255 karakter.',
+                'nama_skill.unique' => 'Nama skill sudah digunakan. Silakan gunakan nama skill lain.',
+            ],
+        );
 
         Skill::create($validated);
 

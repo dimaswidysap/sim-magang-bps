@@ -12,14 +12,16 @@
                     </p>
                 </div>
 
-                <x-main-button href="{{ route('berita-index') }}"
-                    class="w-full sm:w-auto bg-surface text-text border border-border hover:bg-background text-xs px-4 py-2.5 rounded-lg transition-colors shadow-sm inline-flex justify-center items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                    </svg>
-                    <span>Kembali</span>
-                </x-main-button>
+
+                <x-buttonv2 href="{{ route('berita-index') }}" color="accent-dark" class="w-full sm:w-auto">
+                    <x-slot name="icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="3">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                    </x-slot>
+                    kembali
+                </x-buttonv2>
             </div>
 
             <!-- Alert Error (Validasi) -->
@@ -55,7 +57,8 @@
                     </h2>
                 </div>
 
-                <form method="POST" action="{{ route('berita-store') }}" enctype="multipart/form-data" class="m-0" data-confirm="Apakah Anda yakin ingin mempublikasikan berita?">
+                <form method="POST" action="{{ route('berita-store') }}" enctype="multipart/form-data" class="m-0"
+                    data-confirm="Apakah Anda yakin ingin mempublikasikan berita?">
                     @csrf
                     <div class="p-6 md:p-8 space-y-6">
 
@@ -107,14 +110,17 @@
 
                     <!-- Footer Form (Tombol Submit) -->
                     <div class="p-6 md:px-8 md:py-5 bg-background border-t border-border flex justify-end">
-                        <x-main-button type="submit"
-                            class="w-full sm:w-auto bg-primary hover:bg-primary-dark text-xs px-6 py-2.5 rounded-lg text-white transition-colors shadow-sm inline-flex justify-center items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                            </svg>
-                            <span>Publikasikan Berita</span>
-                        </x-main-button>
+
+                        <x-buttonv2 type="submit" color="accent-dark" class="w-full sm:w-auto">
+                            <x-slot name="icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                </svg>
+                            </x-slot>
+                            Publikasikan Berita
+                        </x-buttonv2>
                     </div>
                 </form>
             </div>

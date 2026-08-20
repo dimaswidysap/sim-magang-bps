@@ -30,7 +30,8 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('admin-asn-store') }}" class="space-y-8" data-confirm="Apakah anda yakin ingin menambah data?">
+            <form method="POST" action="{{ route('admin-asn-store') }}" class="space-y-8"
+                data-confirm="Apakah anda yakin ingin menambah data?">
                 @csrf
 
                 <!-- SECTION 1: Data Akun & Kontak -->
@@ -59,7 +60,7 @@
 
                         <div>
                             <label class="block text-sm font-medium text-text-light mb-1.5">No. HP</label>
-                            <input  type="text" name="phone" value="{{ old('phone') }}"
+                            <input type="text" name="phone" value="{{ old('phone') }}"
                                 placeholder="Contoh: 08123456789"
                                 class="hanya-angka w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors">
                         </div>
@@ -84,7 +85,8 @@
                     </h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-background p-5 rounded-xl border border-border">
                         <div class="md:col-span-2">
-                            <label min="0" class="block text-sm font-medium text-text-light mb-1.5">Nomor Induk Pegawai
+                            <label min="0" class="block text-sm font-medium text-text-light mb-1.5">Nomor Induk
+                                Pegawai
                                 (NIP)</label>
                             <input type="number" name="nip" value="{{ old('nip') }}"
                                 placeholder="Masukkan 18 digit NIP"
@@ -112,27 +114,19 @@
                     <!-- Tombol Kembali -->
 
 
-                    <x-main-button
-                        class="border border-text  text-xs px-4 py-2 rounded-lg text-text transition-colors shadow-sm inline-flex items-center gap-2"
-                        href="{{ route('admin-asn') }}">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+
+
+                    <x-buttonv2 href="{{ route('admin-asn') }}" color="primary" class="w-full sm:w-auto">
+
+                        kembali
+                    </x-buttonv2>
+                    <x-buttonv2 type="submit" color="accent-dark" class="w-full sm:w-auto">
+                        <svg xmlns="http://www.w3.org/2000/svg" stroke-width="3" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                         </svg>
-                        <span>Kembali</span>
-                    </x-main-button>
-
-
-
-                    <x-main-button
-                        class="bg-primary hover:bg-primary-dark  text-xs px-4 py-2 rounded-lg text-white transition-colors shadow-sm inline-flex items-center gap-2"
-                        type="submit">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
-                        <span>Simpan data</span>
-                    </x-main-button>
+                        Simpan Data
+                    </x-buttonv2>
 
                 </div>
 
@@ -143,5 +137,3 @@
 
 
 @endsection
-
-

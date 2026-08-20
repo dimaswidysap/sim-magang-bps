@@ -146,23 +146,24 @@
                         </div>
                     </div>
 
-                    <hr class="border-border mb-6">
+                    <hr class="border-border mb-6 ">
 
                     <!-- Footer Buttons -->
                     <div class="flex justify-end items-center gap-3">
-                        <x-main-button href="{{ route('task-not-done') }}"
-                            class="bg-background text-text border border-border hover:bg-surface text-xs px-4 py-2 rounded-lg transition-colors shadow-sm inline-flex items-center gap-2">
-                            <span>Batal</span>
-                        </x-main-button>
 
-                        <x-main-button type="submit"
-                            class="bg-primary hover:bg-primary-dark text-xs px-4 py-2 rounded-lg text-white transition-colors shadow-sm inline-flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24"
+
+                        <x-buttonv2 href="{{ route('task-not-done') }}" color="primary" class="w-full sm:w-auto">
+                            Batal
+                        </x-buttonv2>
+
+
+                        <x-buttonv2 type="submit" color="accent-dark" class="w-full sm:w-auto">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                                 stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                             </svg>
-                            <span>Simpan Perubahan</span>
-                        </x-main-button>
+                            Simpan Perubahan
+                        </x-buttonv2>
                     </div>
                 </form>
             </div>

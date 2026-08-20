@@ -141,49 +141,45 @@
                     class="p-6 md:px-8 md:py-6 bg-background border-t border-border flex flex-col sm:flex-row justify-between items-center gap-4">
 
                     <!-- Tombol Kembali -->
-                    <x-main-button href="{{ route('tugas-saya') }}"
-                        class="w-full sm:w-auto bg-surface text-text border border-border hover:bg-background text-xs px-4 py-2 rounded-lg transition-colors shadow-sm inline-flex justify-center items-center gap-2">
+
+
+                    <x-buttonv2 href="{{ route('tugas-saya') }}" color="primary" class="w-full sm:w-auto">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                         </svg>
-                        <span>Kembali</span>
-                    </x-main-button>
+                        Kembali
+                    </x-buttonv2>
 
 
                     <div class="flex gap-4">
                         {{-- AJAK TEMAN --}}
                         @if (
                             $detailTugas->status !== 'selesai' &&
-                                $detailTugas->status !== 'revisi' &&
                                 auth()->user()->mahasiswaProfile->id == $detailTugas->mahasiswa_profile_id)
-                            <x-main-button href="{{ route('mahasiswa-tugas-undang', $detailTugas->id) }}"
-                                class="w-full sm:w-auto bg-primary hover:bg-primary-dark text-xs px-4 py-2 rounded-lg text-white transition-colors shadow-sm inline-flex justify-center items-center gap-2">
-
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-
+                            <x-buttonv2 href="{{ route('mahasiswa-tugas-undang', $detailTugas->id) }}" color="accent-dark"
+                                class="w-full sm:w-auto">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-
+                                        d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                                 </svg>
-
-                                <span>Ajak Teman</span>
-                            </x-main-button>
+                                Ajak Teman
+                            </x-buttonv2>
                         @endif
 
 
                         {{-- KIRIM TUGAS --}}
                         @if ($detailTugas->status !== 'selesai')
-                            <x-main-button href="{{ route('mahasiswa-tugas-submit-form', $detailTugas->id) }}"
-                                class="w-full sm:w-auto bg-primary hover:bg-primary-dark text-xs px-4 py-2 rounded-lg text-white transition-colors shadow-sm inline-flex justify-center items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <x-buttonv2 href="{{ route('mahasiswa-tugas-submit-form', $detailTugas->id) }}"
+                                color="accent-dark" class="w-full sm:w-auto">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round"
                                         d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                                 </svg>
-                                <span>Kirim Tugas</span>
-                            </x-main-button>
+                                Kirim Tugas
+                            </x-buttonv2>
                         @endif
                     </div>
                 </div>

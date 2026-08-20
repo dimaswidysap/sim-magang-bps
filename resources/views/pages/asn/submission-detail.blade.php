@@ -10,14 +10,14 @@
                     <h1 class="text-2xl font-bold text-text leading-snug">Detail Review Tugas</h1>
                     <p class="text-sm text-text-light mt-1">Periksa hasil pekerjaan mahasiswa dan berikan evaluasi.</p>
                 </div>
-                <x-main-button href="{{ url()->previous() }}"
-                    class="bg-surface text-text border border-border hover:bg-background text-xs px-4 py-2 rounded-lg transition-colors shadow-sm inline-flex justify-center items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor" stroke-width="2">
+
+                <x-buttonv2 href="{{ route('asn-submission-index') }}" color="accent-dark" class="w-full sm:w-auto">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="3">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                     </svg>
-                    <span>Kembali</span>
-                </x-main-button>
+                    Kembali
+                </x-buttonv2>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -285,16 +285,15 @@
                                                     <textarea name="catatan_asn" rows="3" required placeholder="Tuliskan bagian mana yang perlu diperbaiki..."
                                                         class="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-text focus:outline-none focus:border-danger focus:ring-1 focus:ring-danger transition-colors resize-y"></textarea>
 
-                                                    <x-main-button type="submit"
-                                                        class="w-full bg-danger hover:bg-red-700 text-xs px-4 py-2 rounded-lg text-white transition-colors shadow-sm inline-flex justify-center items-center gap-2">
+                                                    <x-buttonv2 type="submit" color="danger" class="w-full sm:w-full">
                                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5"
                                                             fill="none" viewBox="0 0 24 24" stroke="currentColor"
                                                             stroke-width="2">
                                                             <path stroke-linecap="round" stroke-linejoin="round"
                                                                 d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
                                                         </svg>
-                                                        <span>Minta Revisi</span>
-                                                    </x-main-button>
+                                                        Minta Revisi
+                                                    </x-buttonv2>
                                                 </form>
                                             </div>
 
@@ -314,16 +313,17 @@
                                                     class="m-0 mt-3"
                                                     data-confirm="Anda yakin ingin menyetujui tugas ini?">
                                                     @csrf
-                                                    <x-main-button type="submit"
-                                                        class="w-full bg-success hover:bg-green-700 text-xs px-4 py-2 rounded-lg text-white transition-colors shadow-sm inline-flex justify-center items-center gap-2">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5"
+
+                                                    <x-buttonv2 type="submit" color="accent-dark"
+                                                        class="w-full sm:w-full">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
                                                             fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                                                            stroke-width="2">
+                                                            stroke-width="3">
                                                             <path stroke-linecap="round" stroke-linejoin="round"
                                                                 d="M5 13l4 4L19 7" />
                                                         </svg>
-                                                        <span>Setujui & Selesaikan</span>
-                                                    </x-main-button>
+                                                        Setujui & Selesaikan
+                                                    </x-buttonv2>
                                                 </form>
                                             </div>
                                         </div>

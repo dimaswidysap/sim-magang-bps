@@ -107,31 +107,30 @@
                     <div class="p-4 bg-background border-t border-border flex justify-end gap-2">
 
                         <!-- Form Tolak -->
-                        <form method="POST" action="{{ route('mahasiswa-undangan-tolak', $item->id) }}" class="m-0"
-                            onsubmit="return confirm('Anda yakin ingin menolak undangan ini?');">
+                        <form method="POST" data-confirm="Apakah anda yakin ingin menolak undangan ini?" action="{{ route('mahasiswa-undangan-tolak', $item->id) }}" class="m-0"
+                            >
                             @csrf
-                            <x-main-button type="submit"
-                                class="bg-background text-text border border-border hover:bg-surface text-xs px-4 py-2 rounded-lg transition-colors shadow-sm inline-flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+
+                            <x-buttonv2 type="submit" color="danger" class="w-full sm:w-auto">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                                 </svg>
-                                <span>Tolak</span>
-                            </x-main-button>
+                                Tolak
+                            </x-buttonv2>
                         </form>
 
                         <!-- Form Terima -->
-                        <form method="POST" action="{{ route('mahasiswa-undangan-terima', $item->id) }}"
+                        <form method="POST" data-confirm="Apakah anda yakin ingin menerima undangan ini?" action="{{ route('mahasiswa-undangan-terima', $item->id) }}"
                             class="m-0">
                             @csrf
-                            <x-main-button type="submit"
-                                class="bg-primary hover:bg-primary-dark text-xs px-4 py-2 rounded-lg text-white transition-colors shadow-sm inline-flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <x-buttonv2 type="submit" color="accent-dark" class="w-full sm:w-auto">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                                 </svg>
-                                <span>Terima</span>
-                            </x-main-button>
+                                Terima
+                            </x-buttonv2>
                         </form>
 
                     </div>

@@ -39,7 +39,8 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('admin-skill-update', $skill->id) }}" data-confirm="Apakah anda yakin ingin menerapkah perubahan?">
+            <form method="POST" action="{{ route('admin-skill-update', $skill->id) }}"
+                data-confirm="Apakah anda yakin ingin menerapkah perubahan?">
                 @csrf
 
                 <!-- Form Input -->
@@ -62,23 +63,25 @@
                 <div class="flex justify-end items-center gap-2">
 
                     <!-- Tombol Batal (Menggunakan Layout Button Anda, disesuaikan warnanya) -->
-                    <x-main-button href="{{ url()->previous() }}"
-                        class="bg-background text-text border border-border hover:bg-surface text-xs px-4 py-2 rounded-lg transition-colors shadow-sm inline-flex items-center gap-2">
-                        <span>Batal</span>
-                    </x-main-button>
+
+
+                    <x-buttonv2 href="{{ route('admin-skill') }}" color="primary" class="w-full sm:w-auto">
+
+                        Batal
+                    </x-buttonv2>
 
                     <!-- Tombol Simpan (Persis layout button Anda) -->
-                    <x-main-button
-                        class="bg-primary text-xs px-4 py-2 rounded-lg text-white transition-colors shadow-sm inline-flex items-center gap-2"
-                        type="submit">
-                        <!-- Ukuran SVG diubah menjadi w-3.5 h-3.5 persis seperti instruksi Anda -->
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+
+
+                    <x-buttonv2 type="submit" color="accent-dark" class="w-full sm:w-auto">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" stroke-width="3" viewBox="0 0 20 20"
+                            fill="currentColor">
                             <path fill-rule="evenodd"
                                 d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
                                 clip-rule="evenodd" />
                         </svg>
-                        <span>Simpan Perubahan</span>
-                    </x-main-button>
+                        Simpan Perubahan
+                    </x-buttonv2>
 
                 </div>
             </form>

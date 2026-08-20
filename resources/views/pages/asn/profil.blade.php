@@ -84,7 +84,8 @@
             </div>
 
             <!-- Form Update Profil -->
-            <form method="POST" action="{{ route('asn-profil-update') }}" class="space-y-8" data-confirm="Apakah Anda yakin ingin update profil anda?">
+            <form method="POST" action="{{ route('asn-profil-update') }}" class="space-y-8"
+                data-confirm="Apakah Anda yakin ingin update profil anda?">
                 @csrf
                 @method('PUT')
 
@@ -148,36 +149,29 @@
 
                 <!-- Footer Button -->
                 <div class="flex gap-4 justify-end pt-4">
-                    {{-- <button type="submit"
-                        class="w-full sm:w-auto bg-primary hover:bg-primary-dark text-surface flex justify-center items-center gap-2 px-10 py-3 rounded-xl font-medium transition-colors shadow-sm">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd"
-                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                clip-rule="evenodd" />
-                        </svg>
-                        Simpan Perubahan
-                    </button> --}}
-                    <x-main-button
-                        class=" text-xs px-4 py-2 rounded-lg text-text border-text border transition-colors shadow-sm inline-flex items-center gap-2"
-                        href="{{ route('asn-index') }}">
+
+
+
+                    <x-buttonv2 href="{{ route('asn-index') }}" color="primary" class="w-full sm:w-auto">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                            stroke-width="2" class="w-5 h-5">
+                            stroke-width="3" class="w-4 h-4">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                         </svg>
-                        <span>Kembali</span>
-                    </x-main-button>
+                        Kembali
+                    </x-buttonv2>
 
 
-                    <x-main-button
-                        class="bg-primary hover:bg-primary-dark  text-xs px-4 py-2 rounded-lg text-white transition-colors shadow-sm inline-flex items-center gap-2"
-                        type="submit">
+
+
+
+                    <x-buttonv2 type="submit" color="accent-dark" class="w-full sm:w-auto">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                            stroke-width="2" class="w-5 h-5">
+                            stroke-width="2" class="w-4 h-4">
                             <circle cx="12" cy="12" r="9" />
                             <path stroke-linecap="round" stroke-linejoin="round" d="M8 12l3 3 5-6" />
                         </svg>
-                        <span>Simpan perubahan</span>
-                    </x-main-button>
+                        Simpan Perubahan
+                    </x-buttonv2>
                 </div>
 
             </form>

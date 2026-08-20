@@ -31,18 +31,19 @@
                     </svg>
                 </div>
                 <input type="text" name="search" placeholder="Cari data mahasiswa..."
-                    class="input-search w-full pl-10 pr-4 py-2.5 bg-surface border border-border rounded-xl text-sm text-text placeholder:text-text-light focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors shadow-sm">
+                    class="input-search w-full pl-10 pr-4 py-2.5 bg-surface border border-border rounded-md text-sm text-text placeholder:text-text-light focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors shadow-sm">
             </div>
 
             <!-- Tombol Tambah Data -->
-            <x-main-button href="{{ route('admin.mahasiswa.create') }}"
-                class="w-full sm:w-auto bg-primary hover:bg-primary-dark text-xs px-5 py-2.5 rounded-xl text-white transition-colors shadow-sm inline-flex justify-center items-center gap-2 shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+
+
+            <x-buttonv2 href="{{ route('admin.mahasiswa.create') }}" color="accent-dark" class="w-full sm:w-auto">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3"
                     stroke="currentColor" class="w-4 h-4 shrink-0">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                 </svg>
-                <span>Tambah Data</span>
-            </x-main-button>
+                Tambah Data
+            </x-buttonv2>
 
         </section>
 

@@ -42,7 +42,8 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('admin-mahasiswa-update', $dataUser->id) }}" class="space-y-8" data-confirm="Apakah anda yakin ingin melakukan perubahan?">
+            <form method="POST" action="{{ route('admin-mahasiswa-update', $dataUser->id) }}" class="space-y-8"
+                data-confirm="Apakah anda yakin ingin melakukan perubahan?">
                 @csrf
                 @method('PUT')
 
@@ -84,9 +85,9 @@
                             <!-- Toggle Button -->
                             <label class="relative inline-flex items-center cursor-pointer">
                                 <!--
-                Menggunakan old('is_active') untuk repopulate data jika validasi form gagal,
-                dan fallback ke $dataUser->is_active jika baru pertama kali load halaman.
-            -->
+                            Menggunakan old('is_active') untuk repopulate data jika validasi form gagal,
+                            dan fallback ke $dataUser->is_active jika baru pertama kali load halaman.
+                        -->
                                 <input type="checkbox" name="is_active" value="1" class="sr-only peer"
                                     {{ old('is_active', $dataUser->is_active) ? 'checked' : '' }}>
 
@@ -249,28 +250,20 @@
                 <div class="flex flex-col sm:flex-row justify-end items-center gap-4 pt-4">
 
 
-                    <x-main-button
-                        class=" text-xs px-4 py-2 rounded-lg text-text border-text border transition-colors shadow-sm inline-flex items-center gap-2"
-                        href="{{ route('admin-mahasiswa') }}">
-                        {{-- <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd"
-                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                clip-rule="evenodd" />
-                        </svg> --}}
-                        <span>Batal</span>
-                    </x-main-button>
 
 
-                    <x-main-button
-                        class="bg-primary hover:bg-primary-dark  text-xs px-4 py-2 rounded-lg text-white transition-colors shadow-sm inline-flex items-center gap-2"
-                        type="submit">
+                    <x-buttonv2 href="{{ route('admin-mahasiswa') }}" color="accent" class="w-full sm:w-auto">
+                        Batal
+                    </x-buttonv2>
+
+                    <x-buttonv2 type="submit" color="accent-dark" class="w-full sm:w-auto">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd"
                                 d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
                                 clip-rule="evenodd" />
                         </svg>
-                        <span>Simpan perubahan</span>
-                    </x-main-button>
+                        Simpan Perubahan
+                    </x-buttonv2>
 
                 </div>
 

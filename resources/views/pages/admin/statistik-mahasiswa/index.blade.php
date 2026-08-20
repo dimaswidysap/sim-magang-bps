@@ -6,15 +6,17 @@
 
             <!-- Tombol Kembali -->
             <div class="mb-6 flex justify-start w-full">
-                <x-main-button href="{{ route('admin-index') }}"
-                    class="bg-surface border border-border text-text hover:bg-primary hover:text-white hover:border-primary text-xs md:text-sm font-semibold px-4 md:px-5 py-2 md:py-2.5 rounded-xl transition-all duration-300 shadow-sm inline-flex items-center gap-2 group">
-                    <svg xmlns="http://www.w3.org/2000/svg"
-                        class="h-4 w-4 text-text-light group-hover:text-white transition-colors" fill="none"
-                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                    </svg>
-                    <span>Kembali</span>
-                </x-main-button>
+
+
+                <x-buttonv2 href="{{ route('admin-index') }}" color="accent-dark" class="w-full sm:w-auto">
+                    <x-slot name="icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 group-hover:text-white transition-colors"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                    </x-slot>
+                    Kembali
+                </x-buttonv2>
             </div>
 
             <!-- Tab Navigation -->
@@ -23,7 +25,7 @@
 
                     <!-- Tombol Tab: Pending (Default Active) -->
                     <button type="button" onclick="switchTab('pending')" id="tab-pending"
-                        class="tab-btn px-3 sm:px-4 py-2 sm:py-2.5 text-[11px] sm:text-xs md:text-sm font-semibold rounded-xl border transition-all duration-200 flex items-center justify-center gap-1.5 sm:gap-2 grow sm:grow-0 shadow-sm bg-primary border-primary text-white">
+                        class="tab-btn px-3 sm:px-4 py-2 sm:py-2.5 text-[11px] sm:text-xs md:text-sm font-semibold rounded-md border transition-all duration-200 flex items-center justify-center gap-1.5 sm:gap-2 grow sm:grow-0 shadow-sm bg-primary border-primary text-white">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" fill="none"
                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -34,7 +36,7 @@
 
                     <!-- Tombol Tab: Selesai -->
                     <button type="button" onclick="switchTab('selesai')" id="tab-selesai"
-                        class="tab-btn px-3 sm:px-4 py-2 sm:py-2.5 text-[11px] sm:text-xs md:text-sm font-semibold rounded-xl border transition-all duration-200 flex items-center justify-center gap-1.5 sm:gap-2 grow sm:grow-0 shadow-sm bg-surface border-border text-text-light hover:bg-primary/5 hover:border-primary/50 hover:text-primary">
+                        class="tab-btn px-3 sm:px-4 py-2 sm:py-2.5 text-[11px] sm:text-xs md:text-sm font-semibold rounded-md border transition-all duration-200 flex items-center justify-center gap-1.5 sm:gap-2 grow sm:grow-0 shadow-sm bg-surface border-border text-text-light hover:bg-primary/5 hover:border-primary/50 hover:text-primary">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" fill="none"
                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -45,7 +47,7 @@
 
                     <!-- Tombol Tab: Dibatalkan -->
                     <button type="button" onclick="switchTab('dibatalkan')" id="tab-dibatalkan"
-                        class="tab-btn px-3 sm:px-4 py-2 sm:py-2.5 text-[11px] sm:text-xs md:text-sm font-semibold rounded-xl border transition-all duration-200 flex items-center justify-center gap-1.5 sm:gap-2 grow sm:grow-0 shadow-sm bg-surface border-border text-text-light hover:bg-danger/5 hover:border-danger/50 hover:text-danger">
+                        class="tab-btn px-3 sm:px-4 py-2 sm:py-2.5 text-[11px] sm:text-xs md:text-sm font-semibold rounded-md border transition-all duration-200 flex items-center justify-center gap-1.5 sm:gap-2 grow sm:grow-0 shadow-sm bg-surface border-border text-text-light hover:bg-danger/5 hover:border-danger/50 hover:text-danger">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" fill="none"
                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -106,10 +108,10 @@
                 // Tambah style inactive (kecuali tombol batal kita beri hover spesifik merah)
                 if (btn.id === 'tab-dibatalkan') {
                     btn.className =
-                        "tab-btn px-3 sm:px-4 py-2 sm:py-2.5 text-[11px] sm:text-xs md:text-sm font-semibold rounded-xl border transition-all duration-200 flex items-center justify-center gap-1.5 sm:gap-2 grow sm:grow-0 shadow-sm bg-surface border-border text-text-light hover:bg-danger/5 hover:border-danger/50 hover:text-danger";
+                        "tab-btn px-3 sm:px-4 py-2 sm:py-2.5 text-[11px] sm:text-xs md:text-sm font-semibold rounded-md border transition-all duration-200 flex items-center justify-center gap-1.5 sm:gap-2 grow sm:grow-0 shadow-sm bg-surface border-border text-text-light hover:bg-danger/5 hover:border-danger/50 hover:text-danger";
                 } else {
                     btn.className =
-                        "tab-btn px-3 sm:px-4 py-2 sm:py-2.5 text-[11px] sm:text-xs md:text-sm font-semibold rounded-xl border transition-all duration-200 flex items-center justify-center gap-1.5 sm:gap-2 grow sm:grow-0 shadow-sm bg-surface border-border text-text-light hover:bg-primary/5 hover:border-primary/50 hover:text-primary";
+                        "tab-btn px-3 sm:px-4 py-2 sm:py-2.5 text-[11px] sm:text-xs md:text-sm font-semibold rounded-md border transition-all duration-200 flex items-center justify-center gap-1.5 sm:gap-2 grow sm:grow-0 shadow-sm bg-surface border-border text-text-light hover:bg-primary/5 hover:border-primary/50 hover:text-primary";
                 }
             });
 

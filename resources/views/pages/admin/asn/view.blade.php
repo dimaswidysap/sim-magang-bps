@@ -6,16 +6,16 @@
 
             <!-- Tombol Kembali -->
             <div class="mb-6 flex justify-end w-full">
-                <x-main-button
-                    class="bg-primary text-white text-xs px-4 py-2 rounded-lg  transition-colors shadow-sm inline-flex items-center gap-2"
-                    href="{{ route('admin-asn') }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+
+                <x-buttonv2 href="{{ route('admin-asn') }}" color="accent-dark" class="w-full sm:w-auto">
+                    <svg xmlns="http://www.w3.org/2000/svg" stroke-width="3" class="h-4 w-4" viewBox="0 0 20 20"
+                        fill="currentColor">
                         <path fill-rule="evenodd"
                             d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
                             clip-rule="evenodd" />
                     </svg>
-                    <span>Kembali</span>
-                </x-main-button>
+                    Kembali
+                </x-buttonv2>
             </div>
 
             <!-- Card Detail Profil ASN -->
@@ -169,27 +169,27 @@
                         @csrf
                         @method('DELETE')
 
-                        <x-main-button type="submit"
-                            class="w-full sm:w-auto bg-surface border  text-danger hover:bg-danger hover:text-white text-xs px-5 py-2.5 rounded-lg transition-all shadow-sm inline-flex justify-center items-center gap-2 group">
+                        <x-buttonv2 type="submit" color="danger" class="w-full sm:w-auto">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
                                 stroke-width="2" class="w-4 h-4 transition-colors">
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M6 7h12M9 7V5h6v2m-8 0v12a2 2 0 002 2h6a2 2 0 002-2V7M10 11l4 4M14 11l-4 4" />
                             </svg>
-                            <span>Hapus Data</span>
-                        </x-main-button>
+                            Hapus Data
+                        </x-buttonv2>
                     </form>
 
                     <!-- Tombol Edit Data ASN -->
-                    <x-main-button href="{{ route('form-asn-edit', $detailAsn->id) }}"
-                        class="w-full sm:w-auto bg-primary hover:bg-primary-dark text-xs px-5 py-2.5 rounded-lg text-white transition-colors shadow-sm inline-flex justify-center items-center gap-2">
+
+
+                    <x-buttonv2 href="{{ route('admin.mahasiswa.create') }}" color="accent-dark" class="w-full sm:w-auto">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor" stroke-width="2">
+                            stroke="currentColor" stroke-width="3">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                         </svg>
-                        <span>Edit Data</span>
-                    </x-main-button>
+                        Edit
+                    </x-buttonv2>
 
                 </div>
 

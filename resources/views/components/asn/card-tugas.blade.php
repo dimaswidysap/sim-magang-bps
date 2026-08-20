@@ -74,30 +74,19 @@
                     @method('DELETE')
 
 
-                    <x-main-button
-                        class="border border-danger text-danger! text-xs px-4 py-2 rounded-lg  transition-colors shadow-sm inline-flex items-center gap-2"
-                        type="submit">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                            stroke-width="2" class="w-5 h-5">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M6 7h12M9 7V5h6v2m-8 0v12a2 2 0 002 2h6a2 2 0 002-2V7M10 11l4 4M14 11l-4 4" />
-                        </svg>
-                        <span>Hapus tugas</span>
-                    </x-main-button>
+
+
+                    <x-buttonv2 type="submit" color="danger" class="w-full sm:w-auto">
+                        Hapus
+                    </x-buttonv2>
 
                 </form>
-                {{-- href="{{ route('edit-tugas-form', $tugas->id) }}" --}}
-                <x-main-button href="{{ route('edit-tugas-form', $tugas->id) }}"
-                    class="bg-primary hover:bg-primary-dark  text-xs px-4 py-2 rounded-lg text-white transition-colors shadow-sm inline-flex items-center gap-2">
-                    {{-- <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                            stroke-width="2" stroke="currentColor" class="w-4 h-4 shrink-0">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        </svg> --}}
-                    <span>Lihat & Edit</span>
-                </x-main-button>
+
+
+                <x-buttonv2 href="{{ route('edit-tugas-form', $tugas->id) }}" color="accent-dark"
+                    class="w-full sm:w-auto">
+                    Lihat & Edit
+                </x-buttonv2>
             </div>
 
         </div>

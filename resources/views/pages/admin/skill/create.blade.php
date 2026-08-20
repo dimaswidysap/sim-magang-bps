@@ -30,7 +30,8 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('admin-skill-store') }}" data-confirm="Apakah anda yakin ingin menambah data?">
+            <form method="POST" action="{{ route('admin-skill-store') }}"
+                data-confirm="Apakah anda yakin ingin menambah data?">
                 @csrf
 
                 <!-- Form Input -->
@@ -53,27 +54,22 @@
                 <div class="flex flex-col sm:flex-row justify-end items-center gap-4">
                     <!-- Tombol Kembali / Batal (Anda bisa sesuaikan route-nya, di sini saya pakai url()->previous() sebagai contoh) -->
 
-                    <x-main-button
-                        class="border border-text  text-xs px-4 py-2 rounded-lg text-text transition-colors shadow-sm inline-flex items-center gap-2"
-                        href="{{ route('admin-skill') }}">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                            stroke-width="2" class="w-5 h-5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7 7-7" />
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12h18" />
-                        </svg>
-                        <span>Batal</span>
-                    </x-main-button>
 
 
-                    <x-main-button
-                        class="bg-primary text-xs px-4 py-2 rounded-lg text-white transition-colors shadow-sm inline-flex items-center gap-2"
-                        type="submit">
+                    <x-buttonv2 href="{{ route('admin-skill') }}" color="primary" class="w-full sm:w-auto">
+                        Kembali
+                    </x-buttonv2>
+
+
+
+
+                    <x-buttonv2 type="submit" color="accent-dark" class="w-full sm:w-auto">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                         </svg>
-                        <span>Simpan</span>
-                    </x-main-button>
+                        Tambahkan Data
+                    </x-buttonv2>
                 </div>
             </form>
         </section>

@@ -29,18 +29,19 @@
             </svg>
         </div>
         <input type="text" name="search" placeholder="Cari data skill..."
-            class="input-search w-full pl-10 pr-4 py-2.5 bg-surface border border-border rounded-xl text-sm text-text placeholder:text-text-light focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors shadow-sm">
+            class="input-search w-full pl-10 pr-4 py-2.5 bg-surface border border-border rounded-md text-sm text-text placeholder:text-text-light focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors shadow-sm">
     </div>
 
     <!-- Tombol Tambah Data -->
-    <x-main-button href="{{ route('create-skill') }}"
-        class="w-full sm:w-auto bg-primary hover:bg-primary-dark text-xs px-5 py-2.5 rounded-xl text-white transition-colors shadow-sm inline-flex justify-center items-center gap-2 shrink-0">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24"
-            stroke="currentColor" stroke-width="2">
+
+
+    <x-buttonv2 href="{{ route('create-skill') }}" color="accent-dark" class="w-full sm:w-auto">
+        <svg xmlns="http://www.w3.org/2000/svg" stroke-width="3" class="h-4 w-4 shrink-0" fill="none"
+            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
         </svg>
-        <span>Tambah Skill</span>
-    </x-main-button>
+        Tambah Skill
+    </x-buttonv2>
 
 </section>
 
@@ -91,7 +92,7 @@
 
                                 <!-- Tombol Edit (Outline) -->
                                 <x-main-button href="{{ route('admin-skill-edit', $skill->id) }}"
-                                    class="bg-surface text-primary border border-primary hover:bg-primary hover:text-white text-[11px] md:text-xs px-3 md:px-4 py-2 rounded-lg transition-all shadow-sm inline-flex items-center gap-1.5">
+                                    class="bg-surface text-primary border-text/20 border hover:bg-primary hover:text-white text-[11px] md:text-xs px-3 md:px-4 py-2 rounded-lg transition-all shadow-sm inline-flex items-center gap-1.5">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none"
                                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                         <path stroke-linecap="round" stroke-linejoin="round"
@@ -108,7 +109,7 @@
                                     @method('DELETE')
 
                                     <x-main-button type="submit"
-                                        class="bg-surface text-danger border border-danger hover:bg-danger hover:text-white text-[11px] md:text-xs px-3 md:px-4 py-2 rounded-lg transition-all shadow-sm inline-flex items-center gap-1.5">
+                                        class="bg-surface text-danger border border-text/20 hover:bg-danger hover:text-white text-[11px] md:text-xs px-3 md:px-4 py-2 rounded-lg transition-all shadow-sm inline-flex items-center gap-1.5">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none"
                                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round"
