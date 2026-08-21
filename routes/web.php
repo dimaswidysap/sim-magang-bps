@@ -16,11 +16,13 @@ use App\Http\Controllers\Admin\AdminSkill;
 use App\Http\Controllers\Asn\TugasController;
 //
 use App\Http\Controllers\Mahasiswa\MahasiswaTugas;
+use App\Http\Controllers\Mahasiswa\MagangLogbook;
 use App\Http\Controllers\Mahasiswa\TugasanggotacontrollerInvite;
 use App\Http\Controllers\Mahasiswa\TugasAnggotaControllerRespond;
 use App\Http\Controllers\Mahasiswa\TugasMahasiswaControllerAmbil;
 //
 use App\Http\Controllers\BeritaController;
+use App\Http\Controllers\Mahasiswa\MagangLogbookController;
 
 Route::get('/', function () {
     return view('home.index');
@@ -31,7 +33,6 @@ Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])
     ->middleware('auth')
     ->name('logout');
-
 
 // Tambahkan di web.php, DI LUAR grup prefix admin/asn/mahasiswa yang sudah ada.
 // PERHATIKAN URUTANNYA: /berita/create HARUS di atas /berita/{id},
@@ -95,8 +96,38 @@ Route::prefix('admin')
         Route::put('/periode/{id}', [PeriodeMagangController::class, 'updatePeriode'])->name('admin-periode-update');
         Route::delete('/periode/destroy/{id}', [PeriodeMagangController::class, 'destroyPeriode'])->name('admin-periode-destroy');
         // statistik user
-        Route::get('/statistik-magang',[AdminController::class,'statistikUser'])->name('statistik-user');
-        Route::get('/statistik-asn',[AdminController::class,'statistikAsn'])->name('statistik-user-asn');
+        Route::get('/statistik-magang', [AdminController::class, 'statistikUser'])->name('statistik-user');
+        Route::get('/statistik-asn', [AdminController::class, 'statistikAsn'])->name('statistik-user-asn');
+    });
+
+// ASN
+Route::prefix('asn')
+    ->middleware(['auth', 'role:asn'])
+    ->group(function () {
+        Route::get('/dashboard', [AsnController::class, 'asnIndex'])->name('asn-index');
+        Route::delete('/tugas/{id}', [AsnController::class, 'destroyTugas'])->name('asn-tugas-destroy');
+        Route::get('/profil', [AsnController::class, 'showFormProfil'])->name('asn-profil');
+        Route::put('/profil', [AsnController::class, 'updateProfil'])->name('asn-profil-update');
+        Route::get('/create-task', [AsnController::class, 'createTugasForm'])->name('asn-create-task-form');
+        Route::get('/task-not-done', [AsnController::class, 'taskNotDone'])->name('task-not-done');
+        Route::get('/task-done', [AsnController::class, 'taskDone'])->name('task-done');
+        Route::get('/tugas-selesai-detail/{id}', [AsnController::class, 'tugasSelesaiDetail'])->name('asn-tugas-selesai-detail');
+        Route::get('/pengumpulan', [AsnController::class, 'pengumpulanTugas'])->name('pengumpulan-tugas-asn');
+        //
+        Route::post('/storeTugas', [TugasController::class, 'storeTugas'])->name('asn-store-tugas');
+        Route::post('/tugas/check-aktif', [TugasController::class, 'checkTugasAktif'])->name('tugas.check-aktif');
+        Route::get('/update-tugas/{id}', [TugasController::class, 'editTugasForm'])->name('edit-tugas-form');
+        Route::put('/tugas/{id}', [TugasController::class, 'updateTugas'])->name('asn-update-tugas');
+        //
+        Route::get('/submission', [TugasSubmissionController::class, 'daftarSubmissionMasuk'])->name('asn-submission-index');
+        Route::get('/submission/{id}', [TugasSubmissionController::class, 'detailSubmission'])->name('asn-submission-detail');
+        Route::post('/submission/{id}/setujui', [TugasSubmissionController::class, 'approveSubmission'])->name('asn-submission-approve');
+        Route::post('/submission/{id}/revisi', [TugasSubmissionController::class, 'mintaRevisi'])->name('asn-submission-revisi');
+        //
+        Route::get('/logbook-mahasiswa/{mahasiswaProfileId}', [AsnController::class, 'logbookMahasiswa'])->name('asn-logbook-mahasiswa-kalender');
+        Route::get('/logbook-mahasiswa/{mahasiswaProfileId}/{tanggal}', [AsnController::class, 'logbookMahasiswaTanggal'])
+            ->where('tanggal', '[0-9]{4}-[0-9]{2}-[0-9]{2}')
+            ->name('asn-logbook-mahasiswa-tanggal');
     });
 
 // MAHASISWA
@@ -128,34 +159,11 @@ Route::prefix('mahasiswa')
         Route::get('/logbook/{tanggal}', [MahasiswaController::class, 'logbookDetailTanggal'])
             ->where('tanggal', '[0-9]{4}-[0-9]{2}-[0-9]{2}')
             ->name('mahasiswa-logbook-tanggal');
-    });
 
-// ASN
-Route::prefix('asn')
-    ->middleware(['auth', 'role:asn'])
-    ->group(function () {
-        Route::get('/dashboard', [AsnController::class, 'asnIndex'])->name('asn-index');
-        Route::delete('/tugas/{id}', [AsnController::class, 'destroyTugas'])->name('asn-tugas-destroy');
-        Route::get('/profil', [AsnController::class, 'showFormProfil'])->name('asn-profil');
-        Route::put('/profil', [AsnController::class, 'updateProfil'])->name('asn-profil-update');
-        Route::get('/create-task', [AsnController::class, 'createTugasForm'])->name('asn-create-task-form');
-        Route::get('/task-not-done', [AsnController::class, 'taskNotDone'])->name('task-not-done');
-        Route::get('/task-done', [AsnController::class, 'taskDone'])->name('task-done');
-        Route::get('/tugas-selesai-detail/{id}', [AsnController::class, 'tugasSelesaiDetail'])->name('asn-tugas-selesai-detail');
-        Route::get('/pengumpulan', [AsnController::class, 'pengumpulanTugas'])->name('pengumpulan-tugas-asn');
         //
-        Route::post('/storeTugas', [TugasController::class, 'storeTugas'])->name('asn-store-tugas');
-        Route::post('/tugas/check-aktif', [TugasController::class, 'checkTugasAktif'])->name('tugas.check-aktif');
-        Route::get('/update-tugas/{id}', [TugasController::class, 'editTugasForm'])->name('edit-tugas-form');
-        Route::put('/tugas/{id}', [TugasController::class, 'updateTugas'])->name('asn-update-tugas');
-        //
-        Route::get('/submission', [TugasSubmissionController::class, 'daftarSubmissionMasuk'])->name('asn-submission-index');
-        Route::get('/submission/{id}', [TugasSubmissionController::class, 'detailSubmission'])->name('asn-submission-detail');
-        Route::post('/submission/{id}/setujui', [TugasSubmissionController::class, 'approveSubmission'])->name('asn-submission-approve');
-        Route::post('/submission/{id}/revisi', [TugasSubmissionController::class, 'mintaRevisi'])->name('asn-submission-revisi');
-        //
-        Route::get('/logbook-mahasiswa/{mahasiswaProfileId}', [AsnController::class, 'logbookMahasiswa'])->name('asn-logbook-mahasiswa-kalender');
-        Route::get('/logbook-mahasiswa/{mahasiswaProfileId}/{tanggal}', [AsnController::class, 'logbookMahasiswaTanggal'])
-            ->where('tanggal', '[0-9]{4}-[0-9]{2}-[0-9]{2}')
-            ->name('asn-logbook-mahasiswa-tanggal');
+        Route::get('/magang-logbook', [MagangLogbookController::class, 'magangLogbookForm'])->name('magang-logbook-form');
+        Route::post('/magang-logbook-store', [MagangLogbookController::class, 'store'])->name('magang-logbook-store');
+        Route::get('/logbook-mandiri/{id}/edit', [MagangLogbookController::class, 'formEdit'])->name('logbook-mandiri-edit');
+        Route::put('/logbook-mandiri/{id}', [MagangLogbookController::class, 'update'])->name('logbook-mandiri-update');
+        Route::delete('/logbook-mandiri/{id}', [MagangLogbookController::class, 'destroy'])->name('logbook-mandiri-destroy');
     });

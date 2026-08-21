@@ -11,6 +11,7 @@ use App\Models\MahasiswaProfile;
 use App\Models\Skill;
 use App\Models\Tugas;
 use App\Models\Logbook;
+use App\Models\MagangLogbook;
 
 class MahasiswaController extends Controller
 {
@@ -19,15 +20,11 @@ class MahasiswaController extends Controller
     {
         $user = Auth::user();
         $profil = $user->mahasiswaProfile;
-
-        // Ambil id dengan aman - kalau profil belum ada, $mahasiswaProfileId
-        // jadi null, dan method-method di bawah harus bisa terima itu tanpa crash.
         $mahasiswaProfileId = $profil?->id;
 
         $jumlahSelesai = Tugas::getJumlahTugasSelesai($mahasiswaProfileId);
         $jumlahBelumSelesai = Tugas::getJumlahTugasBelumSelesai($mahasiswaProfileId);
 
-        // ===== Bagian kalender logbook =====
         $bulanList = collect();
         $tanggalAktif = collect();
 
@@ -45,7 +42,13 @@ class MahasiswaController extends Controller
                 $kursor->addMonth();
             }
 
-            $tanggalAktif = Logbook::query()->where('mahasiswa_profile_id', $profil->id)->get()->map(fn($item) => $item->created_at->toDateString())->unique();
+            // Sumber 1: tugas dari ASN (acuan tanggal = created_at)
+            $tanggalDariTugas = Logbook::where('mahasiswa_profile_id', $profil->id)->get()->map(fn($item) => $item->created_at->toDateString());
+
+            // Sumber 2: kegiatan mandiri (acuan tanggal = tanggal_kegiatan, BUKAN created_at)
+            $tanggalDariMandiri = MagangLogbook::where('mahasiswa_profile_id', $profil->id)->get()->map(fn($item) => $item->tanggal_kegiatan->toDateString());
+
+            $tanggalAktif = collect($tanggalDariTugas)->merge($tanggalDariMandiri)->unique();
         }
 
         return view('pages.mahasiswa.index', compact('jumlahSelesai', 'jumlahBelumSelesai', 'bulanList', 'tanggalAktif', 'profil'));
@@ -53,27 +56,27 @@ class MahasiswaController extends Controller
 
     public function logbookDetailTanggal($tanggal)
     {
-        $profil = Auth::user()->mahasiswaProfile;
+        $profil = auth()->user()->mahasiswaProfile;
 
         if (!$profil) {
             abort(404);
         }
 
-        $logbook = Logbook::query()
-            ->where('mahasiswa_profile_id', $profil->id)
+        $logbookTugas = Logbook::where('mahasiswa_profile_id', $profil->id)
             ->whereDate('created_at', $tanggal)
             ->with(['tugas.asn', 'tugas.skills'])
             ->get();
 
-        // Kalau tidak ada kegiatan di tanggal ini, seharusnya user tidak pernah
-        // sampai ke sini (tombolnya disabled di kalender) - tapi tetap dijaga
-        // kalau ada yang coba akses URL manual dengan tanggal sembarangan.
-        if ($logbook->isEmpty()) {
+        $logbookMandiri = MagangLogbook::where('mahasiswa_profile_id', $profil->id)->whereDate('tanggal_kegiatan', $tanggal)->get();
+
+        // 404 cuma kalau BENAR-BENAR tidak ada kegiatan dari kedua sumber
+        if ($logbookTugas->isEmpty() && $logbookMandiri->isEmpty()) {
             abort(404, 'Tidak ada kegiatan pada tanggal ini.');
         }
 
         return view('pages.mahasiswa.logbook-detail', [
-            'logbook' => $logbook,
+            'logbookTugas' => $logbookTugas,
+            'logbookMandiri' => $logbookMandiri,
             'tanggal' => $tanggal,
         ]);
     }

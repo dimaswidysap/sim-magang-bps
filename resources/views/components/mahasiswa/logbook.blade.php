@@ -1,7 +1,16 @@
-{{-- Sisipkan di dashboard mahasiswa (pages/mahasiswa/index.blade.php) --}}
+
 
 <div class="bg-surface border border-border rounded-xl p-6">
-    <h2 class="text-lg font-semibold text-primary mb-4">Logbook Kegiatan</h2>
+    <div class="py-4">
+        <h2 class="text-lg font-semibold text-primary mb-4">Logbook Kegiatan</h2>
+        <x-buttonv2 href="{{ route('magang-logbook-form') }}" color="accent-dark" class="w-full sm:w-auto">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3"
+                stroke="currentColor" class="w-4 h-4 shrink-0">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            Tambah Data
+        </x-buttonv2>
+    </div>
 
     @if (!$profil || !$profil->tanggal_mulai || !$profil->tanggal_selesai)
         <p class="text-sm text-text-light">

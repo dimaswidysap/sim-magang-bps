@@ -11,6 +11,7 @@ use App\Models\AsnProfile;
 use App\Models\Tugas;
 use App\Models\MahasiswaProfile;
 use App\Models\Logbook;
+use App\Models\MagangLogbook;
 
 class AsnController extends Controller
 {
@@ -46,32 +47,32 @@ class AsnController extends Controller
                 $kursor->addMonth();
             }
 
-            $tanggalAktif = Logbook::query()->where('mahasiswa_profile_id', $mahasiswa->id)->get()->map(fn($item) => $item->created_at->toDateString())->unique();
+            $tanggalDariTugas = Logbook::where('mahasiswa_profile_id', $mahasiswa->id)->get()->map(fn($item) => $item->created_at->toDateString());
+
+            $tanggalDariMandiri = MagangLogbook::where('mahasiswa_profile_id', $mahasiswa->id)->get()->map(fn($item) => $item->tanggal_kegiatan->toDateString());
+
+            $tanggalAktif = collect($tanggalDariTugas)->merge($tanggalDariMandiri)->unique();
         }
 
         return view('pages.asn.logbook-magang', compact('mahasiswa', 'bulanList', 'tanggalAktif'));
     }
 
-    /**
-     * Detail kegiatan mahasiswa tertentu pada tanggal tertentu.
-     * Menampilkan tugas dari ASN manapun, bukan cuma ASN yang login -
-     * makanya nama ASN pemberi tugas ditampilkan jelas di Blade.
-     */
     public function logbookMahasiswaTanggal($mahasiswaProfileId, $tanggal)
     {
         $mahasiswa = MahasiswaProfile::with('user')->findOrFail($mahasiswaProfileId);
 
-        $logbook = Logbook::query()
-            ->where('mahasiswa_profile_id', $mahasiswa->id)
+        $logbookTugas = Logbook::where('mahasiswa_profile_id', $mahasiswa->id)
             ->whereDate('created_at', $tanggal)
             ->with(['tugas.asn', 'tugas.skills'])
             ->get();
 
-        if ($logbook->isEmpty()) {
+        $logbookMandiri = MagangLogbook::where('mahasiswa_profile_id', $mahasiswa->id)->whereDate('tanggal_kegiatan', $tanggal)->get();
+
+        if ($logbookTugas->isEmpty() && $logbookMandiri->isEmpty()) {
             abort(404, 'Tidak ada kegiatan pada tanggal ini.');
         }
 
-        return view('pages.asn.logbook-detail', compact('mahasiswa', 'logbook', 'tanggal'));
+        return view('pages.asn.logbook-detail', compact('mahasiswa', 'logbookTugas', 'logbookMandiri', 'tanggal'));
     }
 
     public function createTugasForm()
