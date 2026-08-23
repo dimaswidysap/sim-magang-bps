@@ -6,6 +6,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\TugasSubmissionController;
 use App\Http\Controllers\MahasiswaController;
 use App\Http\Controllers\AsnController;
+use App\Http\Controllers\toolsController;
 //
 use App\Http\Controllers\Admin\AdminMahasiswa;
 use App\Http\Controllers\Admin\adminAsn;
@@ -23,6 +24,8 @@ use App\Http\Controllers\Mahasiswa\TugasMahasiswaControllerAmbil;
 //
 use App\Http\Controllers\BeritaController;
 use App\Http\Controllers\Mahasiswa\MagangLogbookController;
+//
+use App\Http\Controllers\Tools\GenerateFasihController;
 
 Route::get('/', function () {
     return view('home.index');
@@ -34,12 +37,6 @@ Route::post('/logout', [AuthController::class, 'logout'])
     ->middleware('auth')
     ->name('logout');
 
-// Tambahkan di web.php, DI LUAR grup prefix admin/asn/mahasiswa yang sudah ada.
-// PERHATIKAN URUTANNYA: /berita/create HARUS di atas /berita/{id},
-// kalau tidak, Laravel akan salah baca "create" sebagai nilai {id}.
-
-// Cuma admin & ASN - BUAT/UBAH/HAPUS
-// (kepemilikan tetap dicek di controller, middleware ini cuma filter role)
 Route::middleware(['auth', 'role:admin,asn'])->group(function () {
     Route::get('/berita/create', [BeritaController::class, 'create'])->name('berita-create');
     Route::post('/berita', [BeritaController::class, 'store'])->name('berita-store');
@@ -48,12 +45,22 @@ Route::middleware(['auth', 'role:admin,asn'])->group(function () {
     Route::delete('/berita/{id}', [BeritaController::class, 'destroy'])->name('berita-destroy');
 });
 
-// Bisa diakses admin, ASN, mahasiswa - LIHAT saja
-// PERHATIKAN: /berita/{id} ditaruh SETELAH /berita/create di atas,
-// supaya /berita/create tidak pernah ketangkap sebagai {id}.
 Route::middleware(['auth', 'role:admin,asn,mahasiswa'])->group(function () {
     Route::get('/berita', [BeritaController::class, 'index'])->name('berita-index');
     Route::get('/berita/{id}', [BeritaController::class, 'show'])->name('berita-show');
+});
+Route::middleware(['auth', 'role:admin,asn,mahasiswa'])->group(function () {
+    Route::get('/tools', [toolsController::class, 'toolsIndex'])->name('tools-index');
+
+    // generate fasih
+    Route::get('/generate-fasih', [toolsController::class, 'form'])->name('generate.form');
+    Route::post('/generate-fasih/upload-excel', [toolsController::class, 'uploadExcel'])->name('generate.uploadExcel');
+    Route::get('/generate/header', [toolsController::class, 'headerForm'])->name('generate.headerForm');
+    Route::post('/generate/header', [toolsController::class, 'storeHeader'])->name('generate.storeHeader');
+    Route::get('/generate/mapping', [toolsController::class, 'mappingForm'])->name('generate.mappingForm');
+    Route::post('/generate/mapping', [toolsController::class, 'storeMapping'])->name('generate.storeMapping');
+    Route::get('/generate/review', [toolsController::class, 'reviewGenerate'])->name('generate.reviewGenerate');
+    Route::get('/generate/download-script', [toolsController::class, 'downloadScript'])->name('generate.downloadScript');
 });
 
 // SUPER ADMIN
