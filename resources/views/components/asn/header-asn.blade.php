@@ -43,7 +43,5 @@
             </x-slot>
             Menu Tools
         </x-buttonv2>
-
     </section>
-
 </header>

@@ -1,6 +1,6 @@
 <!-- Custom Confirm Modal -->
 <div id="custom-confirm-modal"
-    class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity duration-300 opacity-0 pointer-events-none font-montserrat px-4">
+    class="hidden h-screen fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity duration-300 opacity-0 pointer-events-none font-montserrat px-4">
 
     <!-- Modal Content -->
     <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full transform scale-95 transition-transform duration-300 overflow-hidden"

@@ -153,22 +153,34 @@
                                 </p>
 
                                 <div id="daftar-mahasiswa-langsung"
-                                    class="{{ old('penugasan_langsung') ? '' : 'hidden' }} flex flex-wrap gap-3">
-                                    @foreach ($daftarMahasiswa as $mhs)
-                                        {{-- {{ $mhs }} --}}
-                                        <!-- Tambahkan select-none di label list mahasiswa ini -->
-                                        <label for="mhs-{{ $mhs->id }}"
-                                            class="flex items-center gap-2 px-4 py-2 bg-surface border border-border rounded-full cursor-pointer hover:border-primary transition-colors select-none">
-                                            <input type="checkbox" name="mahasiswa_ids[]" value="{{ $mhs->id }}"
-                                                id="mhs-{{ $mhs->id }}"
-                                                {{ in_array($mhs->id, old('mahasiswa_ids', [])) ? 'checked' : '' }}
-                                                class="w-4 h-4 text-primary bg-background border-border rounded focus:ring-primary focus:ring-2 cursor-pointer accent-primary">
-                                            <span class="text-sm font-medium text-text">
+                                    class="{{ old('penugasan_langsung') ? '' : 'hidden' }} relative w-full">
+                                    <details class="group w-full">
+                                        <summary
+                                            class="flex items-center justify-between w-full px-4 py-2.5 bg-surface border border-border rounded-xl text-text text-sm cursor-pointer select-none list-none focus:ring-2 focus:ring-primary transition-all">
+                                            <span class="font-medium">Pilih Mahasiswa</span>
+                                            <svg class="w-4 h-4 text-text-light transition-transform duration-200 group-open:rotate-180"
+                                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </summary>
 
-                                                {{ $mhs->user->name }} ({{ $mhs->jenjang }}-{{ $mhs->jurusan }})
-                                            </span>
-                                        </label>
-                                    @endforeach
+                                        <div
+                                            class="absolute left-0 right-0 mt-2 p-2 bg-surface border border-border rounded-xl shadow-lg z-50 max-h-60 overflow-y-auto space-y-1">
+                                            @foreach ($daftarMahasiswa as $mhs)
+                                                <label for="mhs-{{ $mhs->id }}"
+                                                    class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-background cursor-pointer select-none transition-colors">
+                                                    <input type="checkbox" name="mahasiswa_ids[]"
+                                                        value="{{ $mhs->id }}" id="mhs-{{ $mhs->id }}"
+                                                        {{ in_array($mhs->id, old('mahasiswa_ids', [])) ? 'checked' : '' }}
+                                                        class="w-4 h-4 text-primary bg-background border-border rounded focus:ring-primary focus:ring-2 cursor-pointer accent-primary">
+                                                    <span class="text-sm font-medium text-text">
+                                                        {{ $mhs->user->name }} ({{ $mhs->jenjang }}-{{ $mhs->jurusan }})
+                                                    </span>
+                                                </label>
+                                            @endforeach
+                                        </div>
+                                    </details>
                                 </div>
                             </div>
                         </div>
