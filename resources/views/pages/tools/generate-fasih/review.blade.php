@@ -139,7 +139,7 @@
                             <h3 class="font-bold text-text text-sm sm:text-base">Install Dependency</h3>
                             <p class="text-text-light">Buka Terminal / Command Prompt di folder tempat <code
                                     class="px-1.5 py-0.5 rounded bg-background border border-border text-xs text-primary font-mono">script.py</code>
-                                disimpan, lalu jalankan command:</p>
+                                akan disimpan, lalu jalankan command (didalam folder klik kanan lalu Open in Terminal):</p>
                             <pre class="p-3.5 bg-footer text-surface rounded-xl text-xs font-mono overflow-x-auto border border-border/20">pip install pandas python-docx Pillow openpyxl</pre>
                         </div>
                     </div>
@@ -276,7 +276,7 @@
                             <h3 class="font-bold text-text text-sm sm:text-base">Jalankan Script</h3>
                             <pre class="p-3.5 bg-footer text-surface rounded-xl text-xs font-mono overflow-x-auto border border-border/20">python script.py</pre>
                             <p class="text-text-light">
-                                Jika ditemukan lebih dari satu file Excel atau folder, script akan menampilkan pilihan
+                                Untuk menjalankan program klik kanan pada directory utama folder kemudian Open in Terminal, dan ketika command diatas. Jika ditemukan lebih dari satu file Excel atau folder, script akan menampilkan pilihan
                                 interaktif di terminal — ketik angka sesuai pilihan Anda.
                             </p>
                         </div>
