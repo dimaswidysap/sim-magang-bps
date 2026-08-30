@@ -180,9 +180,7 @@
                     </form>
 
                     <!-- Tombol Edit Data ASN -->
-
-
-                    <x-buttonv2 href="{{ route('admin.mahasiswa.create') }}" color="accent-dark" class="w-full sm:w-auto">
+                    <x-buttonv2 href="{{ route('form-asn-edit',$detailAsn->id) }}" color="accent-dark" class="w-full sm:w-auto">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor" stroke-width="3">
                             <path stroke-linecap="round" stroke-linejoin="round"
