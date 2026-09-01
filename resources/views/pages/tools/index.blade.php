@@ -1,7 +1,8 @@
 @extends('layouts.app')
 
 @section('content')
-    <nav class="fixed top-0 left-0 right-0 z-50 bg-surface/80 backdrop-blur-md border-b border-border/60 transition-all">
+   <section class="w-full flex flex-col pb-20">
+     <nav class="fixed top-0 left-0 right-0 z-50 bg-surface/80 backdrop-blur-md border-b border-border/60 transition-all">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             @php
                 $rutePulang = match (auth()->user()->role) {
@@ -31,4 +32,6 @@
     </nav>
 
     @include('pages.tools.generate-fasih.profil')
+    {{-- @include('pages.tools.generate-fasih.profil') --}}
+   </section>
 @endsection
