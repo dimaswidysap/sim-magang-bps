@@ -1,5 +1,5 @@
 {{-- Header Component --}}
-<header class="w-full p-2 md:p-4 bg-surface/80 backdrop-blur-md border-b border-border/60">
+<header class="w-full p-2">
 
     <section class="w-full h-full flex flex-col sm:flex-row items-center justify-between gap-3 container-dalam">
 
