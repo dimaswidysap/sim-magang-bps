@@ -174,90 +174,72 @@
 
                         <!-- SECTION 3: Penugasan Langsung -->
                         <div>
-
                             <h2 class="text-lg font-semibold text-primary mb-4 flex items-center gap-2">
-
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                                     stroke="currentColor" stroke-width="2">
-
                                     <path stroke-linecap="round" stroke-linejoin="round"
                                         d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-2.13a4 4 0 10-8 0 4 4 0 008 0zm6 0a4 4 0 10-8 0 4 4 0 008 0z" />
-
                                 </svg>
-
                                 Penugasan Langsung
-
                             </h2>
 
                             <div class="bg-background p-5 rounded-xl border border-border">
 
-                                <label class="flex items-center gap-3 mb-2 cursor-pointer select-none">
+                                {{-- Modern Toggle Switch --}}
+                                <label class="flex items-center gap-3 mb-2 cursor-pointer select-none group">
+                                    <div class="relative">
+                                        <input type="checkbox" name="penugasan_langsung" value="1"
+                                            id="penugasan_langsung" onchange="toggleMahasiswaContainer(this)"
+                                            {{ old('penugasan_langsung') ? 'checked' : '' }} class="sr-only peer">
 
-                                    <input type="checkbox" name="penugasan_langsung" value="1" id="penugasan_langsung"
-                                        onchange="toggleMahasiswaContainer(this)"
-                                        {{ old('penugasan_langsung') ? 'checked' : '' }}
-                                        class="w-5 h-5 text-accent-dark bg-surface border-border rounded focus:ring-accent-dark cursor-pointer accent-accent-dark">
+                                        {{-- Background Switch (Abu-abu saat off, Aksen saat on) --}}
+                                        <div
+                                            class="block w-12 h-7 bg-border rounded-full peer-checked:bg-accent-dark transition-colors duration-300 shadow-inner">
+                                        </div>
 
-                                    <span class="text-base font-semibold text-text">
+                                        {{-- Bulatan Putih (Bergerak ke kanan saat on) --}}
+                                        <div
+                                            class="absolute left-1 top-1 bg-surface w-5 h-5 rounded-full transition-transform duration-300 peer-checked:translate-x-5 shadow-sm border border-gray-200">
+                                        </div>
+                                    </div>
+
+                                    <span
+                                        class="text-base font-semibold text-text group-hover:text-primary transition-colors">
                                         Tugaskan langsung ke mahasiswa tertentu
                                     </span>
-
                                 </label>
 
-                                <p class="text-sm text-text-light mb-4 ml-8">
+                                <p class="text-sm text-text-light mb-4 ml-13">
                                     Aktifkan ini jika tugas ditujukan khusus untuk anak magang terpilih.
                                 </p>
 
-
                                 {{-- Trigger Area --}}
                                 <div id="container-pilih-mahasiswa"
-                                    class="{{ old('penugasan_langsung') ? '' : 'hidden' }} relative w-full pl-8">
-
+                                    class="{{ old('penugasan_langsung') ? '' : 'hidden' }} relative w-full pl-13">
                                     <button type="button" onclick="openModalMahasiswa()"
                                         class="flex items-center justify-between w-full p-4 bg-surface border border-border rounded-xl text-left hover:border-primary focus:ring-2 focus:ring-primary/20 transition-all group shadow-sm">
-
                                         <div class="flex items-center gap-4">
-
                                             <div
                                                 class="p-3 bg-primary/10 text-primary rounded-lg group-hover:bg-primary group-hover:text-surface transition-colors">
-
                                                 <svg class="w-6 h-6" fill="none" stroke="currentColor"
                                                     viewBox="0 0 24 24">
-
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                         d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z">
                                                     </path>
-
                                                 </svg>
-
                                             </div>
-
                                             <div>
-
-                                                <span class="block font-bold text-text text-base">
-                                                    Kelola Mahasiswa
-                                                </span>
-
+                                                <span class="block font-bold text-text text-base">Kelola Mahasiswa</span>
                                                 <span id="selected-count-text"
-                                                    class="block text-sm text-text-light mt-0.5 font-medium">
-                                                    0 mahasiswa dipilih
-                                                </span>
-
+                                                    class="block text-sm text-text-light mt-0.5 font-medium">0 mahasiswa
+                                                    dipilih</span>
                                             </div>
-
                                         </div>
-
                                         <span
-                                            class="px-4 py-2 bg-accent-dark text-surface text-xs font-bold rounded-lg tracking-wide uppercase">
-                                            Pilih
-                                        </span>
-
+                                            class="px-4 py-2 bg-accent-dark text-surface text-xs font-bold rounded-lg tracking-wide uppercase">Pilih</span>
                                     </button>
-
                                 </div>
-
                             </div>
-
                         </div>
 
 

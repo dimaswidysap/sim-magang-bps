@@ -1,4 +1,6 @@
-<li>
+<div class="w-full flex flex-col absolute bottom-0 bg-text pb-1 left-0">
+    <li class="text-bold font-black text-danger/50 text-[10px] ml-[5%] translate-y-2.5 mb-2.5">Logout</li>
+    <li class="w-full px-1">
     <!-- Cukup gunakan data-confirm, HAPUS onsubmit bawaan -->
     <form method="POST" action="{{ route('logout') }}" class="w-full m-0" data-confirm="Apakah Anda yakin ingin logout?">
         @csrf
@@ -16,3 +18,5 @@
         </button>
     </form>
 </li>
+
+</div>

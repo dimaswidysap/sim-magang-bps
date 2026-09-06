@@ -3,7 +3,7 @@
 
     {{-- container dalam --}}
 
-    <section class="h-full w-full bg-text container-dalam">
+    <section class="h-full w-full bg-text container-dalam relative overflow-hidden">
 
         {{-- conatiner logo bps --}}
 
@@ -105,7 +105,7 @@
                         Periode Magang
                     </x-nav-link>
                 </li>
-                <li class="text-bold font-black text-danger/50 text-[10px] ml-[5%] translate-y-2.5 mb-1">Logout</li>
+
 
                 @include('components.button-logout')
             </ul>

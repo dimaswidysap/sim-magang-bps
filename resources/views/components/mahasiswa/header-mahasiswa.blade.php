@@ -38,16 +38,25 @@
         </div>
 
         <!-- Tombol Menu Tools -->
-        <x-buttonv2 href="{{ route('tools-index') }}" color="accent-dark" class="w-full sm:w-auto">
-            <x-slot name="icon">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                    stroke="currentColor" class="w-4 h-4">
+        <a href="{{ route('tools-index') }}"
+            class="group inline-flex items-center gap-2 px-2 py-1.5 bg-surface border border-border rounded-full hover:border-primary hover:bg-primary/5 transition-all duration-300 shadow-sm hover:shadow cursor-pointer">
+
+            {{-- Lingkaran Ikon --}}
+            <div
+                class="flex items-center justify-center w-8 h-8 bg-background text-text-light border border-border/50 rounded-full group-hover:bg-primary/10 group-hover:text-primary group-hover:border-primary/30 transition-all duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
+                    stroke-width="1.5" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round"
                         d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
                 </svg>
-            </x-slot>
-            Menu Tools
-        </x-buttonv2>
+            </div>
+
+            {{-- Teks --}}
+            <span
+                class="font-bold text-sm text-text pr-2 tracking-wider group-hover:text-primary transition-colors duration-300">
+                TOOLS
+            </span>
+        </a>
 
     </section>
 
