@@ -23,6 +23,17 @@
 }
 
 @theme {
+    --animate-zoom-infinite: zoom-pulse 15s ease-in-out infinite;
+
+    @keyframes zoom-pulse {
+        0%,
+        100% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.1);
+        }
+    }
     --font-montserrat: "Montserrat", sans-serif;
 
     --color-primary: #1e88e5;
