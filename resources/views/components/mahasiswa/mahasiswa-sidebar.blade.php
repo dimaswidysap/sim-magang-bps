@@ -24,7 +24,7 @@
                                 <rect x="14" y="14" width="7" height="7" rx="1" />
                             </svg>
                         </x-slot>
-                        Dashboard
+                        Beranda
                     </x-nav-link>
                 </li>
                 <li class="text-bold font-black text-white/50 text-[10px] ml-[5%] translate-y-2.5 mb-1">Berita</li>
