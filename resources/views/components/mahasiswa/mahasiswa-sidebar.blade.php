@@ -41,55 +41,56 @@
                     </x-nav-link>
                 </li>
 
-                <li class="text-bold font-black text-white/50 text-[10px] ml-[5%] translate-y-2.5 mb-1">Management Tugas
-                </li>
-                <!-- Menu Mahasiswa -->
-                <li>
-                    <x-nav-link :href="route('mahasiswa-undangan')" :active="request()->routeIs('mahasiswa-undangan')">
-                        <x-slot name="icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor" stroke-width="2" class="w-5 h-5">
+                @if (auth()->user()->isProfileComplete())
+                    <li class="text-bold font-black text-white/50 text-[10px] ml-[5%] translate-y-2.5 mb-1">
+                        Management Tugas
+                    </li>
 
-                                <rect x="3" y="5" width="18" height="14" rx="2" />
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 7l9 6 9-6" />
-                            </svg>
-                        </x-slot>
-                        Undangan Tugas
-                    </x-nav-link>
-                </li>
-                <!-- Menu Mahasiswa -->
-                <li>
-                    <x-nav-link :href="route('tugas')" :active="request()->routeIs('tugas')">
-                        <x-slot name="icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor" stroke-width="2" class="w-5 h-5">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M14 2H7a2 2 0 00-2 2v16a2 2 0 002 2h10a2 2 0 002-2V7l-5-5z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 10h6M9 14h6M9 18h4" />
-                            </svg>
-                        </x-slot>
-                        Tugas
-                    </x-nav-link>
-                </li>
-                <!-- Menu Asn -->
-                <li>
-                    <x-nav-link :href="route('tugas-saya')" :active="request()->routeIs('tugas-saya')">
-                        <x-slot name="icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor" stroke-width="2" class="w-5 h-5">
+                    <!-- Menu Mahasiswa -->
+                    <li>
+                        <x-nav-link :href="route('mahasiswa-undangan')" :active="request()->routeIs('mahasiswa-undangan')">
+                            <x-slot name="icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor" stroke-width="2" class="w-5 h-5">
+                                    <rect x="3" y="5" width="18" height="14" rx="2" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 7l9 6 9-6" />
+                                </svg>
+                            </x-slot>
+                            Undangan Tugas
+                        </x-nav-link>
+                    </li>
 
-                                <!-- Clipboard -->
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M9 3h6a1 1 0 011 1v2h2a2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2h2V4a1 1 0 011-1z" />
+                    <!-- Menu Mahasiswa -->
+                    <li>
+                        <x-nav-link :href="route('tugas')" :active="request()->routeIs('tugas')">
+                            <x-slot name="icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor" stroke-width="2" class="w-5 h-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M14 2H7a2 2 0 00-2 2v16a2 2 0 002 2h10a2 2 0 002-2V7l-5-5z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 10h6M9 14h6M9 18h4" />
+                                </svg>
+                            </x-slot>
+                            Tugas
+                        </x-nav-link>
+                    </li>
 
-                                <!-- User -->
-                                <circle cx="12" cy="11" r="2" />
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9.5 16a2.5 2.5 0 015 0" />
-                            </svg>
-                        </x-slot>
-                        Tugas saya
-                    </x-nav-link>
-                </li>
+                    <!-- Menu Asn -->
+                    <li>
+                        <x-nav-link :href="route('tugas-saya')" :active="request()->routeIs('tugas-saya')">
+                            <x-slot name="icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor" stroke-width="2" class="w-5 h-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M9 3h6a1 1 0 011 1v2h2a2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2h2V4a1 1 0 011-1z" />
+                                    <circle cx="12" cy="11" r="2" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.5 16a2.5 2.5 0 015 0" />
+                                </svg>
+                            </x-slot>
+                            Tugas saya
+                        </x-nav-link>
+                    </li>
+                @endif
 
 
 
