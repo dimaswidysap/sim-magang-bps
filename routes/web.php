@@ -104,7 +104,13 @@ Route::prefix('admin')
         Route::delete('/periode/destroy/{id}', [PeriodeMagangController::class, 'destroyPeriode'])->name('admin-periode-destroy');
         // statistik user
         Route::get('/statistik-magang', [AdminController::class, 'statistikUser'])->name('statistik-user');
-        Route::get('/statistik-asn', [AdminController::class, 'statistikAsn'])->name('statistik-user-asn');
+        route::get('/statistik-asn/aktif',[AdminController::class,'asnAktif'])->name('asn-aktif');
+        route::get('/statistik-asn/nonaktif',[AdminController::class,'asnNonAktif'])->name('asn-nonaktif');
+        route::get('/statistik-magang/aktif',[AdminController::class,'magangAktif'])->name('magang-aktif');
+        route::get('/statistik-magang/nonaktif',[AdminController::class,'magangNonaktif'])->name('magang-nonaktif');
+        route::get('/statistik-magang/pending',[AdminController::class,'magangPending'])->name('magang-pending');
+        route::get('/statistik-magang/batal',[AdminController::class,'magangbatal'])->name('magang-batal');
+        route::get('/statistik-magang/selesai',[AdminController::class,'magangSelesai'])->name('magang-selesai');
     });
 
 // ASN

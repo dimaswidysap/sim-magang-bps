@@ -1,7 +1,7 @@
 <section class="w-full flex flex-col lg:flex-row gap-4 md:gap-6 font-montserrat mb-8">
 
     <!-- Card Statistik Mahasiswa (Full Clickable Area) -->
-    <a href="{{ route('statistik-user') }}"
+    <a href="{{ route('magang-aktif') }}"
         class="flex-1 bg-surface border border-border rounded-xl shadow-sm p-5 md:p-6 flex flex-col sm:flex-row sm:items-center gap-4 md:gap-5 hover:shadow-md hover:border-primary/50 transition-all duration-300 group">
 
         <!-- Ikon Mahasiswa -->
@@ -67,7 +67,7 @@
     </a>
 
     <!-- Card Statistik ASN (Full Clickable Area) -->
-    <a href="{{ route('statistik-user-asn') }}"
+    <a href="{{ route('asn-aktif') }}"
         class="flex-1 bg-surface border border-border rounded-xl shadow-sm p-5 md:p-6 flex flex-col sm:flex-row sm:items-center gap-4 md:gap-5 hover:shadow-md hover:border-warning/50 transition-all duration-300 group">
 
         <!-- Ikon ASN / Pegawai -->
