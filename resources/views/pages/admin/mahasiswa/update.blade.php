@@ -85,9 +85,9 @@
                             <!-- Toggle Button -->
                             <label class="relative inline-flex items-center cursor-pointer">
                                 <!--
-                            Menggunakan old('is_active') untuk repopulate data jika validasi form gagal,
-                            dan fallback ke $dataUser->is_active jika baru pertama kali load halaman.
-                        -->
+                                Menggunakan old('is_active') untuk repopulate data jika validasi form gagal,
+                                dan fallback ke $dataUser->is_active jika baru pertama kali load halaman.
+                            -->
                                 <input type="checkbox" name="is_active" value="1" class="sr-only peer"
                                     {{ old('is_active', $dataUser->is_active) ? 'checked' : '' }}>
 
@@ -124,9 +124,22 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
                         </svg>
-                        Data Mahasiswa
+                        Data Mahasiswa {{ $dataUser->name }}
                     </h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-background p-5 rounded-xl border border-border">
+                        <div>
+                            <label for="tanggal_lahir" class="block text-sm font-medium text-text-light mb-1.5">Tanggal
+                                Lahir</label>
+                            <input type="date" id="tanggal_lahir" name="tanggal_lahir"
+                                value="{{ old('tanggal_lahir', isset($dataUser->mahasiswaProfile?->tanggal_lahir) ? \Carbon\Carbon::parse($dataUser->mahasiswaProfile->tanggal_lahir)->format('Y-m-d') : '') }}"
+                                class="w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-text-light mb-1.5">Alamat</label>
+                            <input type="text" name="alamat"
+                                value="{{ old('nim', $dataUser->mahasiswaProfile->alamat ?? '') }}"
+                                class="w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors">
+                        </div>
                         <div>
                             <label class="block text-sm font-medium text-text-light mb-1.5">NIM / NIS</label>
                             <input type="text" name="nim"
@@ -175,23 +188,9 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
-                        Periode, Waktu & Status
+                        Periode & Status
                     </h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-background p-5 rounded-xl border border-border">
-                        <div>
-                            <label class="block text-sm font-medium text-text-light mb-1.5">Pilih Periode</label>
-                            @php $periodeLama = old('periode_magang_id', $dataUser->mahasiswaProfile->periode_magang_id ?? ''); @endphp
-                            <select name="periode_magang_id"
-                                class="w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors cursor-pointer">
-                                <option value="">-- Pilih Periode --</option>
-                                @foreach ($periodeList as $periode)
-                                    <option value="{{ $periode->id }}"
-                                        {{ $periodeLama == $periode->id ? 'selected' : '' }}>
-                                        {{ $periode->nama_periode }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
                         <div>
                             <label class="block text-sm font-medium text-text-light mb-1.5">Status Magang</label>
                             @php $statusLama = old('status', $dataUser->mahasiswaProfile->status ?? 'pending'); @endphp

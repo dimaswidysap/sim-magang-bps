@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @vite(['resources/js/validasi-number.js'])
+
 @section('content')
     <main class="w-full p-4 md:p-8 bg-background min-h-screen font-montserrat">
         <section class="container-dalam max-w-5xl mx-auto bg-surface rounded-2xl shadow-sm border border-border p-6 md:p-10">
@@ -7,18 +8,14 @@
             <!-- Header Halaman -->
             <div class="mb-8 pb-4 border-b border-border">
                 <h1 class="text-2xl font-bold text-text">Profil Saya</h1>
-                <p class="text-sm text-text-light mt-1">Kelola informasi data diri, asal instansi, dan detail magang Anda.
-                </p>
+                <p class="text-sm text-text-light mt-1">Kelola informasi data diri, asal instansi, dan detail magang Anda.</p>
             </div>
 
             <!-- Alert Sukses -->
             @if (session('success'))
                 <div class="mb-6 p-4 bg-success/10 border border-success rounded-lg flex items-center gap-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-success shrink-0" viewBox="0 0 20 20"
-                        fill="currentColor">
-                        <path fill-rule="evenodd"
-                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                            clip-rule="evenodd" />
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-success shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                     </svg>
                     <span class="text-sm font-medium text-success">{{ session('success') }}</span>
                 </div>
@@ -29,9 +26,7 @@
                 <div class="mb-6 p-4 bg-surface border border-danger rounded-lg shadow-sm">
                     <div class="flex items-center gap-2 text-danger font-semibold mb-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd"
-                                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                                clip-rule="evenodd" />
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
                         </svg>
                         Terdapat kesalahan pada input Anda:
                     </div>
@@ -44,20 +39,16 @@
             @endif
 
             <!-- Highlight Box: Data Read-Only -->
-            <div
-                class="mb-8 p-5 bg-background border border-border rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="mb-8 p-5 bg-background border border-border rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <!-- Info Email -->
                 <div class="flex items-start gap-3">
                     <div class="p-2 bg-surface rounded-lg border border-border text-primary shrink-0">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                         </svg>
                     </div>
                     <div>
-                        <p class="text-xs text-text-light font-medium uppercase tracking-wider mb-0.5">Alamat Email Tertaut
-                        </p>
+                        <p class="text-xs text-text-light font-medium uppercase tracking-wider mb-0.5">Alamat Email Tertaut</p>
                         <p class="text-sm font-semibold text-text">{{ $profil->email }}</p>
                         <p class="text-xs text-text-light mt-0.5 italic">* Email tidak dapat diubah</p>
                     </div>
@@ -70,21 +61,18 @@
                     <div>
                         <p class="text-xs text-text-light font-medium uppercase tracking-wider mb-1.5">Status Akun</p>
                         @if ($profil->is_active)
-                            <span
-                                class="inline-flex px-2.5 py-1 bg-success/10 text-success text-xs font-bold rounded-md items-center gap-1.5 border border-success/20">
+                            <span class="inline-flex px-2.5 py-1 bg-success/10 text-success text-xs font-bold rounded-md items-center gap-1.5 border border-success/20">
                                 <span class="w-1.5 h-1.5 rounded-full bg-success"></span> Aktif
                             </span>
                         @else
-                            <span
-                                class="inline-flex px-2.5 py-1 bg-danger/10 text-danger text-xs font-bold rounded-md items-center gap-1.5 border border-danger/20">
+                            <span class="inline-flex px-2.5 py-1 bg-danger/10 text-danger text-xs font-bold rounded-md items-center gap-1.5 border border-danger/20">
                                 <span class="w-1.5 h-1.5 rounded-full bg-danger"></span> Nonaktif
                             </span>
                         @endif
                     </div>
                     <div>
                         <p class="text-xs text-text-light font-medium uppercase tracking-wider mb-1.5">Status Magang</p>
-                        <span
-                            class="inline-flex px-2.5 py-1 bg-primary/10 text-primary-dark text-xs font-bold rounded-md items-center border border-primary/20 uppercase">
+                        <span class="inline-flex px-2.5 py-1 bg-primary/10 text-primary-dark text-xs font-bold rounded-md items-center border border-primary/20 uppercase">
                             {{ $profil->mahasiswaProfile->status ?? 'Belum ada data' }}
                         </span>
                     </div>
@@ -92,65 +80,109 @@
             </div>
 
             <!-- Form Update Profil -->
-            <form method="POST" action="{{ route('mahasiswa-profil-update', $profil->id) }}" class="space-y-8" data-confirm="Apakah Anda yakin ingin update profil anda?">
+            <form method="POST" action="{{ route('mahasiswa-profil-update', $profil->id) }}" enctype="multipart/form-data" class="space-y-8" data-confirm="Apakah Anda yakin ingin update profil anda?">
                 @csrf
                 @method('PUT')
 
-                <!-- SECTION 1: Edit Data Akun -->
+                <!-- SECTION 1: Edit Data Akun & Personal -->
                 <div>
                     <h2 class="text-lg font-semibold text-text mb-4 flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none"
-                            viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
                         Informasi Pribadi
                     </h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-background p-5 rounded-xl border border-border">
-                        <div>
-                            <label class="block text-sm font-medium text-text-light mb-1.5">Nama Lengkap</label>
-                            <input type="text" name="name" value="{{ old('name', $profil->name) }}"
-                                class="w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors">
+
+                    <div class="bg-background p-5 rounded-xl border border-border space-y-6">
+
+                        <!-- Placeholder Foto Profil (Fitur Mendatang) -->
+                        <div class="flex flex-col sm:flex-row items-center gap-5 p-4 bg-surface rounded-xl border border-border">
+                            <div class="w-20 h-20 rounded-full bg-primary/10 border-2 border-primary/20 flex items-center justify-center shrink-0 overflow-hidden">
+                                @if (!empty($profil->avatar))
+                                    <img src="{{ asset('storage/' . $profil->avatar) }}" alt="{{ $profil->name }}" class="w-full h-full object-cover">
+                                @else
+                                    <span class="text-2xl font-bold text-primary">{{ strtoupper(substr($profil->name ?? 'M', 0, 1)) }}</span>
+                                @endif
+                            </div>
+                            <div class="flex-1 text-center sm:text-left space-y-2">
+                                <div>
+                                    <label class="block text-sm font-semibold text-text">Foto Profil</label>
+                                    <p class="text-xs text-text-light mt-0.5">Format file: JPG, JPEG, PNG (Maks. 2MB)</p>
+                                </div>
+                                <div class="flex flex-wrap items-center justify-center sm:justify-start gap-3">
+                                    <input type="file" name="avatar" id="avatar" accept="image/*" class="hidden" disabled>
+                                    <label for="avatar" class="cursor-not-allowed opacity-60 px-3.5 py-1.5 bg-background border border-border rounded-lg text-xs font-medium text-text flex items-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-text-light" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                        </svg>
+                                        Pilih Foto
+                                    </label>
+                                    <span class="text-[11px] font-semibold text-amber-600 bg-amber-50 dark:bg-amber-950/40 px-2.5 py-1 rounded-md border border-amber-200/50">
+                                        * Fitur unggah foto segera hadir
+                                    </span>
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-text-light mb-1.5">Nomor Handphone</label>
-                            <input type="text" name="phone" value="{{ old('phone', $profil->phone) }}"
-                                class="hanya-angka w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors">
+
+                        <!-- Grid Input Informasi Pribadi -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Nama Lengkap -->
+                            <div>
+                                <label class="block text-sm font-medium text-text-light mb-1.5">Nama Lengkap</label>
+                                <input type="text" name="name" value="{{ old('name', $profil->name) }}"
+                                    class="w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors">
+                            </div>
+
+                            <!-- Nomor Handphone -->
+                            <div>
+                                <label class="block text-sm font-medium text-text-light mb-1.5">Nomor Handphone</label>
+                                <input type="text" name="phone" value="{{ old('phone', $profil->phone) }}"
+                                    class="hanya-angka w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors">
+                            </div>
+
+                            <!-- Tanggal Lahir -->
+                            <div>
+                                <label class="block text-sm font-medium text-text-light mb-1.5">Tanggal Lahir</label>
+                                <input type="date" name="tanggal_lahir"
+                                    value="{{ old('tanggal_lahir', optional($profil->mahasiswaProfile->tanggal_lahir ?? null)->format('Y-m-d')) }}"
+                                    class="w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors">
+                            </div>
+
+                            <!-- Alamat -->
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-text-light mb-1.5">Alamat Tempat Tinggal</label>
+                                <textarea name="alamat" rows="3" placeholder="Masukkan alamat lengkap domisili saat ini..."
+                                    class="w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors resize-y">{{ old('alamat', $profil->mahasiswaProfile->alamat ?? '') }}</textarea>
+                            </div>
                         </div>
+
                     </div>
                 </div>
 
                 <!-- SECTION 2: Edit Data Mahasiswa -->
                 <div>
                     <h2 class="text-lg font-semibold text-text mb-4 flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none"
-                            viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 14l9-5-9-5-9 5 9 5z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 01-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
                         </svg>
                         Data Akademik & Instansi
                     </h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-background p-5 rounded-xl border border-border">
                         <div>
                             <label class="block text-sm font-medium text-text-light mb-1.5">NIM / NIS</label>
-                            <input type="text" name="nim"
-                                value="{{ old('nim', $profil->mahasiswaProfile->nim ?? '') }}"
+                            <input type="text" name="nim" value="{{ old('nim', $profil->mahasiswaProfile->nim ?? '') }}"
                                 class="w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-text-light mb-1.5">Instansi Asal
-                                (Kampus/Sekolah)</label>
-                            <input type="text" name="instansi_asal"
-                                value="{{ old('instansi_asal', $profil->mahasiswaProfile->instansi_asal ?? '') }}"
+                            <label class="block text-sm font-medium text-text-light mb-1.5">Instansi Asal (Kampus/Sekolah)</label>
+                            <input type="text" name="instansi_asal" value="{{ old('instansi_asal', $profil->mahasiswaProfile->instansi_asal ?? '') }}"
                                 class="w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-text-light mb-1.5">Jenjang</label>
                             @php $jenjangLama = old('jenjang', $profil->mahasiswaProfile->jenjang ?? ''); @endphp
-                            <select name="jenjang"
-                                class="w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors cursor-pointer">
+                            <select name="jenjang" class="w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors cursor-pointer">
                                 <option value="">-- Pilih Jenjang --</option>
                                 <option value="SMA/SMK" {{ $jenjangLama == 'SMA/SMK' ? 'selected' : '' }}>SMA/SMK</option>
                                 <option value="D3" {{ $jenjangLama == 'D3' ? 'selected' : '' }}>D3</option>
@@ -161,8 +193,7 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-text-light mb-1.5">Jurusan / Program Studi</label>
-                            <input type="text" name="jurusan"
-                                value="{{ old('jurusan', $profil->mahasiswaProfile->jurusan ?? '') }}"
+                            <input type="text" name="jurusan" value="{{ old('jurusan', $profil->mahasiswaProfile->jurusan ?? '') }}"
                                 class="w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors">
                         </div>
                     </div>
@@ -171,28 +202,12 @@
                 <!-- SECTION 3: Periode Magang -->
                 <div>
                     <h2 class="text-lg font-semibold text-text mb-4 flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none"
-                            viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                         Waktu Pelaksanaan Magang
                     </h2>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 bg-background p-5 rounded-xl border border-border">
-                        <div>
-                            <label class="block text-sm font-medium text-text-light mb-1.5">Periode Magang</label>
-                            @php $periodeLama = old('periode_magang_id', $profil->mahasiswaProfile->periode_magang_id ?? ''); @endphp
-                            <select name="periode_magang_id"
-                                class="w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors cursor-pointer">
-                                <option value="">-- Pilih Periode --</option>
-                                @foreach ($periodeList as $periode)
-                                    <option value="{{ $periode->id }}"
-                                        {{ $periodeLama == $periode->id ? 'selected' : '' }}>
-                                        {{ $periode->nama_periode }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-background p-5 rounded-xl border border-border">
                         <div>
                             <label class="block text-sm font-medium text-text-light mb-1.5">Tanggal Mulai</label>
                             <input type="date" name="tanggal_mulai"
@@ -211,23 +226,18 @@
                 <!-- SECTION 4: Skill / Kemampuan -->
                 <div>
                     <h2 class="text-lg font-semibold text-text mb-4 flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none"
-                            viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                         </svg>
                         Keahlian / Skill
                     </h2>
                     <div class="bg-background p-5 rounded-xl border border-border">
-                        <p class="text-sm text-text-light mb-4">Pilih keahlian yang Anda kuasai untuk memudahkan penempatan
-                            tugas.</p>
+                        <p class="text-sm text-text-light mb-4">Pilih keahlian yang Anda kuasai untuk memudahkan penempatan tugas.</p>
                         <div class="flex flex-wrap gap-3">
                             @php $skillLama = old('skills', $selectedSkillIds); @endphp
                             @foreach ($skillList as $skill)
-                                <label for="skill-{{ $skill->id }}"
-                                    class="flex items-center gap-2 px-4 py-2 bg-surface border border-border rounded-full cursor-pointer hover:border-primary transition-colors">
-                                    <input type="checkbox" name="skills[]" value="{{ $skill->id }}"
-                                        id="skill-{{ $skill->id }}"
+                                <label for="skill-{{ $skill->id }}" class="flex items-center gap-2 px-4 py-2 bg-surface border border-border rounded-full cursor-pointer hover:border-primary transition-colors">
+                                    <input type="checkbox" name="skills[]" value="{{ $skill->id }}" id="skill-{{ $skill->id }}"
                                         {{ in_array($skill->id, $skillLama) ? 'checked' : '' }}
                                         class="w-4 h-4 text-primary bg-background border-border rounded focus:ring-primary focus:ring-2 cursor-pointer accent-primary">
                                     <span class="text-sm font-medium text-text">{{ $skill->nama_skill }}</span>
@@ -241,35 +251,20 @@
 
                 <!-- Footer Button -->
                 <div class="flex gap-4 justify-end pt-4">
-                    {{-- <button type="submit"
-                        class="w-full sm:w-auto bg-primary hover:bg-primary-dark text-surface flex justify-center items-center gap-2 px-10 py-3 rounded-xl font-medium transition-colors shadow-sm">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd"
-                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                clip-rule="evenodd" />
-                        </svg>
-                        Simpan Perubahan
-                    </button> --}}
-
                     <x-main-button
-                        class=" text-xs px-4 py-2 rounded-lg text-text border-text border transition-colors shadow-sm inline-flex items-center gap-2"
-                        href="{{ route('mahasiswa-index') }}">
+                        class="text-xs px-4 py-2 rounded-lg text-text border-text border transition-colors shadow-sm inline-flex items-center gap-2"
+                        href="{{ route('profil-magang') }}">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd"
-                                d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
-                                clip-rule="evenodd" />
+                            <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
                         </svg>
                         <span>Kembali</span>
                     </x-main-button>
 
-
                     <x-main-button
-                        class="bg-primary hover:bg-primary-dark  text-xs px-4 py-2 rounded-lg text-white transition-colors shadow-sm inline-flex items-center gap-2"
+                        class="bg-primary hover:bg-primary-dark text-xs px-4 py-2 rounded-lg text-white transition-colors shadow-sm inline-flex items-center gap-2"
                         type="submit">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd"
-                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                clip-rule="evenodd" />
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
                         </svg>
                         <span>Simpan perubahan</span>
                     </x-main-button>

@@ -9,7 +9,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\MahasiswaProfile;
-use App\Models\PeriodeMagang;
 use App\Models\Skill;
 
 class AdminMahasiswa extends Controller
@@ -17,7 +16,7 @@ class AdminMahasiswa extends Controller
     //
     public function showForm()
     {
-        $periodeList = PeriodeMagang::orderBy('tanggal_mulai', 'desc')->get();
+
         $skillList = Skill::orderBy('nama_skill', 'asc')->get();
 
         return view('pages.admin.mahasiswa.create', compact('periodeList', 'skillList'));
@@ -81,8 +80,7 @@ class AdminMahasiswa extends Controller
         // Tambahkan query() setelah User
         $dataUser = User::query()->where('id', $id)->where('role', 'mahasiswa')->with('mahasiswaProfile.skills')->firstOrFail();
 
-        // Tambahkan query() setelah PeriodeMagang
-        $periodeList = PeriodeMagang::query()->orderBy('tanggal_mulai', 'desc')->get();
+
 
         // Tambahkan query() setelah Skill
         $skillList = Skill::query()->orderBy('nama_skill', 'asc')->get();
@@ -91,7 +89,7 @@ class AdminMahasiswa extends Controller
         // cek "checked" di form. Kalau belum punya profile, otomatis array kosong.
         $selectedSkillIds = $dataUser->mahasiswaProfile ? $dataUser->mahasiswaProfile->skills->pluck('id')->toArray() : [];
 
-        return view('pages.admin.mahasiswa.update', compact('dataUser', 'periodeList', 'skillList', 'selectedSkillIds'));
+        return view('pages.admin.mahasiswa.update', compact('dataUser', 'skillList', 'selectedSkillIds'));
     }
 
     public function updateMahasiswa(Request $request, $id)
@@ -117,12 +115,14 @@ class AdminMahasiswa extends Controller
                 'jenjang' => 'nullable|in:SMA/SMK,D3,D4,S1,S2',
                 'jurusan' => 'nullable|string|max:255',
                 'phone' => 'nullable|string|max:13',
+                'tanggal_lahir'=>'nullable|date',
                 'tanggal_mulai' => 'nullable|date',
                 'tanggal_selesai' => 'nullable|date|after_or_equal:tanggal_mulai',
                 'status' => 'required|in:pending,aktif,selesai,dibatalkan',
                 'periode_magang_id' => 'nullable|exists:periode_magang,id',
                 'skills' => 'nullable|array',
                 'skills.*' => 'exists:skills,id',
+                'alamat'=>'string'
             ],
             [
                 // Pesan error untuk field name
@@ -163,6 +163,8 @@ class AdminMahasiswa extends Controller
 
                 // Pesan error untuk field tanggal_mulai
                 'tanggal_mulai.date' => 'Format tanggal mulai tidak valid.',
+                //
+                'tanggal_lahir.date' => 'Format tanggal mulai tidak valid.',
 
                 // Pesan error untuk field tanggal_selesai
                 'tanggal_selesai.date' => 'Format tanggal selesai tidak valid.',
@@ -186,9 +188,6 @@ class AdminMahasiswa extends Controller
                 'name' => $validated['name'],
                 'email' => $validated['email'],
                 'phone' => $validated['phone'],
-                'is_active' => $validated['is_active'],
-                // Password cuma diganti kalau diisi - kalau dikosongkan,
-                // password lama tetap dipakai (tidak ditimpa jadi kosong/null).
                 'password' => !empty($validated['password']) ? Hash::make($validated['password']) : $user->password,
             ]);
 
@@ -202,9 +201,11 @@ class AdminMahasiswa extends Controller
                     'instansi_asal' => $validated['instansi_asal'],
                     'jenjang' => $validated['jenjang'] ?? null,
                     'jurusan' => $validated['jurusan'] ?? null,
+                    'tanggal_lahir' => $validated['tanggal_lahir'] ?? null,
                     'tanggal_mulai' => $validated['tanggal_mulai'] ?? null,
                     'tanggal_selesai' => $validated['tanggal_selesai'] ?? null,
                     'status' => $validated['status'],
+                    'alamat' => $validated['alamat'],
                 ],
             );
 

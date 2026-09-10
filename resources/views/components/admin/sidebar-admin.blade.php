@@ -91,22 +91,6 @@
                         Skill
                     </x-nav-link>
                 </li>
-                <li>
-                    <x-nav-link :href="route('admin-periode-magang')" :active="request()->routeIs('admin-periode-magang*')">
-                        <x-slot name="icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor" stroke-width="2" class="w-5 h-5">
-                                <circle cx="8" cy="8" r="3" />
-                                <circle cx="16" cy="8" r="3" />
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M3 19a5 5 0 0110 0M11 19a5 5 0 0110 0" />
-                            </svg>
-                        </x-slot>
-                        Periode Magang
-                    </x-nav-link>
-                </li>
-
-
                 @include('components.button-logout')
             </ul>
         </nav>

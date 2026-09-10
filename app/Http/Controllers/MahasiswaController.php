@@ -131,16 +131,24 @@ class MahasiswaController extends Controller
         return view('pages.mahasiswa.tugas-saya.view', compact('detailTugas'));
     }
 
+    public function profil(){
+
+    $profil = User::with('mahasiswaProfile.skills')->findOrFail(Auth::id());
+
+    return view('pages.mahasiswa.profil-view',compact('profil'));
+
+    }
+
     public function showFormProfil()
     {
         $profil = User::with('mahasiswaProfile.skills')->findOrFail(Auth::id());
 
-        $periodeList = PeriodeMagang::orderBy('tanggal_mulai', 'desc')->get();
+
         $skillList = Skill::query()->orderBy('nama_skill', 'asc')->get();
 
         $selectedSkillIds = $profil->mahasiswaProfile ? $profil->mahasiswaProfile->skills->pluck('id')->toArray() : [];
 
-        return view('pages.mahasiswa.profil', compact('profil', 'periodeList', 'skillList', 'selectedSkillIds'));
+        return view('pages.mahasiswa.profil', compact('profil', 'skillList', 'selectedSkillIds'));
     }
 
     public function updateProfil(Request $request)

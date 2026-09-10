@@ -61,7 +61,7 @@
                             <th scope="col" class="px-6 py-4 font-bold">NIM</th>
                             <th scope="col" class="px-6 py-4 font-bold">Instansi Asal</th>
                             <th scope="col" class="px-6 py-4 font-bold">Jurusan (Jenjang)</th>
-                            <th scope="col" class="px-6 py-4 font-bold">Periode Magang</th>
+                            <th scope="col" class="px-6 py-4 font-bold">Mulai - Selesai</th>
                             <th scope="col" class="px-6 py-4 font-bold text-center">Status (Akun)</th>
                             <th scope="col" class="px-6 py-4 font-bold text-center">Aksi</th>
                         </tr>
@@ -142,10 +142,10 @@
                                             class="md:hidden text-[10px] font-bold text-text-light uppercase">Periode:</span>
                                         <div class="flex flex-col text-right md:text-left text-xs text-text-light">
                                             <span
-                                                class="font-medium text-text">{{ $mhs->tanggal_mulai ? \Carbon\Carbon::parse($mhs->tanggal_mulai)->translatedFormat('d M Y') : '-' }}</span>
+                                                class="font-medium text-text">{{ $mhs->mahasiswaProfile->tanggal_mulai ? \Carbon\Carbon::parse($mhs->mahasiswaProfile->tanggal_mulai)->translatedFormat('d M Y') : '-' }}</span>
                                             <span class="text-[10px] my-0.5">s.d</span>
                                             <span
-                                                class="font-medium text-text">{{ $mhs->tanggal_selesai ? \Carbon\Carbon::parse($mhs->tanggal_selesai)->translatedFormat('d M Y') : '-' }}</span>
+                                                class="font-medium text-text">{{ $mhs->mahasiswaProfile->tanggal_selesai ? \Carbon\Carbon::parse($mhs->mahasiswaProfile->tanggal_selesai)->translatedFormat('d M Y') : '-' }}</span>
                                         </div>
                                     </div>
                                 </td>

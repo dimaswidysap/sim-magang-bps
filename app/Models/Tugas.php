@@ -12,7 +12,7 @@ class Tugas extends Model
 
     protected $table = 'tugas';
 
-    protected $fillable = ['asn_id', 'periode_magang_id', 'mahasiswa_profile_id', 'judul', 'deskripsi', 'deadline', 'status', 'diambil_at', 'selesai_at'];
+    protected $fillable = ['asn_id', 'mahasiswa_profile_id', 'judul', 'deskripsi', 'deadline', 'status', 'diambil_at', 'selesai_at'];
 
     protected function casts(): array
     {
@@ -79,10 +79,6 @@ class Tugas extends Model
         return $this->belongsTo(User::class, 'asn_id');
     }
 
-    public function periodeMagang()
-    {
-        return $this->belongsTo(PeriodeMagang::class);
-    }
 
     public function mahasiswaProfile()
     {

@@ -91,9 +91,6 @@
                         </x-nav-link>
                     </li>
                 @endif
-
-
-
                 @include('components.button-logout')
             </ul>
         </nav>

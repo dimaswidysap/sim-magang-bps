@@ -11,9 +11,7 @@ return new class extends Migration
         Schema::create('tugas', function (Blueprint $table) {
             $table->id();
             $table->foreignId('asn_id')->constrained('users')->cascadeOnDelete();
-            $table->foreignId('periode_magang_id')->nullable()->constrained('periode_magang')->nullOnDelete();
             $table->foreignId('mahasiswa_profile_id')->nullable()->constrained('mahasiswa_profiles')->nullOnDelete();
-
             $table->string('judul');
             $table->text('deskripsi');
             $table->dateTime('deadline')->nullable();

@@ -4,27 +4,6 @@
     <main class="w-full p-4 md:p-8 bg-background min-h-screen font-montserrat">
         <section class="container-dalam max-w-4xl mx-auto">
 
-            {{-- {{ $detailUser }} --}}
-
-            <!-- Tombol Kembali -->
-            <div class="mb-6 w-full flex justify-end">
-
-
-
-
-                <x-buttonv2 href="{{ route('admin-mahasiswa') }}" color="accent-dark" class="w-full sm:w-auto">
-                    <svg xmlns="http://www.w3.org/2000/svg" stroke-width="3" class="h-4 w-4" viewBox="0 0 20 20"
-                        fill="currentColor">
-                        <path fill-rule="evenodd"
-                            d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
-                            clip-rule="evenodd" />
-                    </svg>
-                    kembali
-                </x-buttonv2>
-
-
-            </div>
-
             <!-- Card Detail Profil -->
             <div class="bg-surface rounded-2xl shadow-sm border border-border overflow-hidden font-montserrat">
 
@@ -58,7 +37,7 @@
                             Status Magang:
                         </span>
 
-                        <!-- Badge Status (Gaya Netral/Primary) -->
+                        <!-- Badge Status -->
                         <span
                             class="inline-flex px-3 py-1.5 bg-primary/10 border border-primary/20 text-primary-dark text-xs font-bold rounded-full items-center shadow-sm capitalize">
                             {{ $detailUser->mahasiswaProfile->status ?? 'Belum ada status' }}
@@ -111,30 +90,25 @@
                                 </p>
                             </div>
                             <div>
-                                <p class="text-sm text-text-light mb-1">Tanggal Selesai
+                                <p class="text-sm text-text-light mb-1">Tanggal Selesai</p>
                                 <p class="font-medium text-text">
                                     {{ $detailUser->mahasiswaProfile?->tanggal_selesai?->format('d-m-Y') ?? '-' }}</p>
                             </div>
                             <div>
-                                <p class="text-sm text-text-light mb-1">Periode Magang
-                                <p class="font-medium text-text">
-                                    {{ $detailUser->mahasiswaProfile?->periode_magang_id ?? '-' }}</p>
-                            </div>
-                            <div>
-                                <p class="text-sm text-text-light mb-1">Keahlian
-                                <p class="font-medium text-text">
-
+                                <p class="text-sm text-text-light mb-1">Keahlian</p>
+                                <div class="font-medium text-text">
                                     @if ($detailUser->mahasiswaProfile && count($detailUser->mahasiswaProfile->skills) > 0)
                                         <div class="skills-container">
                                             <ul>
                                                 @foreach ($detailUser->mahasiswaProfile->skills as $skill)
-                                                    <li>{{ $skill->nama_skill }} </li>
+                                                    <li>{{ $skill->nama_skill }}</li>
                                                 @endforeach
                                             </ul>
                                         </div>
                                     @else
                                         <p>Belum ada data skill yang ditambahkan.</p>
                                     @endif
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -152,6 +126,19 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
                             <div>
+                                <p class="text-sm text-text-light mb-1">Tanggal Lahir</p>
+                                <div class="font-medium text-text flex items-center gap-2">
+                                    @if (!empty($detailUser->mahasiswaProfile?->tanggal_lahir))
+                                        <span>{{ \Carbon\Carbon::parse($detailUser->mahasiswaProfile->tanggal_lahir)->translatedFormat('d F Y') }}</span>
+                                        <span
+                                            class="text-xs text-text-light font-normal">({{ \Carbon\Carbon::parse($detailUser->mahasiswaProfile->tanggal_lahir)->age }}
+                                            tahun)</span>
+                                    @else
+                                        <span class="text-text-light italic">-</span>
+                                    @endif
+                                </div>
+                            </div>
+                            <div>
                                 <p class="text-sm text-text-light mb-1">Email Lengkap</p>
                                 <p class="font-medium text-text flex items-center gap-2">
                                     {{ $detailUser->email ?? '-' }}
@@ -163,12 +150,12 @@
                             </div>
                             <div class="md:col-span-2">
                                 <p class="text-sm text-text-light mb-1">Alamat Asal</p>
-                                <p class="font-medium text-text">{{ $detailUser->alamat ?? '-' }}</p>
+                                <p class="font-medium text-text">{{ $detailUser->mahasiswaProfile->alamat ?? '-' }}</p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Informasi lainya -->
+                    <!-- Informasi Lainya -->
                     <div>
                         <h2 class="text-xl font-semibold text-text mb-4 flex items-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-secondary" fill="none"
@@ -176,7 +163,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
                             </svg>
-                            Data Lainya
+                            Data Lainnya
                         </h2>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
@@ -191,8 +178,6 @@
                                 <p class="font-medium text-text">
                                     {{ $detailUser->surat_pengantar_path ? 'Ada' : 'Belum ada' }}</p>
                             </div>
-
-
                         </div>
                     </div>
 
@@ -200,38 +185,50 @@
 
                 <!-- Footer Actions -->
                 <div
-                    class="bg-footer border-t border-border px-6 md:px-10 py-5 flex flex-col-reverse sm:flex-row gap-3 sm:justify-end items-center font-montserrat">
+                    class="bg-footer border-t border-border px-6 md:px-10 py-5 flex flex-col sm:flex-row gap-3 sm:justify-between items-center font-montserrat">
 
-                    <!-- Form Hapus Data -->
-                    <form action="{{ route('admin-mahasiswa-destroy', $detailUser->id) }}" method="POST"
-                        data-confirm="Yakin ingin menghapus data mahasiswa ini? Semua data terkait (absensi, tugas) ikut terhapus dan tidak bisa dikembalikan."
-                        class="w-full sm:w-auto m-0">
-                        @csrf
-                        @method('DELETE')
+                    <!-- Aksi Hapus & Edit (Di Sisi Kanan) -->
+                    <div class="flex flex-col-reverse sm:flex-row gap-3 w-full sm:w-auto items-center">
 
+                        <!-- Form Hapus Data -->
+                        <form action="{{ route('admin-mahasiswa-destroy', $detailUser->id) }}" method="POST"
+                            data-confirm="Yakin ingin menghapus data mahasiswa ini? Semua data terkait (absensi, tugas) ikut terhapus dan tidak bisa dikembalikan."
+                            class="w-full sm:w-auto m-0">
+                            @csrf
+                            @method('DELETE')
 
+                            <x-buttonv2 type="submit" color="danger" class="w-full sm:w-auto">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor" stroke-width="2" class="w-4 h-4 transition-colors">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M6 7h12M9 7V5h6v2m-8 0v12a2 2 0 002 2h6a2 2 0 002-2V7M10 11l4 4M14 11l-4 4" />
+                                </svg>
+                                Hapus Data
+                            </x-buttonv2>
+                        </form>
 
-                        <x-buttonv2 type="submit" color="danger" class="w-full sm:w-auto">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                                stroke-width="2" class="w-4 h-4 transition-colors">
+                        <!-- Tombol Edit Data -->
+                        <x-buttonv2 href="{{ route('form-mahasiswa-edit', $detailUser->id) }}" color="accent-dark"
+                            class="w-full sm:w-auto">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="3" class="w-4 h-4">
                                 <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M6 7h12M9 7V5h6v2m-8 0v12a2 2 0 002 2h6a2 2 0 002-2V7M10 11l4 4M14 11l-4 4" />
+                                    d="M16.862 3.487a2.25 2.25 0 113.182 3.182L8.25 18.463 3 21l2.537-5.25L16.862 3.487z" />
                             </svg>
-                            Hapus Data
+                            Edit Data
                         </x-buttonv2>
-                    </form>
 
-                    <!-- Tombol Edit Data -->
+                    </div>
 
-
-                    <x-buttonv2 href="{{ route('form-mahasiswa-edit', $detailUser->id) }}" color="accent-dark"
-                        class="w-full sm:w-auto">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                            stroke-width="3" class="w-4 h-4">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M16.862 3.487a2.25 2.25 0 113.182 3.182L8.25 18.463 3 21l2.537-5.25L16.862 3.487z" />
+                    <!-- Tombol Kembali (Di Sisi Kiri) -->
+                    <x-buttonv2 href="{{ route('admin-mahasiswa') }}" color="accent-primary" class="w-full sm:w-auto">
+                        <svg xmlns="http://www.w3.org/2000/svg" stroke-width="3" class="h-4 w-4" viewBox="0 0 20 20"
+                            fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                                clip-rule="evenodd" />
                         </svg>
-                        Edit Data
+                        Kembali
                     </x-buttonv2>
 
                 </div>

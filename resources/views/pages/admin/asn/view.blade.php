@@ -1,22 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
+
     <main class="w-full p-4 md:p-8 bg-background min-h-screen font-montserrat">
         <section class="container-dalam max-w-4xl mx-auto">
-
-            <!-- Tombol Kembali -->
-            <div class="mb-6 flex justify-end w-full">
-
-                <x-buttonv2 href="{{ route('admin-asn') }}" color="accent-dark" class="w-full sm:w-auto">
-                    <svg xmlns="http://www.w3.org/2000/svg" stroke-width="3" class="h-4 w-4" viewBox="0 0 20 20"
-                        fill="currentColor">
-                        <path fill-rule="evenodd"
-                            d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
-                            clip-rule="evenodd" />
-                    </svg>
-                    Kembali
-                </x-buttonv2>
-            </div>
 
             <!-- Card Detail Profil ASN -->
             <div class="bg-surface rounded-2xl shadow-sm border border-border overflow-hidden">
@@ -122,7 +109,7 @@
                         </div>
                     </div>
 
-                    <!-- Informasi Kontak -->
+                    <!-- Informasi Kontak & Pribadi -->
                     <div>
                         <h2 class="text-xl font-semibold text-text mb-4 flex items-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-secondary" fill="none"
@@ -130,7 +117,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                             </svg>
-                            Informasi Kontak
+                            Informasi Kontak & Pribadi
                         </h2>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
@@ -149,9 +136,38 @@
                                     @endif
                                 </a>
                             </div>
+
                             <div>
                                 <p class="text-sm text-text-light mb-1">Nomor Telepon</p>
                                 <p class="font-medium text-text">{{ $detailAsn->phone ?? 'Belum ditambahkan' }}</p>
+                            </div>
+
+                            <!-- Kolom Tanggal Lahir -->
+                            <div>
+                                <p class="text-sm text-text-light mb-1">Tanggal Lahir</p>
+                                <div class="font-medium text-text flex items-center gap-2">
+                                    @php
+                                        $tglLahir =
+                                            $detailAsn->asnProfile->tanggal_lahir ??
+                                            ($detailAsn->asnProfile->anggal_lahir ?? null);
+                                    @endphp
+                                    @if ($tglLahir)
+                                        <span>{{ \Carbon\Carbon::parse($tglLahir)->translatedFormat('d F Y') }}</span>
+                                        <span
+                                            class="text-xs text-text-light font-normal">({{ \Carbon\Carbon::parse($tglLahir)->age }}
+                                            tahun)</span>
+                                    @else
+                                        <span class="text-text-light italic">-</span>
+                                    @endif
+                                </div>
+                            </div>
+
+                            <!-- Kolom Alamat -->
+                            <div class="md:col-span-2">
+                                <p class="text-sm text-text-light mb-1">Alamat Tempat Tinggal</p>
+                                <p class="font-medium text-text">
+                                    {{ $detailAsn->asnProfile->alamat ?? ($detailAsn->alamat ?? '-') }}
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -160,33 +176,51 @@
 
                 <!-- Footer Actions -->
                 <div
-                    class="bg-footer border-t border-border px-6 md:px-10 py-5 flex flex-col-reverse sm:flex-row gap-3 sm:justify-end items-center font-montserrat">
+                    class="bg-footer border-t border-border px-6 md:px-10 py-5 flex flex-col sm:flex-row gap-3 sm:justify-between items-center font-montserrat">
 
-                    <!-- Form Hapus Data ASN -->
-                    <form action="{{ route('admin-asn-destroy', $detailAsn->id) }}" method="POST"
-                        data-confirm="Yakin ingin menghapus data asn ini? Semua data terkait ikut terhapus dan tidak bisa dikembalikan."
-                        class="w-full sm:w-auto m-0">
-                        @csrf
-                        @method('DELETE')
 
-                        <x-buttonv2 type="submit" color="danger" class="w-full sm:w-auto">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                                stroke-width="2" class="w-4 h-4 transition-colors">
+
+                    <!-- Aksi Hapus & Edit (Di Sisi Kanan Footer) -->
+                    <div class="flex flex-col-reverse sm:flex-row gap-3 w-full sm:w-auto items-center">
+
+                        <!-- Form Hapus Data ASN -->
+                        <form action="{{ route('admin-asn-destroy', $detailAsn->id) }}" method="POST"
+                            data-confirm="Yakin ingin menghapus data asn ini? Semua data terkait ikut terhapus dan tidak bisa dikembalikan."
+                            class="w-full sm:w-auto m-0">
+                            @csrf
+                            @method('DELETE')
+
+                            <x-buttonv2 type="submit" color="danger" class="w-full sm:w-auto">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor" stroke-width="2" class="w-4 h-4 transition-colors">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M6 7h12M9 7V5h6v2m-8 0v12a2 2 0 002 2h6a2 2 0 002-2V7M10 11l4 4M14 11l-4 4" />
+                                </svg>
+                                Hapus Data
+                            </x-buttonv2>
+                        </form>
+
+                        <!-- Tombol Edit Data ASN -->
+                        <x-buttonv2 href="{{ route('form-asn-edit', $detailAsn->id) }}" color="accent-dark"
+                            class="w-full sm:w-auto">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="3">
                                 <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M6 7h12M9 7V5h6v2m-8 0v12a2 2 0 002 2h6a2 2 0 002-2V7M10 11l4 4M14 11l-4 4" />
+                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                             </svg>
-                            Hapus Data
+                            Edit
                         </x-buttonv2>
-                    </form>
 
-                    <!-- Tombol Edit Data ASN -->
-                    <x-buttonv2 href="{{ route('form-asn-edit',$detailAsn->id) }}" color="accent-dark" class="w-full sm:w-auto">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor" stroke-width="3">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </div>
+                    <!-- Tombol Kembali (Di Sisi Kiri Footer) -->
+                    <x-buttonv2 href="{{ route('admin-asn') }}" color="primary" class="w-full sm:w-auto">
+                        <svg xmlns="http://www.w3.org/2000/svg" stroke-width="3" class="h-4 w-4" viewBox="0 0 20 20"
+                            fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                                clip-rule="evenodd" />
                         </svg>
-                        Edit
+                        Kembali
                     </x-buttonv2>
 
                 </div>

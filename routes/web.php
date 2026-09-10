@@ -95,13 +95,7 @@ Route::prefix('admin')
         Route::post('/skill/{id}', [AdminSkill::class, 'updateSkill'])->name('admin-skill-update');
         Route::delete('/skill/destroy/{id}', [AdminSkill::class, 'destroySkill'])->name('admin-skill-destroy');
 
-        // management periode magang
-        Route::get('/periode-magang', [AdminController::class, 'adminPeriodeMagang'])->name('admin-periode-magang');
-        Route::get('/periode/create', [PeriodeMagangController::class, 'formPeriodeCreate'])->name('admin-periode-create');
-        Route::post('/periode', [PeriodeMagangController::class, 'storePeriode'])->name('admin-periode-store');
-        Route::get('/periode/edit/{id}', [PeriodeMagangController::class, 'formPeriodeEdit'])->name('admin-periode-edit');
-        Route::put('/periode/{id}', [PeriodeMagangController::class, 'updatePeriode'])->name('admin-periode-update');
-        Route::delete('/periode/destroy/{id}', [PeriodeMagangController::class, 'destroyPeriode'])->name('admin-periode-destroy');
+
         // statistik user
         Route::get('/statistik-magang', [AdminController::class, 'statistikUser'])->name('statistik-user');
         route::get('/statistik-asn/aktif',[AdminController::class,'asnAktif'])->name('asn-aktif');
@@ -144,12 +138,14 @@ Route::prefix('asn')
     });
 
 // MAHASISWA
-Route::prefix('mahasiswa')
+Route::prefix('magang')
     ->middleware(['auth', 'role:mahasiswa'])
     ->group(function () {
         Route::get('/dashboard', [MahasiswaController::class, 'mahasiswaIndex'])->name('mahasiswa-index');
-        Route::get('/profil', [MahasiswaController::class, 'showFormProfil'])->name('mahasiswa-profil');
-        Route::put('/profil', [MahasiswaController::class, 'updateProfil'])->name('mahasiswa-profil-update');
+        Route::get('/profil/update', [MahasiswaController::class, 'showFormProfil'])->name('mahasiswa-profil-form');
+        Route::put('/profilUpdate', [MahasiswaController::class, 'updateProfil'])->name('mahasiswa-profil-update');
+        Route::get('/profil', [MahasiswaController::class, 'profil'])->name('profil-magang');
+
         Route::get('/tugas', [MahasiswaController::class, 'tugas'])->name('tugas');
         Route::get('/tugas-saya', [MahasiswaController::class, 'tugasSaya'])->name('tugas-saya');
         Route::get('/detail-tugas-saya/{id}', [MahasiswaController::class, 'detailTugasSaya'])->name('detail-tugas-saya');

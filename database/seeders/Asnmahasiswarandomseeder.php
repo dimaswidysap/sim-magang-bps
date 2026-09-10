@@ -66,7 +66,7 @@ class AsnMahasiswaRandomSeeder extends Seeder
         $jurusanList = ['Teknik Informatika', 'Sistem Informasi', 'Statistika', 'Ilmu Komputer', 'Manajemen Informatika'];
         $jenjangList = ['SMA/SMK', 'D3', 'D4', 'S1'];
 
-        $periodeIds = PeriodeMagang::pluck('id');
+
 
         for ($i = 1; $i <= 10; $i++) {
             $nama = fake('id_ID')->name();
@@ -90,7 +90,7 @@ class AsnMahasiswaRandomSeeder extends Seeder
             MahasiswaProfile::firstOrCreate(
                 ['user_id' => $user->id],
                 [
-                    'periode_magang_id' => $periodeIds->isNotEmpty() ? $periodeIds->random() : null,
+
                     'nim' => fake()->unique()->numerify('##########'), // 10 digit
                     'instansi_asal' => fake()->randomElement($instansiList),
                     'jenjang' => fake()->randomElement($jenjangList),

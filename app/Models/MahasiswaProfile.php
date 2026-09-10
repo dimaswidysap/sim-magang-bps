@@ -9,11 +9,12 @@ class MahasiswaProfile extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'periode_magang_id', 'nim', 'instansi_asal', 'jenjang', 'jurusan', 'tanggal_mulai', 'tanggal_selesai', 'status', 'surat_pengantar_path', 'catatan'];
+    protected $fillable = ['user_id', 'nim', 'instansi_asal', 'alamat',',jenjang', 'jurusan','tanggal_lahir', 'tanggal_mulai', 'tanggal_selesai', 'status', 'surat_pengantar_path', 'catatan'];
 
     protected function casts(): array
     {
         return [
+            'tanggal_lahir' => 'date',
             'tanggal_mulai' => 'date',
             'tanggal_selesai' => 'date',
         ];
@@ -30,10 +31,6 @@ class MahasiswaProfile extends Model
         return $query->where('status', 'aktif');
     }
 
-    public function periodeMagang()
-    {
-        return $this->belongsTo(PeriodeMagang::class);
-    }
 
     public function skills()
     {

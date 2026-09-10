@@ -43,6 +43,8 @@ class AdminAsn extends Controller
                 'nip' => 'required|string|unique:asn_profiles,nip,' . optional($user->asnProfile)->id,
                 'jabatan' => 'nullable|string|max:255',
                 'unit_kerja' => 'nullable|string|max:255',
+                'tanggal_lahir'=>'nullable|date',
+                'alamat'=>'nullable|string'
             ],
             [
                 // Pesan error untuk field name
@@ -76,6 +78,9 @@ class AdminAsn extends Controller
                 // Pesan error untuk field unit_kerja
                 'unit_kerja.string' => 'Unit kerja harus berupa teks.',
                 'unit_kerja.max' => 'Unit kerja maksimal 255 karakter.',
+
+                //
+                'tanggal_lahir.date' => 'Format tanggal mulai tidak valid.',
             ],
         );
 
@@ -101,6 +106,11 @@ class AdminAsn extends Controller
                     'nip' => $validated['nip'],
                     'jabatan' => $validated['jabatan'] ?? null,
                     'unit_kerja' => $validated['unit_kerja'] ?? null,
+                    'tanggal_lahir' => $validated['langgal_lahir'] ?? null,
+                    'alamat' => $validated['alamat'] ?? null,
+                    'tanggal_lahir' => $validated['tanggal_lahir'] ?? null,
+
+
                 ],
             );
         });
