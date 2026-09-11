@@ -23,8 +23,7 @@ return new class extends Migration
             $table->date('tanggal_kegiatan');
             $table->string('judul_kegiatan');
             $table->text('deskripsi_kegiatan');
-            $table->string('file_lampiran')->nullable(); // Menyimpan path file foto (png, jpg, jpeg)
-
+            $table->text('file_lampiran')->nullable(); // Menyimpan path file foto (png, jpg, jpeg)
             $table->timestamps();
         });
     }

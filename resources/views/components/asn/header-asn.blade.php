@@ -6,7 +6,7 @@
 
         <!-- Profil ASN -->
         <div class="flex items-center min-w-0 font-montserrat">
-            <a href="{{ route('asn-profil') }}"
+            <a href="{{ route('asn-detail-profil') }}"
                 class="flex items-center gap-2.5 sm:gap-3 p-1.5 pr-3 sm:pr-4 bg-background/50 hover:bg-background border border-border/60 hover:border-primary/40 rounded-full transition-all duration-300 group shadow-xs hover:shadow-sm min-w-0">
 
                 <!-- Avatar Ikon ASN -->

@@ -13,7 +13,6 @@ return new class extends Migration
             $table->foreignId('tugas_id')->constrained('tugas')->cascadeOnDelete();
             $table->foreignId('mahasiswa_profile_id')->constrained('mahasiswa_profiles')->cascadeOnDelete();
             $table->timestamps();
-
             $table->unique(['tugas_id', 'mahasiswa_profile_id']);
         });
     }

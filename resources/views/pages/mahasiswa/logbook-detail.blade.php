@@ -1,5 +1,5 @@
 @extends('layouts.app')
-
+@include('pages.mahasiswa.logbook.lihat-lampiran')
 @section('content')
     <main class="w-full p-4 md:p-8 bg-background min-h-screen font-montserrat">
         <section class="max-w-5xl mx-auto space-y-6">
@@ -245,30 +245,17 @@
 
                                             <!-- Lampiran -->
                                             <td class="px-5 py-4 align-middle text-center whitespace-nowrap">
-                                                @if ($item->file_lampiran)
-                                                    @if ($item->isGambar())
-                                                        <a href="{{ Storage::url($item->file_lampiran) }}"
-                                                            target="_blank" class="inline-block group/img">
-                                                            <img src="{{ Storage::url($item->file_lampiran) }}"
-                                                                alt="Lampiran kegiatan"
-                                                                class="w-12 h-12 object-cover rounded-md border border-border group-hover/img:scale-105 transition-transform">
-                                                        </a>
-                                                    @else
-                                                        <a href="{{ Storage::url($item->file_lampiran) }}"
-                                                            target="_blank"
-                                                            class="inline-flex items-center gap-1.5 text-xs text-primary hover:underline font-medium">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
-                                                                fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                                                                stroke-width="2">
-                                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                            </svg>
-                                                            Lihat File
-                                                        </a>
-                                                    @endif
-                                                @else
-                                                    <span class="text-xs text-text-light italic">-</span>
-                                                @endif
+                                                <button type="button" data-id="{{ $item->id }}"
+                                                    class="btn-lihat-lampiran text-xs text-primary hover:underline flex items-center gap-1.5 font-medium">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
+                                                        fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                                        stroke-width="2">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                    </svg>
+                                                    Lihat Lampiran
+                                                </button>
+
                                             </td>
 
                                             <!-- Tombol Aksi (Edit & Hapus) -->
@@ -320,7 +307,7 @@
                                         </p>
                                     </div>
 
-                                    @if ($item->file_lampiran)
+                                    {{-- @if ($item->file_lampiran)
                                         <div class="pt-2 border-t border-border/60">
                                             @if ($item->isGambar())
                                                 <a href="{{ Storage::url($item->file_lampiran) }}" target="_blank">
@@ -341,7 +328,17 @@
                                                 </a>
                                             @endif
                                         </div>
-                                    @endif
+                                    @endif --}}
+                                    <button type="button" data-id="{{ $item->id }}"
+                                        class="btn-lihat-lampiran text-xs text-primary hover:underline flex items-center gap-1.5 font-medium">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                        Lihat Lampiran
+                                    </button>
+
 
                                     <div class="w-full flex pt-3 border-t border-border/60 justify-end gap-2">
                                         <x-buttonv2 href="{{ route('logbook-mandiri-edit', $item->id) }}"

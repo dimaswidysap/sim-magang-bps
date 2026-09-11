@@ -111,9 +111,10 @@ Route::prefix('admin')
 Route::prefix('asn')
     ->middleware(['auth', 'role:asn'])
     ->group(function () {
-        Route::get('/dashboard', [AsnController::class, 'asnIndex'])->name('asn-index');
+        Route::get('/beranda', [AsnController::class, 'asnIndex'])->name('asn-index');
         Route::delete('/tugas/{id}', [AsnController::class, 'destroyTugas'])->name('asn-tugas-destroy');
-        Route::get('/profil', [AsnController::class, 'showFormProfil'])->name('asn-profil');
+        Route::get('/profil/edit', [AsnController::class, 'showFormProfil'])->name('asn-profil-form');
+        Route::get('/profil/detail', [AsnController::class, 'profilAsnDetail'])->name('asn-detail-profil');
         Route::put('/profil', [AsnController::class, 'updateProfil'])->name('asn-profil-update');
         Route::get('/create-task', [AsnController::class, 'createTugasForm'])->name('asn-create-task-form');
         Route::get('/task-not-done', [AsnController::class, 'taskNotDone'])->name('task-not-done');
@@ -137,7 +138,7 @@ Route::prefix('asn')
             ->name('asn-logbook-mahasiswa-tanggal');
     });
 
-// MAHASISWA
+// MAGANG
 Route::prefix('magang')
     ->middleware(['auth', 'role:mahasiswa'])
     ->group(function () {
@@ -175,4 +176,7 @@ Route::prefix('magang')
         Route::get('/logbook-mandiri/{id}/edit', [MagangLogbookController::class, 'formEdit'])->name('logbook-mandiri-edit');
         Route::put('/logbook-mandiri/{id}', [MagangLogbookController::class, 'update'])->name('logbook-mandiri-update');
         Route::delete('/logbook-mandiri/{id}', [MagangLogbookController::class, 'destroy'])->name('logbook-mandiri-destroy');
+        // melihat lampiran logbook
+        Route::get('/logbook/{id}/lampiran', [MagangLogbookController::class, 'detailLampiran'])
+            ->name('magang.logbook.lampiran');
     });

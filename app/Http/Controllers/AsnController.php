@@ -129,6 +129,13 @@ class AsnController extends Controller
         return view('pages.asn.task-done.view', compact('tugasDetail'));
     }
 
+    public function profilAsnDetail()
+    {
+        $profil = User::with('asnProfile')->findOrFail(Auth::id());
+
+        return view('pages.asn.profil-view', compact('profil'));
+    }
+
     public function showFormProfil()
     {
         $profil = User::with('asnProfile')->findOrFail(Auth::id());
@@ -147,6 +154,8 @@ class AsnController extends Controller
                 'nip' => 'required|string|unique:asn_profiles,nip,' . optional($user->asnProfile)->id,
                 'jabatan' => 'nullable|string|max:255',
                 'unit_kerja' => 'nullable|string|max:255',
+                'tanggal_lahir'=>'nullable|date',
+                'alamat'=>'nullable|string'
             ],
             [
                 // Pesan error untuk field name
@@ -176,6 +185,7 @@ class AsnController extends Controller
         $user->update([
             'name' => $validated['name'],
             'phone' => $validated['phone'] ?? null,
+
         ]);
 
         AsnProfile::updateOrCreate(
@@ -184,10 +194,12 @@ class AsnController extends Controller
                 'nip' => $validated['nip'],
                 'jabatan' => $validated['jabatan'] ?? null,
                 'unit_kerja' => $validated['unit_kerja'] ?? null,
+                'tanggal_lahir' => $validated['tanggal_lahir'] ?? null,
+                'alamat' => $validated['alamat'] ?? null,
             ],
         );
 
-        return redirect()->route('asn-profil')->with('success', 'Profil berhasil diperbarui.');
+        return redirect()->route('asn-detail-profil')->with('success', 'Profil berhasil diperbarui.');
     }
 
     public function destroyTugas($id)
