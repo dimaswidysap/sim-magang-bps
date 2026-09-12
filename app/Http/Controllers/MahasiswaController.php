@@ -237,6 +237,6 @@ class MahasiswaController extends Controller
 
         $profile->skills()->sync($validated['skills'] ?? []);
 
-        return redirect()->route('mahasiswa-profil')->with('success', 'Profil berhasil diperbarui.');
+        return redirect()->route('profil-magang')->with('success', 'Profil berhasil diperbarui.');
     }
 }

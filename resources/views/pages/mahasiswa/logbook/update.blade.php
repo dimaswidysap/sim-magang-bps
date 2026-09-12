@@ -29,10 +29,13 @@
         <!-- Card Form Container -->
         <div class="bg-surface border border-border rounded-2xl p-6 sm:p-8 shadow-xs">
             <form data-confirm="Apakah anda yakin ingin menerapkan perubahan?" method="POST"
-                action="{{ route('logbook-mandiri-update', $logbook->id) }}" enctype="multipart/form-data"
-                class="space-y-5">
+                action="{{ route('logbook-mandiri-update', $logbook->id) }}" enctype="multipart/form-data" class="space-y-5"
+                id="formEditLogbook">
                 @csrf
                 @method('PUT')
+
+                <!-- Container tersembunyi untuk penampung input gambar lama yang dihapus -->
+                <div id="containerHapusLampiran"></div>
 
                 <!-- Tanggal Kegiatan -->
                 <div>
@@ -41,7 +44,7 @@
                         Tanggal Kegiatan <span class="text-danger">*</span>
                     </label>
                     <input type="date" id="tanggal_kegiatan" name="tanggal_kegiatan"
-                        value="{{ old('tanggal_kegiatan', $logbook->tanggal_kegiatan->format('Y-m-d')) }}"
+                        value="{{ old('tanggal_kegiatan', $logbook->tanggal_kegiatan?->format('Y-m-d')) }}"
                         class="w-full px-4 py-2.5 rounded-xl border border-border text-text bg-surface focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition duration-200 text-sm"
                         required>
                 </div>
@@ -72,51 +75,57 @@
                 </div>
 
                 <!-- Preview Lampiran Saat Ini -->
-                @if ($logbook->file_lampiran)
+                @if (!empty($logbook->file_lampiran))
                     <div class="p-4 bg-background border border-border rounded-xl space-y-3">
-                        <span class="block text-xs font-bold text-text-light uppercase tracking-wider">Lampiran Saat
-                            Ini</span>
+                        <span class="block text-xs font-bold text-text-light uppercase tracking-wider">
+                            Lampiran Saat Ini
+                        </span>
 
-                        <div class="flex items-center gap-4">
-                            @if ($logbook->isGambar())
-                                <div
-                                    class="rounded-xl overflow-hidden border border-border bg-surface w-28 h-28 flex items-center justify-center shrink-0">
-                                    <img src="{{ Storage::url($logbook->file_lampiran) }}" alt="Lampiran"
-                                        class="w-full h-full object-cover">
-                                </div>
-                            @else
-                                <a href="{{ Storage::url($logbook->file_lampiran) }}" target="_blank"
-                                    class="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary-dark underline">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
-                                    Lihat File Lampiran
-                                </a>
+                        <div class="flex flex-wrap gap-3">
+                            @php
+                                $lampiranList = is_array($logbook->file_lampiran)
+                                    ? $logbook->file_lampiran
+                                    : json_decode($logbook->file_lampiran, true);
+                            @endphp
+
+                            @if (!empty($lampiranList) && is_array($lampiranList))
+                                @foreach ($lampiranList as $gambar)
+                                    <div
+                                        class="relative group rounded-xl overflow-hidden border border-border bg-surface w-28 h-28 shrink-0">
+                                        <img src="{{ Storage::url($gambar) }}" alt="Lampiran"
+                                            class="w-full h-full object-cover">
+
+                                        <!-- Tombol X Hapus Gambar Lama -->
+                                        <button type="button" onclick="tandaiHapusGambar(this, '{{ $gambar }}')"
+                                            title="Hapus gambar ini"
+                                            class="absolute top-1 right-1 bg-danger text-white rounded-full p-1 shadow-md hover:bg-danger/80 transition duration-200 focus:outline-none">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                                    d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                @endforeach
                             @endif
-                        </div>
-
-                        <div class="pt-2 border-t border-border/60">
-                            <label
-                                class="inline-flex items-center gap-2 cursor-pointer text-sm text-danger hover:text-danger/80 transition">
-                                <input type="checkbox" name="hapus_lampiran" value="1"
-                                    class="w-4 h-4 rounded border-border text-danger focus:ring-danger/20">
-                                <span class="font-medium">Hapus lampiran ini</span>
-                            </label>
                         </div>
                     </div>
                 @endif
 
-                <!-- File Lampiran Baru -->
+                <!-- File Lampiran Baru (Multiple + Live Preview) -->
                 <div>
                     <label for="file_lampiran"
                         class="block text-xs font-bold text-text-light uppercase tracking-wider mb-2">
-                        Ganti / Tambah Lampiran <span class="normal-case text-text-light/80 font-normal">(Opsional: PNG,
-                            JPG, JPEG - Maks 10MB)</span>
+                        Tambah Lampiran Baru <span class="normal-case text-text-light/80 font-normal">(Opsional: PNG, JPG,
+                            JPEG - Maks 10MB per file)</span>
                     </label>
-                    <input type="file" id="file_lampiran" name="file_lampiran" accept="image/png, image/jpeg, image/jpg"
+
+                    <input type="file" id="file_lampiran" name="file_lampiran[]" multiple
+                        accept="image/png, image/jpeg, image/jpg"
                         class="w-full text-sm text-text-light border border-border rounded-xl cursor-pointer bg-surface file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-primary-light/20 file:text-primary hover:file:bg-primary-light/30 file:cursor-pointer file:transition">
+
+                    <!-- Container Live Preview Gambar Baru -->
+                    <div id="previewGambarBaru" class="flex flex-wrap gap-3 mt-3 hidden"></div>
                 </div>
 
                 <!-- Tombol Aksi -->
@@ -131,4 +140,85 @@
             </form>
         </div>
     </div>
+
+    <!-- JavaScript -->
+    <script>
+        // 1. Hapus Gambar Lama
+        function tandaiHapusGambar(button, pathGambar) {
+            const container = document.getElementById('containerHapusLampiran');
+
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'hapus_lampiran[]';
+            input.value = pathGambar;
+            container.appendChild(input);
+
+            button.closest('.relative').remove();
+        }
+
+        // 2. Live Preview Gambar Baru
+        let dtNewFiles = new DataTransfer();
+
+        document.getElementById('file_lampiran').addEventListener('change', function(e) {
+            const files = Array.from(e.target.files);
+
+            files.forEach(file => {
+                dtNewFiles.items.add(file);
+            });
+
+            this.files = dtNewFiles.files;
+            renderNewPreviews();
+        });
+
+        function renderNewPreviews() {
+            const container = document.getElementById('previewGambarBaru');
+            container.innerHTML = '';
+
+            if (dtNewFiles.files.length === 0) {
+                container.classList.add('hidden');
+                return;
+            }
+
+            container.classList.remove('hidden');
+
+            Array.from(dtNewFiles.files).forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const div = document.createElement('div');
+                    div.className =
+                        'relative group rounded-xl overflow-hidden border border-border bg-surface w-28 h-28 shrink-0';
+                    div.innerHTML = `
+                        <img src="${e.target.result}" alt="Preview Baru" class="w-full h-full object-cover">
+                        <button type="button"
+                                onclick="hapusFileBaru(${index})"
+                                title="Batal pilih gambar ini"
+                                class="absolute top-1 right-1 bg-danger text-white rounded-full p-1 shadow-md hover:bg-danger/80 transition duration-200 focus:outline-none">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    `;
+                    container.appendChild(div);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function hapusFileBaru(index) {
+            const dtUpdated = new DataTransfer();
+            const {
+                files
+            } = dtNewFiles;
+
+            for (let i = 0; i < files.length; i++) {
+                if (i !== index) {
+                    dtUpdated.items.add(files[i]);
+                }
+            }
+
+            dtNewFiles = dtUpdated;
+            document.getElementById('file_lampiran').files = dtNewFiles.files;
+            renderNewPreviews();
+        }
+    </script>
 @endsection

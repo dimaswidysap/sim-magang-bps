@@ -199,7 +199,7 @@
                                 <thead class="bg-black/5 border-b border-border">
                                     <tr>
                                         <th
-                                            class="px-5 py-4 text-xs font-semibold text-text-light uppercase tracking-wider text-center w-12 align-middle">
+                                            class="px-5 py-4 text-xs font-semibold text-text-light uppercase tracking-wider  w-12 align-middle">
                                             No</th>
                                         <th
                                             class="px-5 py-4 text-xs font-semibold text-text-light uppercase tracking-wider w-2/5 align-middle">
@@ -208,10 +208,10 @@
                                             class="px-5 py-4 text-xs font-semibold text-text-light uppercase tracking-wider text-center whitespace-nowrap align-middle">
                                             Kategori</th>
                                         <th
-                                            class="px-5 py-4 text-xs font-semibold text-text-light uppercase tracking-wider text-center whitespace-nowrap align-middle">
+                                            class="px-5 py-4 text-xs font-semibold text-text-light uppercase tracking-wider  whitespace-nowrap align-middle">
                                             Lampiran</th>
                                         <th
-                                            class="px-5 py-4 text-xs font-semibold text-text-light uppercase tracking-wider text-center whitespace-nowrap align-middle">
+                                            class="px-5 py-4 text-xs font-semibold text-text-light uppercase tracking-wider text-center  whitespace-nowrap align-middle">
                                             Aksi</th>
                                     </tr>
                                 </thead>
@@ -246,7 +246,7 @@
                                             <!-- Lampiran -->
                                             <td class="px-5 py-4 align-middle text-center whitespace-nowrap">
                                                 <button type="button" data-id="{{ $item->id }}"
-                                                    class="btn-lihat-lampiran text-xs text-primary hover:underline flex items-center gap-1.5 font-medium">
+                                                    class="btn-lihat-lampiran text-xs text-primary cursor-pointer flex items-center gap-1.5 font-medium">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
                                                         fill="none" viewBox="0 0 24 24" stroke="currentColor"
                                                         stroke-width="2">

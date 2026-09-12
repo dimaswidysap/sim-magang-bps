@@ -36,7 +36,7 @@
                 modal.classList.remove('hidden');
 
                 // Fetch ke endpoint API
-                fetch(`/magang/logbook/${id}/lampiran`)
+                fetch(`/asn/logbook/${id}/lampiran`)
                     .then(res => res.json())
                     .then(res => {
                         if (res.success && res.data.length > 0) {

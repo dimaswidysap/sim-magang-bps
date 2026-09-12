@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use App\Models\Skill;
 use App\Models\User;
@@ -74,6 +75,52 @@ class AsnController extends Controller
 
         return view('pages.asn.logbook-detail', compact('mahasiswa', 'logbookTugas', 'logbookMandiri', 'tanggal'));
     }
+
+      public function detailLampiran($id)
+{
+    $user = auth()->user();
+    $query = MagangLogbook::where('id', $id);
+
+    // Jika BUKAN role ASN (misal: Mahasiswa), batasi akses hanya ke logbook milik sendiri
+    // Catatan: Jika menggunakan Spatie Permission, ganti kondisi menjadi: !$user->hasRole('asn')
+    if ($user->role !== 'asn') {
+        $profilId = $user->mahasiswaProfile?->id ?? 0;
+        $query->where('mahasiswa_profile_id', $profilId);
+    }
+
+    $logbook = $query->first();
+
+    if (!$logbook) {
+        return response()->json(
+            [
+                'success' => false,
+                'message' => 'Data logbook tidak ditemukan atau Anda tidak memiliki akses.',
+            ],
+            404
+        );
+    }
+
+    $files = $logbook->file_lampiran;
+
+    if (is_string($files)) {
+        $files = json_decode($files, true) ?? [];
+    }
+
+    $imageUrls = [];
+    if (is_array($files)) {
+        foreach ($files as $file) {
+            if ($file) {
+                $imageUrls[] = Storage::url($file);
+            }
+        }
+    }
+
+    return response()->json([
+        'success' => true,
+        'judul'   => $logbook->judul_kegiatan,
+        'data'    => $imageUrls,
+    ]);
+}
 
     public function createTugasForm()
     {

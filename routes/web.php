@@ -136,6 +136,9 @@ Route::prefix('asn')
         Route::get('/logbook-mahasiswa/{mahasiswaProfileId}/{tanggal}', [AsnController::class, 'logbookMahasiswaTanggal'])
             ->where('tanggal', '[0-9]{4}-[0-9]{2}-[0-9]{2}')
             ->name('asn-logbook-mahasiswa-tanggal');
+            //
+            Route::get('/logbook/{id}/lampiran', [AsnController::class, 'detailLampiran'])
+            ->name('magang.logbook.lampiran');
     });
 
 // MAGANG

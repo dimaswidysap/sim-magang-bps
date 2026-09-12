@@ -16,42 +16,45 @@ class MagangLogbookController extends Controller
         return view('pages.mahasiswa.logbook.create');
     }
 
-   public function detailLampiran($id)
-{
-    $profil = auth()->user()->mahasiswaProfile;
+    public function detailLampiran($id)
+    {
+        $profil = auth()->user()->mahasiswaProfile;
 
-    $logbook = MagangLogbook::where('id', $id)
-        ->where('mahasiswa_profile_id', $profil?->id ?? 0)
-        ->first();
+        $logbook = MagangLogbook::where('id', $id)
+            ->where('mahasiswa_profile_id', $profil?->id ?? 0)
+            ->first();
 
-    if (!$logbook) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Data logbook tidak ditemukan.',
-        ], 404);
-    }
+        if (!$logbook) {
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Data logbook tidak ditemukan.',
+                ],
+                404,
+            );
+        }
 
-    $files = $logbook->file_lampiran;
+        $files = $logbook->file_lampiran;
 
-    if (is_string($files)) {
-        $files = json_decode($files, true) ?? [];
-    }
+        if (is_string($files)) {
+            $files = json_decode($files, true) ?? [];
+        }
 
-    $imageUrls = [];
-    if (is_array($files)) {
-        foreach ($files as $file) {
-            if ($file) {
-                $imageUrls[] = asset('storage/' . $file);
+        $imageUrls = [];
+        if (is_array($files)) {
+            foreach ($files as $file) {
+                if ($file) {
+                    $imageUrls[] = asset('storage/' . $file);
+                }
             }
         }
-    }
 
-    return response()->json([
-        'success' => true,
-        'judul'   => $logbook->judul_kegiatan,
-        'data'    => $imageUrls,
-    ]);
-}
+        return response()->json([
+            'success' => true,
+            'judul' => $logbook->judul_kegiatan,
+            'data' => $imageUrls,
+        ]);
+    }
 
     public function formEdit($id)
     {
@@ -122,38 +125,47 @@ class MagangLogbookController extends Controller
             'tanggal_kegiatan' => 'required|date',
             'judul_kegiatan' => 'required|string|max:255',
             'deskripsi_kegiatan' => 'required|string',
-            'file_lampiran' => 'nullable|file|max:10240|mimes:png,jpg,jpeg',
-            'hapus_lampiran' => 'nullable|boolean',
+            'file_lampiran' => 'nullable|array',
+            'file_lampiran.*' => 'image|mimes:png,jpg,jpeg|max:10240',
+            'hapus_lampiran' => 'nullable|array',
+            'hapus_lampiran.*' => 'string',
         ]);
 
-        // Kalau ada file baru diupload, hapus file lama dari disk dulu
-        // sebelum diganti - mencegah file lama menumpuk tak terpakai.
-        if ($request->hasFile('file_lampiran')) {
-            if ($logbook->file_lampiran) {
-                Storage::disk('public')->delete($logbook->file_lampiran);
-            }
-            $path = $request->file('file_lampiran')->store('logbook-mandiri', 'public');
-        } elseif ($request->boolean('hapus_lampiran')) {
-            // Mahasiswa centang "hapus lampiran" tanpa upload file baru
-            if ($logbook->file_lampiran) {
-                Storage::disk('public')->delete($logbook->file_lampiran);
-            }
-            $path = null;
-        } else {
-            // Tidak ada perubahan - pertahankan file lama
-            $path = $logbook->file_lampiran;
+        // 1. Ambil daftar file lampiran yang ada saat ini
+        $existingFiles = $logbook->file_lampiran ?? [];
+        if (is_string($existingFiles)) {
+            $existingFiles = json_decode($existingFiles, true) ?? [];
         }
 
+        // 2. Hapus file tertentu jika ditandai untuk dihapus
+        if ($request->has('hapus_lampiran') && is_array($request->hapus_lampiran)) {
+            foreach ($request->hapus_lampiran as $fileToDelete) {
+                if (Storage::disk('public')->exists($fileToDelete)) {
+                    Storage::disk('public')->delete($fileToDelete);
+                }
+                // Keluarkan path file dari array
+                $existingFiles = array_diff($existingFiles, [$fileToDelete]);
+            }
+            $existingFiles = array_values($existingFiles); // Reset index array
+        }
+
+        // 3. Tambahkan file baru jika ada yang diunggah
+        if ($request->hasFile('file_lampiran')) {
+            foreach ($request->file('file_lampiran') as $file) {
+                $existingFiles[] = $file->store('logbook-mandiri', 'public');
+            }
+        }
+
+        // 4. Simpan perubahan ke database
         $logbook->update([
             'tanggal_kegiatan' => $validated['tanggal_kegiatan'],
             'judul_kegiatan' => $validated['judul_kegiatan'],
             'deskripsi_kegiatan' => $validated['deskripsi_kegiatan'],
-            'file_lampiran' => $path,
+            'file_lampiran' => $existingFiles,
         ]);
 
         return redirect()->route('mahasiswa-index')->with('success', 'Kegiatan berhasil diperbarui.');
     }
-
 
     // function hapus logbook
     public function destroy($id)
