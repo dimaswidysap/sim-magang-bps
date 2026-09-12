@@ -59,7 +59,7 @@
                                 <p class="text-[11px] font-semibold text-text-light uppercase tracking-wider mb-1">Deskripsi
                                 </p>
                                 <p
-                                    class="text-xs text-text leading-relaxed  bg-background p-3 rounded-lg border border-border">
+                                    class="text-xs text-text leading-relaxed bg-background p-3 rounded-lg border border-border">
                                     {{ $tugas->deskripsi }}</p>
                             </div>
                         </div>
@@ -199,22 +199,67 @@
                                                 class="text-[11px] font-semibold text-text-light uppercase tracking-wider mb-2">
                                                 Lampiran File</p>
                                             @if ($submission->file_path)
-                                                <a href="{{ Storage::url($submission->file_path) }}" target="_blank"
-                                                    class="inline-flex items-center gap-2 p-3 bg-background border border-border hover:border-primary rounded-lg transition-colors group w-full sm:w-auto">
+                                                @php
+                                                    $extension = strtolower(
+                                                        pathinfo($submission->file_path, PATHINFO_EXTENSION),
+                                                    );
+                                                    $isImage = in_array($extension, [
+                                                        'jpg',
+                                                        'jpeg',
+                                                        'png',
+                                                        'gif',
+                                                        'webp',
+                                                        'svg',
+                                                    ]);
+                                                @endphp
+
+                                                @if ($isImage && $loop->first)
+                                                    <!-- Preview Foto Kecil Ringkas (Khusus Pengumpulan Terbaru) -->
                                                     <div
-                                                        class="w-8 h-8 rounded bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
-                                                            fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                                                            stroke-width="2">
-                                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                        </svg>
+                                                        class="inline-flex items-center gap-3 p-2.5 bg-background border border-border hover:border-primary rounded-lg transition-colors max-w-full sm:max-w-md">
+                                                        <a href="{{ Storage::url($submission->file_path) }}"
+                                                            target="_blank" class="shrink-0">
+                                                            <img src="{{ Storage::url($submission->file_path) }}"
+                                                                alt="{{ $submission->file_name ?? 'Preview Foto' }}"
+                                                                class="w-14 h-14 object-cover rounded-md border border-border hover:opacity-80 transition-opacity">
+                                                        </a>
+                                                        <div class="overflow-hidden space-y-1">
+                                                            <p class="text-xs font-medium text-text truncate">
+                                                                {{ $submission->file_name ?? 'Lampiran Foto' }}
+                                                            </p>
+                                                            <a href="{{ Storage::url($submission->file_path) }}"
+                                                                target="_blank" download
+                                                                class="inline-flex items-center gap-1 text-[11px] text-primary hover:underline font-semibold">
+                                                                <svg xmlns="http://www.w3.org/2000/svg"
+                                                                    class="h-3.5 w-3.5" fill="none"
+                                                                    viewBox="0 0 24 24" stroke="currentColor"
+                                                                    stroke-width="2">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                                </svg>
+                                                                Lihat / Unduh Foto
+                                                            </a>
+                                                        </div>
                                                     </div>
-                                                    <span
-                                                        class="text-sm font-medium text-text group-hover:text-primary transition-colors line-clamp-1">
-                                                        {{ $submission->file_name ?? 'Download Lampiran' }}
-                                                    </span>
-                                                </a>
+                                                @else
+                                                    <!-- Tampilan Card Standar (Dokumen ATAU Pengumpulan Revisi Lama) -->
+                                                    <a href="{{ Storage::url($submission->file_path) }}" target="_blank"
+                                                        class="inline-flex items-center gap-2 p-3 bg-background border border-border hover:border-primary rounded-lg transition-colors group w-full sm:w-auto">
+                                                        <div
+                                                            class="w-8 h-8 rounded bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
+                                                                fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                                                stroke-width="2">
+                                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                            </svg>
+                                                        </div>
+                                                        <span
+                                                            class="text-sm font-medium text-text group-hover:text-primary transition-colors line-clamp-1">
+                                                            {{ $submission->file_name ?? 'Download Lampiran' }}
+                                                        </span>
+                                                    </a>
+                                                @endif
                                             @else
                                                 <p
                                                     class="text-sm text-text-light italic px-3 py-2 bg-background border border-border rounded-lg border-dashed">
@@ -230,7 +275,7 @@
                                                     class="text-[11px] font-semibold text-text-light uppercase tracking-wider mb-2">
                                                     Pesan Mahasiswa</p>
                                                 <div
-                                                    class="text-sm text-text leading-relaxed bg-[#F8FAFC] border border-border p-4 rounded-lg ">
+                                                    class="text-sm text-text leading-relaxed bg-[#F8FAFC] border border-border p-4 rounded-lg">
                                                     {{ $submission->catatan_mahasiswa }}</div>
                                             </div>
                                         @endif
@@ -250,7 +295,7 @@
                                                     Catatan / Feedback Anda Sebelumnya
                                                 </p>
                                                 <div
-                                                    class="text-sm text-text leading-relaxed bg-primary/5 border border-primary/20 p-4 rounded-lg ">
+                                                    class="text-sm text-text leading-relaxed bg-primary/5 border border-primary/20 p-4 rounded-lg">
                                                     {{ $submission->catatan_asn }}</div>
                                             </div>
                                         @endif
@@ -267,8 +312,8 @@
                                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                 <path stroke-linecap="round" stroke-linejoin="round"
                                                     d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                </path>
-                                                Tindakan Evaluasi
+                                            </svg>
+                                            Tindakan Evaluasi
                                         </h3>
 
                                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">

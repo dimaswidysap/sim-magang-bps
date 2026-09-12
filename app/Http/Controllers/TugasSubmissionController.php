@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 use App\Models\Tugas;
 use App\Models\TugasSubmission;
-use Illuminate\Http\Request;
 
 class TugasSubmissionController extends Controller
 {
@@ -34,40 +34,53 @@ class TugasSubmissionController extends Controller
             return back()->with('error', 'Tugas ini tidak sedang dalam status yang bisa dikumpulkan.');
         }
 
+        // 1. Validasi Input Multiple Files & Catatan
         $validated = $request->validate(
             [
-                'file' => 'nullable|file|max:10240|required_without:catatan_mahasiswa|mimes:doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png,gif,svg,webp,bmp,pdf,zip',
-                'catatan_mahasiswa' => 'nullable|string|required_without:file',
+                'files' => 'nullable|array|required_without:catatan_mahasiswa',
+                'files.*' => 'file|max:10240|mimes:doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png,gif,svg,webp,bmp,pdf,zip',
+                'catatan_mahasiswa' => 'nullable|string|required_without:files',
             ],
             [
-                'file.required_without' => 'Isi salah satu: upload file atau tulis pesan.',
+                'files.required_without' => 'Isi salah satu: upload file atau tulis pesan.',
                 'catatan_mahasiswa.required_without' => 'Isi salah satu: upload file atau tulis pesan.',
-            ]
+                'files.*.max' => 'Ukuran masing-masing file tidak boleh melebihi 10 MB.',
+                'files.*.mimes' => 'Format file yang diunggah tidak didukung.',
+            ],
         );
 
-        $path = null;
-        $fileName = null;
-        $fileSize = null;
-        $mimeType = null;
+        $catatan = $validated['catatan_mahasiswa'] ?? null;
 
-        if ($request->hasFile('file')) {
-            $file = $request->file('file');
-            $path = $file->store('tugas-submissions', 'public');
-            $fileName = $file->getClientOriginalName();
-            $fileSize = $file->getSize();
-            $mimeType = $file->getClientMimeType();
+        // 2. Simpan File (Jika ada file diunggah)
+        if ($request->hasFile('files')) {
+            foreach ($request->file('files') as $index => $file) {
+                $path = $file->store('tugas-submissions', 'public');
+
+                TugasSubmission::create([
+                    'tugas_id' => $tugas->id,
+                    'file_path' => $path,
+                    'file_name' => $file->getClientOriginalName(),
+                    'file_size' => $file->getSize(),
+                    'mime_type' => $file->getClientMimeType(),
+                    // Catatan mahasiswa dilekatkan pada file pertama agar tidak berulang
+                    'catatan_mahasiswa' => $index === 0 ? $catatan : null,
+                    'status' => 'menunggu',
+                ]);
+            }
+        } else {
+            // Jika hanya mengirimkan catatan teks tanpa file
+            TugasSubmission::create([
+                'tugas_id' => $tugas->id,
+                'file_path' => null,
+                'file_name' => null,
+                'file_size' => null,
+                'mime_type' => null,
+                'catatan_mahasiswa' => $catatan,
+                'status' => 'menunggu',
+            ]);
         }
 
-        TugasSubmission::create([
-            'tugas_id' => $tugas->id,
-            'file_path' => $path,
-            'file_name' => $fileName,
-            'file_size' => $fileSize,
-            'mime_type' => $mimeType,
-            'catatan_mahasiswa' => $validated['catatan_mahasiswa'] ?? null,
-            'status' => 'menunggu',
-        ]);
-
+        // 3. Update Status Tugas
         $tugas->update(['status' => 'menunggu_review']);
 
         return redirect()->route('tugas-saya')->with('success', 'Tugas berhasil dikumpulkan, menunggu review dari ASN.');
@@ -87,7 +100,7 @@ class TugasSubmissionController extends Controller
                 // Ini mencegah mahasiswa yang menolak muncul jika Blade memanggil relasi anggota
                 'anggota' => fn($q) => $q->where('status', 'diterima')->with('mahasiswaProfile.user'),
                 'anggotaDiterima.mahasiswaProfile.user',
-                'submissions' => fn($q) => $q->latest()->limit(1)
+                'submissions' => fn($q) => $q->latest()->limit(1),
             ])
             ->orderBy('deadline')
             ->get();
@@ -96,20 +109,20 @@ class TugasSubmissionController extends Controller
     }
 
     public function detailSubmission($tugasId)
-    {
-        $tugas = Tugas::query()->where('id', $tugasId)
-            ->where('asn_id', Auth::id())
-            ->with([
-                'mahasiswaProfile.user',
-                // PERBAIKAN UTAMA: Diterapkan juga di halaman detail submission
-                'anggota' => fn($q) => $q->where('status', 'diterima')->with('mahasiswaProfile.user'),
-                'anggotaDiterima.mahasiswaProfile.user',
-                'submissions' => fn($q) => $q->latest(),
-            ])
-            ->firstOrFail();
+{
+    $tugas = Tugas::query()->where('id', $tugasId)
+        ->where('asn_id', Auth::id())
+        ->with([
+            'mahasiswaProfile.user',
+            'anggota' => fn($q) => $q->where('status', 'diterima')->with('mahasiswaProfile.user'),
+            'anggotaDiterima.mahasiswaProfile.user',
+            // PERBAIKAN: Hapus with('files')
+            'submissions' => fn($q) => $q->latest(),
+        ])
+        ->firstOrFail();
 
-        return view('pages.asn.submission-detail', compact('tugas'));
-    }
+    return view('pages.asn.submission-detail', compact('tugas'));
+}
 
     public function approveSubmission($submissionId)
     {
@@ -147,7 +160,7 @@ class TugasSubmissionController extends Controller
             ],
             [
                 'catatan_asn.required' => 'Jelaskan apa yang perlu diperbaiki sebelum minta revisi.',
-            ]
+            ],
         );
 
         $submission->update([

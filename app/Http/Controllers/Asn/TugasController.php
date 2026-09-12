@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Asn;
 
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -48,7 +49,8 @@ class TugasController extends Controller
                 'deadline' => 'required|date|after:now',
                 'skills' => 'nullable|array',
                 'skills.*' => 'exists:skills,id',
-                'file' => 'nullable|file|max:10240|mimes:doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png,gif,svg,webp,bmp,pdf,zip',
+                'file' => 'nullable|array',
+                'file.*' => 'file|max:10240|mimes:doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png,gif,svg,webp,bmp,pdf,zip',
                 'penugasan_langsung' => 'nullable|boolean',
                 'mahasiswa_ids' => 'required_if:penugasan_langsung,1|nullable|array|min:1',
                 'mahasiswa_ids.*' => 'exists:mahasiswa_profiles,id',
@@ -62,7 +64,9 @@ class TugasController extends Controller
                 'array' => 'Format :attribute tidak valid.',
                 'exists' => ':attribute yang dipilih tidak terdaftar.',
                 'file' => 'File yang diunggah tidak valid.',
-                'mimes' => 'Format file tidak didukung. Gunakan format: doc, docx, xls, xlsx, ppt, pptx, jpg, jpeg, png, gif, svg, webp, bmp, pdf, atau zip.',
+                'file.*.file' => 'Salah satu file yang diunggah tidak valid.',
+                'file.*.max' => 'Ukuran setiap file maksimal 10MB.',
+                'file.*.mimes' => 'Format file tidak didukung. Gunakan format: doc, docx, xls, xlsx, ppt, pptx, jpg, jpeg, png, gif, svg, webp, bmp, pdf, atau zip.',
                 'min' => ':attribute minimal :min item.',
                 'boolean' => 'Format :attribute tidak valid.',
                 'required_if' => 'Pilih minimal 1 mahasiswa untuk ditugaskan langsung.',
@@ -72,7 +76,8 @@ class TugasController extends Controller
                 'deskripsi' => 'Deskripsi Tugas',
                 'deadline' => 'Deadline',
                 'skills' => 'Skill',
-                'file' => 'File',
+                'file' => 'File Referensi',
+                'file.*' => 'File Referensi',
                 'penugasan_langsung' => 'Penugasan Langsung',
                 'mahasiswa_ids' => 'Mahasiswa',
             ],
@@ -86,16 +91,9 @@ class TugasController extends Controller
                 'judul' => $validated['judul'],
                 'deskripsi' => $validated['deskripsi'],
                 'deadline' => $validated['deadline'],
-                // Kalau penugasan langsung: status langsung 'diambil', BUKAN
-                // 'tersedia' - karena sudah pasti ada yang mengerjakan, tidak
-                // perlu masuk daftar "tugas tersedia" untuk direbutkan lagi.
                 'status' => $isPenugasanLangsung ? 'diambil' : 'tersedia',
                 'diambil_at' => $isPenugasanLangsung ? now() : null,
                 'periode_magang_id' => null,
-                // Mahasiswa PERTAMA yang dipilih otomatis jadi "ketua" (kolom
-                // ini) - sisanya masuk sebagai anggota. Ini murni teknis
-                // (mengikuti struktur tabel yang sudah ada), bukan berarti
-                // dia "lebih penting" dari anggota lain.
                 'mahasiswa_profile_id' => $isPenugasanLangsung ? $validated['mahasiswa_ids'][0] : null,
             ]);
 
@@ -104,19 +102,17 @@ class TugasController extends Controller
             }
 
             if ($isPenugasanLangsung) {
-                // Mahasiswa ke-2 dan seterusnya (index 0 sudah jadi ketua di atas)
                 $anggotaTambahan = array_slice($validated['mahasiswa_ids'], 1);
 
                 foreach ($anggotaTambahan as $mahasiswaProfileId) {
                     $tugas->anggota()->create([
                         'mahasiswa_profile_id' => $mahasiswaProfileId,
-                        'status' => 'diterima', // langsung diterima, tidak perlu konfirmasi
-                        'diundang_oleh' => null, // bukan diundang mahasiswa lain
+                        'status' => 'diterima',
+                        'diundang_oleh' => null,
                         'sumber' => 'ditugaskan_asn',
                     ]);
                 }
 
-                // Logbook otomatis untuk SEMUA mahasiswa yang ditugaskan (ketua + anggota)
                 foreach ($validated['mahasiswa_ids'] as $mahasiswaProfileId) {
                     Logbook::create([
                         'tugas_id' => $tugas->id,
@@ -128,16 +124,18 @@ class TugasController extends Controller
             return $tugas;
         });
 
+        // Proses Penyimpanan Multiple Files Lampiran
         if ($request->hasFile('file')) {
-            $file = $request->file('file');
-            $path = $file->store('tugas-attachments', 'public');
+            foreach ($request->file('file') as $file) {
+                $path = $file->store('tugas-attachments', 'public');
 
-            $tugas->attachments()->create([
-                'file_path' => $path,
-                'file_name' => $file->getClientOriginalName(),
-                'file_size' => $file->getSize(),
-                'mime_type' => $file->getClientMimeType(),
-            ]);
+                $tugas->attachments()->create([
+                    'file_path' => $path,
+                    'file_name' => $file->getClientOriginalName(),
+                    'file_size' => $file->getSize(),
+                    'mime_type' => $file->getClientMimeType(),
+                ]);
+            }
         }
 
         $pesan = $isPenugasanLangsung ? 'Tugas berhasil dibuat dan langsung ditugaskan ke mahasiswa terpilih.' : 'Tugas berhasil dibuat dan tersedia untuk diambil mahasiswa.';
@@ -147,52 +145,162 @@ class TugasController extends Controller
 
     public function editTugasForm($id)
     {
+        // 1. Ambil data tugas milik ASN yang sedang login beserta relasi mahasiswa & file lampiran
+        $tugas = Tugas::with(['skills', 'attachments', 'mahasiswaProfile.user', 'anggota.mahasiswaProfile.user'])
+            ->where('asn_id', Auth::id())
+            ->findOrFail($id);
+
+        // 2. Ambil master data skill
         $skills = Skill::all();
-        $tugas = Tugas::with('skills')->findOrFail($id);
-        return view('pages.asn.task-not-done.update', compact('tugas', 'skills'));
+
+        // 3. Ambil daftar mahasiswa aktif untuk opsi ubah penugasan
+        $mahasiswaList = MahasiswaProfile::with('user')->where('status', 'aktif')->get();
+
+        return view('pages.asn.task-not-done.update', compact('tugas', 'skills', 'mahasiswaList'));
     }
 
     public function updateTugas(Request $request, $id)
     {
-        // FIX: tambahkan where('asn_id', Auth::id()) - tanpa ini, ASN mana pun
-        // bisa edit tugas ASN lain lewat URL, bukan cuma tugas miliknya sendiri.
+        // 1. Validasi kepemilikan tugas
         $tugas = Tugas::where('id', $id)->where('asn_id', Auth::id())->firstOrFail();
 
-        $validated = $request->validate([
-            'judul' => 'required|string|max:255',
-            'deskripsi' => 'required|string',
-            'deadline' => 'required|date|after:now',
-            'skills' => 'nullable|array',
-            'skills.*' => 'exists:skills,id',
-            'file' => 'nullable|file|max:10240|mimes:doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png,gif,svg,webp,bmp,pdf,zip',
-        ]);
+        // 2. Validasi Input
+        $validated = $request->validate(
+            [
+                'judul' => 'required|string|max:255',
+                'deskripsi' => 'required|string',
+                'deadline' => 'required|date|after:now',
+                'skills' => 'nullable|array',
+                'skills.*' => 'exists:skills,id',
+                'file' => 'nullable|array',
+                'file.*' => 'file|max:10240|mimes:doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png,gif,svg,webp,bmp,pdf,zip',
+                'delete_attachments' => 'nullable|array',
+                'delete_attachments.*' => 'exists:tugas_attachments,id',
+                'mahasiswa_ids' => 'nullable|array',
+                'mahasiswa_ids.*' => 'exists:mahasiswa_profiles,id',
+            ],
+            [
+                'required' => ':attribute wajib diisi.',
+                'after' => ':attribute harus lebih besar dari waktu sekarang.',
+                'file.*.max' => 'Ukuran file maksimal 10MB.',
+                'file.*.mimes' => 'Format file tidak didukung.',
+                'delete_attachments.*.exists' => 'File lampiran yang akan dihapus tidak valid.',
+            ],
+            [
+                'judul' => 'Judul Tugas',
+                'deskripsi' => 'Deskripsi Tugas',
+                'deadline' => 'Deadline',
+                'file.*' => 'File Lampiran',
+                'delete_attachments' => 'File Lampiran yang Dihapus',
+                'mahasiswa_ids' => 'Mahasiswa',
+            ],
+        );
 
-        $tugas->update([
-            'judul' => $validated['judul'],
-            'deskripsi' => $validated['deskripsi'],
-            'deadline' => $validated['deadline'],
-        ]);
-
-        if (!empty($validated['skills'])) {
-            $tugas->skills()->sync($validated['skills']);
-        } else {
-            $tugas->skills()->detach();
-        }
-
-        // Tambah file BARU tanpa menghapus yang lama - pakai create() biasa
-        // (menambah baris baru di tugas_attachments), BUKAN sync/replace apa pun.
-        if ($request->hasFile('file')) {
-            $file = $request->file('file');
-            $path = $file->store('tugas-attachments', 'public');
-
-            $tugas->attachments()->create([
-                'file_path' => $path,
-                'file_name' => $file->getClientOriginalName(),
-                'file_size' => $file->getSize(),
-                'mime_type' => $file->getClientMimeType(),
+        DB::transaction(function () use ($request, $tugas, $validated) {
+            // A. Update Data Utama Tugas
+            $tugas->update([
+                'judul' => $validated['judul'],
+                'deskripsi' => $validated['deskripsi'],
+                'deadline' => $validated['deadline'],
             ]);
-        }
+
+            // B. Update Skill (Sync)
+            if (!empty($validated['skills'])) {
+                $tugas->skills()->sync($validated['skills']);
+            } else {
+                $tugas->skills()->detach();
+            }
+
+            // C. Hapus File Lampiran Spesifik yang Dipilih/Dicentang oleh User
+            if (!empty($validated['delete_attachments'])) {
+                $attachmentsToDelete = $tugas->attachments()->whereIn('id', $validated['delete_attachments'])->get();
+
+                foreach ($attachmentsToDelete as $attachment) {
+                    // Hapus file fisik dari storage disk public
+                    if ($attachment->file_path && Storage::disk('public')->exists($attachment->file_path)) {
+                        Storage::disk('public')->delete($attachment->file_path);
+                    }
+                    // Hapus record database
+                    $attachment->delete();
+                }
+            }
+
+            // D. Tambah File Lampiran Baru (Multiple File Upload)
+            if ($request->hasFile('file')) {
+                foreach ($request->file('file') as $file) {
+                    $path = $file->store('tugas-attachments', 'public');
+
+                    $tugas->attachments()->create([
+                        'file_path' => $path,
+                        'file_name' => $file->getClientOriginalName(),
+                        'file_size' => $file->getSize(),
+                        'mime_type' => $file->getClientMimeType(),
+                    ]);
+                }
+            }
+
+            // E. Update Penugasan Mahasiswa (Jika Disediakan dalam Form)
+            if ($request->has('mahasiswa_ids')) {
+                $mahasiswaIds = array_filter($validated['mahasiswa_ids'] ?? []);
+
+                if (!empty($mahasiswaIds)) {
+                    // Mahasiswa pertama sebagai ketua/penanggung jawab utama
+                    $tugas->update([
+                        'mahasiswa_profile_id' => $mahasiswaIds[0],
+                        'status' => 'diambil',
+                        'diambil_at' => $tugas->diambil_at ?? now(),
+                    ]);
+
+                    // Anggota tambahan (index ke-1 ke atas)
+                    $anggotaIds = array_slice($mahasiswaIds, 1);
+
+                    // Hapus anggota lama yang tidak terpilih lagi
+                    $tugas->anggota()->whereNotIn('mahasiswa_profile_id', $anggotaIds)->delete();
+
+                    // Tambahkan anggota baru
+                    foreach ($anggotaIds as $mhsId) {
+                        $tugas->anggota()->firstOrCreate(['mahasiswa_profile_id' => $mhsId], ['status' => 'diterima', 'sumber' => 'ditugaskan_asn']);
+                    }
+
+                    // Buat pencatatan Logbook untuk semua mahasiswa penanggung jawab & anggota
+                    foreach ($mahasiswaIds as $mhsId) {
+                        Logbook::firstOrCreate([
+                            'tugas_id' => $tugas->id,
+                            'mahasiswa_profile_id' => $mhsId,
+                        ]);
+                    }
+                } else {
+                    // Jika dikosongkan, reset tugas menjadi 'tersedia' kembali
+                    $tugas->update([
+                        'mahasiswa_profile_id' => null,
+                        'status' => 'tersedia',
+                        'diambil_at' => null,
+                    ]);
+                    $tugas->anggota()->delete();
+                }
+            }
+        });
 
         return redirect()->route('task-not-done')->with('success', 'Tugas berhasil diperbarui.');
+    }
+
+    public function destroyTugas($id)
+    {
+        // 1. Ambil data tugas beserta relasi attachments
+        $tugas = Tugas::with('attachments')->where('id', $id)->where('asn_id', Auth::id())->firstOrFail();
+
+        // 2. Hapus berkas fisik dari disk penyimpanan (public)
+        foreach ($tugas->attachments as $attachment) {
+            if ($attachment->file_path && Storage::disk('public')->exists($attachment->file_path)) {
+                Storage::disk('public')->delete($attachment->file_path);
+            }
+        }
+
+        // 3. Hapus record lampiran di database & data tugas
+        $tugas->attachments()->delete();
+        $tugas->delete();
+
+        // 4. Return sukses
+        return redirect()->route('task-not-done')->with('success', 'Tugas berhasil dihapus beserta seluruh file terkait.');
     }
 }

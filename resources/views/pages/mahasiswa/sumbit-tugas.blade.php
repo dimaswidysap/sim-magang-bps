@@ -11,7 +11,6 @@
                     <p class="text-sm font-semibold text-primary mt-1">{{ $tugas->judul }}</p>
                 </div>
 
-
                 <x-buttonv2 href="{{ route('tugas-saya') }}" color="primary" class="w-full sm:w-auto">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="3">
@@ -74,22 +73,23 @@
                                 dan/atau Pesan Teks).</span>
                         </div>
 
-                        <!-- Input File -->
+                        <!-- Input File (Multiple + Preview Area) -->
                         <div>
                             <label class="block text-sm font-semibold text-text-light uppercase tracking-wider mb-2">
-                                File Hasil Kerja <span class="normal-case font-normal text-[11px]">(Opsional, maks. 10
-                                    MB)</span>
+                                File Hasil Kerja <span class="normal-case font-normal text-[11px]">(Opsional, bisa memilih lebih dari 1 file)</span>
                             </label>
-                            <div
-                                class="border-2 border-dashed border-border rounded-xl p-4 bg-[#F8FAFC] hover:border-primary transition-colors">
-                                <input type="file" name="file"
+                            <div class="border-2 border-dashed border-border rounded-xl p-4 bg-[#F8FAFC] hover:border-primary transition-colors">
+                                <input type="file" name="files[]" id="file-input" multiple
                                     class="block w-full text-sm text-text-light cursor-pointer
-                                file:mr-4 file:py-2 file:px-4
-                                file:rounded-lg file:border-0
-                                file:text-xs file:font-semibold
-                                file:bg-primary file:text-white
-                                hover:file:bg-primary-dark transition-colors">
+                                    file:mr-4 file:py-2 file:px-4
+                                    file:rounded-lg file:border-0
+                                    file:text-xs file:font-semibold
+                                    file:bg-primary file:text-white
+                                    hover:file:bg-primary-dark transition-colors">
                             </div>
+
+                            <!-- Container Preview File -->
+                            <div id="file-preview-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-4 hidden"></div>
                         </div>
 
                         <!-- Input Pesan/Catatan -->
@@ -107,8 +107,6 @@
 
                     <!-- Footer Form (Tombol Submit) -->
                     <div class="p-6 md:px-8 md:py-5 bg-background border-t border-border flex justify-end">
-
-
                         <x-buttonv2 type="submit" color="accent-dark" class="w-full sm:w-auto">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                                 stroke="currentColor" stroke-width="3">
@@ -257,4 +255,82 @@
 
         </section>
     </main>
+
+    <!-- JavaScript untuk Menangani Multiple Preview & Menghapus File -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const fileInput = document.getElementById('file-input');
+            const previewContainer = document.getElementById('file-preview-container');
+            const dt = new DataTransfer();
+
+            fileInput.addEventListener('change', function () {
+                for (let i = 0; i < this.files.length; i++) {
+                    dt.items.add(this.files[i]);
+                }
+                this.files = dt.files;
+                renderPreviews();
+            });
+
+            function renderPreviews() {
+                previewContainer.innerHTML = '';
+
+                if (dt.files.length === 0) {
+                    previewContainer.classList.add('hidden');
+                    return;
+                }
+
+                previewContainer.classList.remove('hidden');
+
+                Array.from(dt.files).forEach((file, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'relative bg-surface border border-border rounded-xl p-3 flex flex-col items-center text-center shadow-sm';
+
+                    // Tombol Hapus (X) di Pojok Kanan Atas Card Preview
+                    const removeBtn = document.createElement('button');
+                    removeBtn.type = 'button';
+                    removeBtn.className = 'absolute -top-2 -right-2 bg-danger text-white rounded-full p-1 shadow hover:scale-110 transition-transform focus:outline-none';
+                    removeBtn.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    `;
+                    removeBtn.addEventListener('click', function () {
+                        removeFile(index);
+                    });
+
+                    // Cek Tipe File (Gambar / Non-Gambar)
+                    let mediaElement = '';
+                    if (file.type.startsWith('image/')) {
+                        const imgUrl = URL.createObjectURL(file);
+                        mediaElement = `<img src="${imgUrl}" class="w-full h-20 object-cover rounded-lg mb-2">`;
+                    } else {
+                        mediaElement = `
+                            <div class="w-full h-20 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-2 shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                            </div>
+                        `;
+                    }
+
+                    const fileSize = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
+
+                    card.innerHTML = `
+                        ${mediaElement}
+                        <p class="text-xs font-semibold text-text truncate w-full" title="${file.name}">${file.name}</p>
+                        <span class="text-[10px] text-text-light mt-0.5">${fileSize}</span>
+                    `;
+                    card.appendChild(removeBtn);
+
+                    previewContainer.appendChild(card);
+                });
+            }
+
+            function removeFile(index) {
+                dt.items.remove(index);
+                fileInput.files = dt.files;
+                renderPreviews();
+            }
+        });
+    </script>
 @endsection

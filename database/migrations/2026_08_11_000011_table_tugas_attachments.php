@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('tugas_id')->constrained('tugas')->cascadeOnDelete();
             $table->string('file_path');
-            $table->string('file_name');
+            $table->text('file_name');
             $table->unsignedBigInteger('file_size');
             $table->string('mime_type');
             $table->timestamps();

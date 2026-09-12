@@ -76,51 +76,51 @@ class AsnController extends Controller
         return view('pages.asn.logbook-detail', compact('mahasiswa', 'logbookTugas', 'logbookMandiri', 'tanggal'));
     }
 
-      public function detailLampiran($id)
-{
-    $user = auth()->user();
-    $query = MagangLogbook::where('id', $id);
+    public function detailLampiran($id)
+    {
+        $user = auth()->user();
+        $query = MagangLogbook::where('id', $id);
 
-    // Jika BUKAN role ASN (misal: Mahasiswa), batasi akses hanya ke logbook milik sendiri
-    // Catatan: Jika menggunakan Spatie Permission, ganti kondisi menjadi: !$user->hasRole('asn')
-    if ($user->role !== 'asn') {
-        $profilId = $user->mahasiswaProfile?->id ?? 0;
-        $query->where('mahasiswa_profile_id', $profilId);
-    }
+        // Jika BUKAN role ASN (misal: Mahasiswa), batasi akses hanya ke logbook milik sendiri
+        // Catatan: Jika menggunakan Spatie Permission, ganti kondisi menjadi: !$user->hasRole('asn')
+        if ($user->role !== 'asn') {
+            $profilId = $user->mahasiswaProfile?->id ?? 0;
+            $query->where('mahasiswa_profile_id', $profilId);
+        }
 
-    $logbook = $query->first();
+        $logbook = $query->first();
 
-    if (!$logbook) {
-        return response()->json(
-            [
-                'success' => false,
-                'message' => 'Data logbook tidak ditemukan atau Anda tidak memiliki akses.',
-            ],
-            404
-        );
-    }
+        if (!$logbook) {
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Data logbook tidak ditemukan atau Anda tidak memiliki akses.',
+                ],
+                404,
+            );
+        }
 
-    $files = $logbook->file_lampiran;
+        $files = $logbook->file_lampiran;
 
-    if (is_string($files)) {
-        $files = json_decode($files, true) ?? [];
-    }
+        if (is_string($files)) {
+            $files = json_decode($files, true) ?? [];
+        }
 
-    $imageUrls = [];
-    if (is_array($files)) {
-        foreach ($files as $file) {
-            if ($file) {
-                $imageUrls[] = Storage::url($file);
+        $imageUrls = [];
+        if (is_array($files)) {
+            foreach ($files as $file) {
+                if ($file) {
+                    $imageUrls[] = Storage::url($file);
+                }
             }
         }
-    }
 
-    return response()->json([
-        'success' => true,
-        'judul'   => $logbook->judul_kegiatan,
-        'data'    => $imageUrls,
-    ]);
-}
+        return response()->json([
+            'success' => true,
+            'judul' => $logbook->judul_kegiatan,
+            'data' => $imageUrls,
+        ]);
+    }
 
     public function createTugasForm()
     {
@@ -201,8 +201,8 @@ class AsnController extends Controller
                 'nip' => 'required|string|unique:asn_profiles,nip,' . optional($user->asnProfile)->id,
                 'jabatan' => 'nullable|string|max:255',
                 'unit_kerja' => 'nullable|string|max:255',
-                'tanggal_lahir'=>'nullable|date',
-                'alamat'=>'nullable|string'
+                'tanggal_lahir' => 'nullable|date',
+                'alamat' => 'nullable|string',
             ],
             [
                 // Pesan error untuk field name
@@ -232,7 +232,6 @@ class AsnController extends Controller
         $user->update([
             'name' => $validated['name'],
             'phone' => $validated['phone'] ?? null,
-
         ]);
 
         AsnProfile::updateOrCreate(
@@ -249,15 +248,5 @@ class AsnController extends Controller
         return redirect()->route('asn-detail-profil')->with('success', 'Profil berhasil diperbarui.');
     }
 
-    public function destroyTugas($id)
-    {
-        // 1. Ambil data spesifiknya (atau gagal jika tidak ketemu/bukan miliknya)
-        $tugas = Tugas::query()->where('id', $id)->where('asn_id', Auth::id())->firstOrFail();
 
-        // 2. Hapus HANYA data ini
-        $tugas->delete('tugas');
-
-        // 3. Return sukses
-        return redirect()->route('task-not-done')->with('success', 'Tugas berhasil dihapus beserta seluruh data terkait.');
-    }
 }

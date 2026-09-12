@@ -21,10 +21,7 @@
                 <!-- Page Banner / Header Title -->
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
                     <div>
-                        <h1 class="text-2xl font-bold text-text leading-snug">Buat Tugas Baru</h1>
-                        <p class="text-sm text-text-light mt-1">
-                            Isi formulir di bawah ini untuk mendistribusikan tugas kepada mahasiswa magang.
-                        </p>
+                        <h1 class="text-2xl font-bold text-text leading-snug">Buat Tugas</h1>
                     </div>
                 </div>
 
@@ -95,11 +92,17 @@
                             <!-- Upload Lampiran -->
                             <div>
                                 <label class="block text-sm font-semibold text-text mb-2">
-                                    File Referensi/Template <span class="text-xs font-normal text-text-light">(Maks.
-                                        10MB)</span>
+                                    File Referensi/Template <span class="text-xs font-normal text-text-light">(Maks. 10MB
+                                        per file)</span>
                                 </label>
-                                <input type="file" name="file"
+
+                                <!-- Input File Multiple (Menerima Foto & Dokumen) -->
+                                <input type="file" id="file_referensi" name="file[]" multiple
+                                    accept="image/*, .pdf, .doc, .docx, .xls, .xlsx"
                                     class="w-full text-sm text-text file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 file:transition-colors bg-background border border-border rounded-xl p-1 cursor-pointer">
+
+                                <!-- Container Tempat Tampilnya Live Preview -->
+                                <div id="previewContainerRef" class="flex flex-wrap gap-3 mt-3 hidden"></div>
                             </div>
 
                             <!-- Deskripsi -->
@@ -315,4 +318,96 @@
 
     <script src="{{ asset('js/asn/tugas-alert.js') }}"></script>
 
+    <script>
+        let dtRefFiles = new DataTransfer();
+
+        document.getElementById('file_referensi').addEventListener('change', function(e) {
+            const files = Array.from(e.target.files);
+
+            // Tambahkan file baru ke penampung tanpa menimpa pilihan sebelumnya
+            files.forEach(file => {
+                dtRefFiles.items.add(file);
+            });
+
+            this.files = dtRefFiles.files;
+            renderRefPreviews();
+        });
+
+        function renderRefPreviews() {
+            const container = document.getElementById('previewContainerRef');
+            container.innerHTML = '';
+
+            if (dtRefFiles.files.length === 0) {
+                container.classList.add('hidden');
+                return;
+            }
+
+            container.classList.remove('hidden');
+
+            Array.from(dtRefFiles.files).forEach((file, index) => {
+                const isImage = file.type.startsWith('image/');
+                const div = document.createElement('div');
+                div.className =
+                    'relative group rounded-xl overflow-hidden border border-border bg-surface w-28 h-28 shrink-0 flex flex-col items-center justify-center p-2 text-center';
+
+                if (isImage) {
+                    // Render Preview jika File berupa Gambar/Foto
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        div.innerHTML = `
+                        <img src="${e.target.result}" alt="${file.name}" class="w-full h-full object-cover rounded-lg">
+                        <button type="button"
+                                onclick="removeRefFile(${index})"
+                                title="Hapus file"
+                                class="absolute top-1 right-1 bg-danger text-white rounded-full p-1 shadow-md hover:bg-danger/80 transition duration-200 focus:outline-none">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    `;
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    // Render Card jika File berupa Dokumen (PDF, Word, Excel, dll)
+                    div.innerHTML = `
+                    <div class="flex flex-col items-center justify-center h-full w-full p-1">
+                        <svg class="w-8 h-8 text-primary mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                        </svg>
+                        <span class="text-[10px] text-text font-medium truncate w-full px-1" title="${file.name}">
+                            ${file.name}
+                        </span>
+                    </div>
+                    <button type="button"
+                            onclick="removeRefFile(${index})"
+                            title="Hapus file"
+                            class="absolute top-1 right-1 bg-danger text-white rounded-full p-1 shadow-md hover:bg-danger/80 transition duration-200 focus:outline-none">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                `;
+                }
+
+                container.appendChild(div);
+            });
+        }
+
+        function removeRefFile(index) {
+            const dtUpdated = new DataTransfer();
+            const {
+                files
+            } = dtRefFiles;
+
+            for (let i = 0; i < files.length; i++) {
+                if (i !== index) {
+                    dtUpdated.items.add(files[i]);
+                }
+            }
+
+            dtRefFiles = dtUpdated;
+            document.getElementById('file_referensi').files = dtRefFiles.files;
+            renderRefPreviews();
+        }
+    </script>
 @endsection

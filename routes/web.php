@@ -112,7 +112,6 @@ Route::prefix('asn')
     ->middleware(['auth', 'role:asn'])
     ->group(function () {
         Route::get('/beranda', [AsnController::class, 'asnIndex'])->name('asn-index');
-        Route::delete('/tugas/{id}', [AsnController::class, 'destroyTugas'])->name('asn-tugas-destroy');
         Route::get('/profil/edit', [AsnController::class, 'showFormProfil'])->name('asn-profil-form');
         Route::get('/profil/detail', [AsnController::class, 'profilAsnDetail'])->name('asn-detail-profil');
         Route::put('/profil', [AsnController::class, 'updateProfil'])->name('asn-profil-update');
@@ -126,6 +125,7 @@ Route::prefix('asn')
         Route::post('/tugas/check-aktif', [TugasController::class, 'checkTugasAktif'])->name('tugas.check-aktif');
         Route::get('/update-tugas/{id}', [TugasController::class, 'editTugasForm'])->name('edit-tugas-form');
         Route::put('/tugas/{id}', [TugasController::class, 'updateTugas'])->name('asn-update-tugas');
+        Route::delete('/tugas/{id}', [TugasController::class, 'destroyTugas'])->name('asn-tugas-destroy');
         //
         Route::get('/submission', [TugasSubmissionController::class, 'daftarSubmissionMasuk'])->name('asn-submission-index');
         Route::get('/submission/{id}', [TugasSubmissionController::class, 'detailSubmission'])->name('asn-submission-detail');
