@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+    {{-- {{ $detailUser }} --}}
     <main class="w-full p-4 md:p-8 bg-background min-h-screen font-montserrat">
         <section class="container-dalam max-w-4xl mx-auto">
 
@@ -16,14 +17,19 @@
                     <!-- Foto Profil (Absolute Position agar menimpa cover) -->
                     <div class="absolute -top-16 flex items-end">
                         <div class="w-32 h-32 rounded-full border-4 border-surface bg-background overflow-hidden shadow-sm">
-                            @if (!empty($detailUser->foto))
-                                <img src="{{ asset('storage/' . $detailUser->foto) }}" alt="Foto {{ $detailUser->name }}"
+                            @if ($detailUser->mahasiswaProfile?->foto_profil_path)
+                                {{-- Mengambil foto dari relasi mahasiswaProfile (foto_profil_path) --}}
+                                <img src="{{ asset('storage/' . $detailUser->mahasiswaProfile->foto_profil_path) }}"
+                                    alt="Foto {{ $detailUser->name }}" class="w-full h-full object-cover">
+                            @elseif (!empty($detailUser->avatar))
+                                {{-- Fallback jika ada foto langsung di tabel user --}}
+                                <img src="{{ asset('storage/' . $detailUser->avatar) }}" alt="Foto {{ $detailUser->name }}"
                                     class="w-full h-full object-cover">
                             @else
-                                <!-- Placeholder jika tidak ada foto -->
+                                <!-- Placeholder jika foto belum diunggah (Menampilkan Inisial Nama) -->
                                 <div
-                                    class="w-full h-full bg-primary flex items-center justify-center text-surface text-4xl font-bold">
-                                    {{ substr($detailUser->nama ?? 'M', 0, 1) }}
+                                    class="w-full h-full bg-primary flex items-center justify-center text-surface text-4xl font-bold uppercase">
+                                    {{ strtoupper(substr($detailUser->name ?? 'M', 0, 1)) }}
                                 </div>
                             @endif
                         </div>

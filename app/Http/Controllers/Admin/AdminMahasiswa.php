@@ -19,7 +19,7 @@ class AdminMahasiswa extends Controller
 
         $skillList = Skill::orderBy('nama_skill', 'asc')->get();
 
-        return view('pages.admin.mahasiswa.create', compact('periodeList', 'skillList'));
+        return view('pages.admin.mahasiswa.create', compact('skillList'));
     }
 
     public function detailMahasiswa($id)

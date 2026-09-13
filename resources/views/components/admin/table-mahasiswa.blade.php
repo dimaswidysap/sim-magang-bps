@@ -3,20 +3,7 @@
 <section class="w-full p-2  font-montserrat">
     <section class="container-dalam max-w-7xl mx-auto">
 
-        <!-- Alert Sukses -->
-        @if (session('success'))
-            <div class="mb-6 p-4 bg-success/10 border border-success/30 rounded-xl flex items-center gap-3 shadow-sm">
-                <div class="w-8 h-8 rounded-full bg-success/20 flex items-center justify-center shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-success shrink-0" viewBox="0 0 20 20"
-                        fill="currentColor">
-                        <path fill-rule="evenodd"
-                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                            clip-rule="evenodd" />
-                    </svg>
-                </div>
-                <span class="text-sm font-semibold text-success">{{ session('success') }}</span>
-            </div>
-        @endif
+
 
         <!-- Toolbar: Search & Action -->
         <section class="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
@@ -84,11 +71,25 @@
                                         <span
                                             class="md:hidden text-[10px] font-bold text-text-light uppercase">Nama:</span>
                                         <div class="flex items-center gap-3">
-                                            <!-- Avatar -->
-                                            <div
-                                                class="hidden md:flex w-9 h-9 rounded-full bg-primary/10 text-primary flex-shrink-0 items-center justify-center text-xs font-bold border border-primary/20">
-                                                {{ strtoupper(substr($mhs->name, 0, 1)) }}
-                                            </div>
+                                            <!-- Avatar Foto Profil / Inisial -->
+                                            @if ($mhs->mahasiswaProfile?->foto_profil_path)
+                                                {{-- Mengambil foto dari relasi mahasiswaProfile (foto_profil_path) --}}
+                                                <img src="{{ asset('storage/' . $mhs->mahasiswaProfile->foto_profil_path) }}"
+                                                    alt="{{ $mhs->name }}"
+                                                    class="hidden md:block w-9 h-9 rounded-full object-cover shrink-0 border border-primary/20">
+                                            @elseif (!empty($mhs->avatar))
+                                                {{-- Fallback jika ada foto langsung di tabel user --}}
+                                                <img src="{{ asset('storage/' . $mhs->avatar) }}"
+                                                    alt="{{ $mhs->name }}"
+                                                    class="hidden md:block w-9 h-9 rounded-full object-cover shrink-0 border border-primary/20">
+                                            @else
+                                                {{-- Placeholder jika foto belum diunggah --}}
+                                                <div
+                                                    class="hidden md:flex w-9 h-9 rounded-full bg-primary/10 text-primary flex-shrink-0 items-center justify-center text-xs font-bold border border-primary/20">
+                                                    {{ strtoupper(substr($mhs->name, 0, 1)) }}
+                                                </div>
+                                            @endif
+
                                             <span
                                                 class="text-sm font-bold text-text group-hover:text-primary transition-colors">
                                                 {{ $mhs->name }}

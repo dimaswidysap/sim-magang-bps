@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('jabatan')->nullable();
             $table->string('unit_kerja')->nullable();
             $table->text('alamat')->nullable();
+            $table->string('avatar')->nullable();
             $table->timestamps();
         });
     }

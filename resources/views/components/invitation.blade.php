@@ -1,29 +1,7 @@
 <div class="font-montserrat">
-    <!-- Alert Sukses -->
-    @if (session('success'))
-        <div class="mb-6 p-4 bg-success/10 border border-success rounded-lg flex items-center gap-3 shadow-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-success shrink-0" viewBox="0 0 20 20"
-                fill="currentColor">
-                <path fill-rule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                    clip-rule="evenodd" />
-            </svg>
-            <span class="text-sm font-medium text-success">{{ session('success') }}</span>
-        </div>
-    @endif
 
-    <!-- Alert Error -->
-    @if (session('error'))
-        <div class="mb-6 bg-danger/10 border border-danger p-4 rounded-xl flex items-start gap-3 shadow-sm">
-            <svg class="h-5 w-5 text-danger shrink-0 mt-0.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
-                fill="currentColor">
-                <path fill-rule="evenodd"
-                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                    clip-rule="evenodd" />
-            </svg>
-            <span class="text-sm font-semibold text-danger">{{ session('error') }}</span>
-        </div>
-    @endif
+
+
 
     <!-- Kondisi Data Kosong -->
     @if ($undangan->isEmpty())
@@ -37,9 +15,6 @@
             <p class="text-sm text-text-light mt-1">Saat ini tidak ada undangan tugas yang menunggu.</p>
         </div>
     @else
-        {{-- ========================================================= --}}
-        {{-- 1. TAMPILAN DESKTOP & TABLET (Tabel Undangan)            --}}
-        {{-- ========================================================= --}}
         <div class="hidden md:block overflow-x-auto bg-surface border border-border rounded-[10px] shadow-sm">
             <table class="w-full text-left border-collapse">
                 <thead class="bg-black/5 border-b border-border">

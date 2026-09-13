@@ -8,10 +8,8 @@
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
                 <div>
                     <h1 class="text-2xl font-bold text-text leading-snug">Tulis Berita / Pengumuman</h1>
-                    <p class="text-sm text-text-light mt-1">Buat dan publikasikan informasi terbaru untuk mahasiswa magang.
-                    </p>
+                    <p class="text-sm text-text-light mt-1">Buat dan publikasikan informasi terbaru untuk mahasiswa magang.</p>
                 </div>
-
 
                 <x-buttonv2 href="{{ route('berita-index') }}" color="accent-dark" class="w-full sm:w-auto">
                     <x-slot name="icon">
@@ -88,13 +86,13 @@
                             </label>
                             <div
                                 class="border-2 border-dashed border-border rounded-xl p-4 bg-[#F8FAFC] hover:border-primary transition-colors">
-                                <input type="file" name="lampiran[]" multiple
+                                <input type="file" name="lampiran[]" id="lampiran-input" multiple
                                     class="block w-full text-sm text-text-light cursor-pointer
-                                file:mr-4 file:py-2 file:px-4
-                                file:rounded-lg file:border-0
-                                file:text-xs file:font-semibold
-                                file:bg-primary file:text-white
-                                hover:file:bg-primary-dark transition-colors">
+                                    file:mr-4 file:py-2 file:px-4
+                                    file:rounded-lg file:border-0
+                                    file:text-xs file:font-semibold
+                                    file:bg-primary file:text-white
+                                    hover:file:bg-primary-dark transition-colors">
                                 <p class="text-[11px] text-text-light mt-2.5 flex items-center gap-1.5">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-primary" fill="none"
                                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -103,6 +101,10 @@
                                     </svg>
                                     Anda dapat memilih lebih dari satu file (Maks. 10 MB per file).
                                 </p>
+
+                                <!-- Grid Preview Lampiran -->
+                                <div id="preview-container" class="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 hidden border-t border-border pt-4">
+                                </div>
                             </div>
                         </div>
 
@@ -127,4 +129,65 @@
 
         </section>
     </main>
+
+    <!-- JavaScript Preview File -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileInput = document.getElementById('lampiran-input');
+            const previewContainer = document.getElementById('preview-container');
+
+            fileInput.addEventListener('change', function(e) {
+                const files = e.target.files;
+                previewContainer.innerHTML = ''; // Clear preview sebelumnya
+
+                if (files.length > 0) {
+                    previewContainer.classList.remove('hidden');
+
+                    Array.from(files).forEach((file) => {
+                        const card = document.createElement('div');
+                        card.className = 'relative border border-border rounded-lg p-2 bg-white flex flex-col items-center justify-between text-center shadow-xs overflow-hidden';
+
+                        if (file.type.startsWith('image/')) {
+                            // Render Preview Gambar
+                            const img = document.createElement('img');
+                            img.src = URL.createObjectURL(file);
+                            img.className = 'h-24 w-full object-cover rounded-md mb-1.5';
+                            img.onload = () => URL.revokeObjectURL(img.src); // Cleanup memori
+                            card.appendChild(img);
+                        } else {
+                            // Render Icon Dokumen non-gambar
+                            const ext = file.name.split('.').pop().toUpperCase();
+                            const iconBox = document.createElement('div');
+                            iconBox.className = 'h-24 w-full bg-background rounded-md mb-1.5 flex flex-col items-center justify-center text-text-light border border-border/50';
+                            iconBox.innerHTML = `
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mb-1 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                </svg>
+                                <span class="text-[10px] font-bold text-text-light tracking-wider">${ext}</span>
+                            `;
+                            card.appendChild(iconBox);
+                        }
+
+                        // Nama File
+                        const fileName = document.createElement('p');
+                        fileName.className = 'text-[11px] font-medium text-text truncate w-full px-1';
+                        fileName.title = file.name;
+                        fileName.textContent = file.name;
+                        card.appendChild(fileName);
+
+                        // Ukuran File
+                        const fileSize = document.createElement('span');
+                        fileSize.className = 'text-[10px] text-text-light mt-0.5';
+                        const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+                        fileSize.textContent = `${sizeMB} MB`;
+                        card.appendChild(fileSize);
+
+                        previewContainer.appendChild(card);
+                    });
+                } else {
+                    previewContainer.classList.add('hidden');
+                }
+            });
+        });
+    </script>
 @endsection

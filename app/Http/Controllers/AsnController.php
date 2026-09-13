@@ -159,16 +159,14 @@ class AsnController extends Controller
     public function tugasSelesaiDetail($id)
     {
         $tugasDetail = Tugas::where('id', $id)
-            ->where('asn_id', Auth::id()) // FIX: pastikan cuma tugas milik ASN yang login
+            ->where('asn_id', Auth::id())
             ->with([
                 'mahasiswaProfile.user',
                 'asn',
                 'anggota.mahasiswaProfile.user',
-                // Ambil submission yang SUDAH disetujui saja, terbaru duluan.
-                // Kalau ada riwayat revisi berkali-kali, yang ditampilkan
-                // cuma yang final disetujui, bukan seluruh riwayat.
+                // Mengambil seluruh riwayat/file submission yang diunggah
                 'submissions' => function ($q) {
-                    $q->where('status', 'disetujui')->latest();
+                    $q->latest();
                 },
             ])
             ->firstOrFail();
@@ -203,6 +201,7 @@ class AsnController extends Controller
                 'unit_kerja' => 'nullable|string|max:255',
                 'tanggal_lahir' => 'nullable|date',
                 'alamat' => 'nullable|string',
+                'avatar' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048', // Validasi foto profil
             ],
             [
                 // Pesan error untuk field name
@@ -212,7 +211,7 @@ class AsnController extends Controller
 
                 // Pesan error untuk field phone
                 'phone.string' => 'Nomor telepon harus berupa teks.',
-                'phone.max' => 'Nomor telepon maksimal 13 karakter.',
+                'phone.max' => 'Nomor telepon maksimal 20 karakter.',
 
                 // Pesan error untuk field nip
                 'nip.required' => 'NIP wajib diisi.',
@@ -226,14 +225,36 @@ class AsnController extends Controller
                 // Pesan error untuk field unit_kerja
                 'unit_kerja.string' => 'Unit kerja harus berupa teks.',
                 'unit_kerja.max' => 'Unit kerja maksimal 255 karakter.',
+
+                // Pesan error untuk field avatar
+                'avatar.image' => 'File foto profil harus berupa gambar.',
+                'avatar.mimes' => 'Format foto profil yang diperbolehkan adalah jpeg, png, jpg, atau webp.',
+                'avatar.max' => 'Ukuran foto profil tidak boleh lebih dari 2MB.',
             ],
         );
 
+        // Update data user utama
         $user->update([
             'name' => $validated['name'],
             'phone' => $validated['phone'] ?? null,
         ]);
 
+        // Ambil data profil ASN yang ada saat ini
+        $asnProfile = $user->asnProfile;
+        $avatarPath = $asnProfile ? $asnProfile->avatar : null;
+
+        // Proses upload avatar baru jika ada file yang diunggah
+        if ($request->hasFile('avatar')) {
+            // Hapus foto profil lama dari storage jika ada
+            if ($avatarPath && Storage::disk('public')->exists($avatarPath)) {
+                Storage::disk('public')->delete($avatarPath);
+            }
+
+            // Simpan foto profil baru ke folder avatars/asn di disk public
+            $avatarPath = $request->file('avatar')->store('avatars/asn', 'public');
+        }
+
+        // Simpan / perbarui profil ASN
         AsnProfile::updateOrCreate(
             ['user_id' => $user->id],
             [
@@ -242,11 +263,10 @@ class AsnController extends Controller
                 'unit_kerja' => $validated['unit_kerja'] ?? null,
                 'tanggal_lahir' => $validated['tanggal_lahir'] ?? null,
                 'alamat' => $validated['alamat'] ?? null,
+                'avatar' => $avatarPath,
             ],
         );
 
         return redirect()->route('asn-detail-profil')->with('success', 'Profil berhasil diperbarui.');
     }
-
-
 }

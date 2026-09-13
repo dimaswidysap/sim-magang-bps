@@ -1,18 +1,6 @@
 @vite(['resources/js/fitur-search.js'])
 
-<!-- Alert Sukses -->
-@if (session('success'))
-    <div
-        class="mb-6 p-4 bg-success/10 border border-success rounded-xl flex items-center gap-3 shadow-sm font-montserrat mt-4">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-success shrink-0" viewBox="0 0 20 20"
-            fill="currentColor">
-            <path fill-rule="evenodd"
-                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                clip-rule="evenodd" />
-        </svg>
-        <span class="text-sm font-semibold text-success">{{ session('success') }}</span>
-    </div>
-@endif
+
 
 <!-- Toolbar: Search & Action -->
 <section class="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 font-montserrat">
@@ -82,16 +70,34 @@
                         <!-- Kolom Nama Pegawai -->
                         <td class="block md:table-cell md:px-6 md:py-4 mb-4 md:mb-0">
                             <div class="flex items-center gap-3">
-                                <!-- Avatar Inisial -->
-                                <div
-                                    class="w-10 h-10 rounded-full bg-primary/10 text-primary-dark flex items-center justify-center text-xs font-bold shrink-0 border border-primary/20">
-                                    {{ strtoupper(substr($asn->name ?? 'U', 0, 1)) }}
-                                </div>
+
+                                @if ($asn->asnProfile?->foto_profil_path)
+                                    <img src="{{ asset('storage/' . $asn->asnProfile->foto_profil_path) }}"
+                                        alt="{{ $asn->name ?? 'ASN' }}"
+                                        class="w-10 h-10 rounded-full object-cover shrink-0 border border-primary/20">
+                                @elseif ($asn->asnProfile?->avatar)
+                                    <img src="{{ asset('storage/' . $asn->asnProfile->avatar) }}"
+                                        alt="{{ $asn->name ?? 'ASN' }}"
+                                        class="w-10 h-10 rounded-full object-cover shrink-0 border border-primary/20">
+                                @elseif (!empty($asn->avatar))
+                                    <img src="{{ asset('storage/' . $asn->avatar) }}" alt="{{ $asn->name ?? 'ASN' }}"
+                                        class="w-10 h-10 rounded-full object-cover shrink-0 border border-primary/20">
+                                @else
+                                    {{-- Placeholder Inisial --}}
+                                    <div
+                                        class="w-10 h-10 rounded-full bg-primary/10 text-primary-dark flex items-center justify-center text-xs font-bold shrink-0 border border-primary/20">
+                                        {{ strtoupper(substr($asn->name ?? 'U', 0, 1)) }}
+                                    </div>
+                                @endif
+
                                 <div class="flex flex-col">
                                     <span
-                                        class="text-sm font-bold text-text group-hover:text-primary transition-colors">{{ $asn->name ?? '-' }}</span>
-                                    <span
-                                        class="text-[10px] md:text-xs text-text-light mt-0.5">{{ $asn->email ?? 'Tidak ada email' }}</span>
+                                        class="text-sm font-bold text-text group-hover:text-primary transition-colors">
+                                        {{ $asn->name ?? '-' }}
+                                    </span>
+                                    <span class="text-[10px] md:text-xs text-text-light mt-0.5">
+                                        {{ $asn->email ?? 'Tidak ada email' }}
+                                    </span>
                                 </div>
                             </div>
                         </td>

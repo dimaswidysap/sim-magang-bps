@@ -12,7 +12,6 @@
                         diselesaikan.</p>
                 </div>
 
-
                 <x-buttonv2 href="{{ route('task-done') }}" color="accent-dark" class="w-full sm:w-auto">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 aspect-square" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="3">
@@ -75,58 +74,123 @@
                         </div>
                     </div>
 
-                    @php
-                        $submissionDisetujui = $tugasDetail->submissions->first();
-                    @endphp
+                    <!-- Riwayat Pengiriman Tugas (Dikelompokkan Berdasarkan Tanggal & Menit Pengiriman) -->
+                    <div>
+                        <h2
+                            class="text-sm font-semibold text-text-light uppercase tracking-wider mb-4 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Riwayat Pengiriman Tugas
+                        </h2>
 
-                    @if ($submissionDisetujui)
-                        <div>
-                            <h2
-                                class="text-sm font-semibold text-text-light uppercase tracking-wider mb-3 flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                                Hasil Kerja yang Disetujui
-                            </h2>
+                        @if ($tugasDetail->submissions && $tugasDetail->submissions->count() > 0)
+                            @php
 
-                            <div class="p-5 bg-background border border-border rounded-xl space-y-3">
-                                @if ($submissionDisetujui->file_path)
-                                    <a href="{{ Storage::url($submissionDisetujui->file_path) }}" target="_blank"
-                                        class="flex items-center gap-3 bg-surface border border-border p-4 rounded-xl hover:border-primary transition-colors">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary shrink-0"
-                                            fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                        </svg>
-                                        <div class="flex-1">
-                                            <p class="text-sm font-medium text-text">{{ $submissionDisetujui->file_name }}
-                                            </p>
-                                            <p class="text-xs text-text-light">
-                                                {{ number_format($submissionDisetujui->file_size / 1024, 0) }} KB
-                                            </p>
+                                $groupedSubmissions = $tugasDetail->submissions
+                                    ->sortByDesc('created_at')
+                                    ->groupBy(function ($item) {
+                                        return $item->created_at->translatedFormat('d F Y');
+                                    })
+                                    ->map(function ($dateGroup) {
+                                        return $dateGroup->groupBy(function ($item) {
+                                            return $item->created_at->translatedFormat('H:i');
+                                        });
+                                    });
+                            @endphp
+
+                            <div class="space-y-6">
+                                @foreach ($groupedSubmissions as $tanggal => $timeGroups)
+                                    <div class="space-y-3">
+                                        <!-- Header Tanggal Pengiriman -->
+                                        <div class="flex items-center gap-2">
+                                            <span class="w-2.5 h-2.5 rounded-full bg-primary shrink-0"></span>
+                                            <h3 class="text-xs font-bold text-text-light uppercase tracking-wider">
+                                                Pengiriman: {{ $tanggal }}
+                                            </h3>
+                                            <div class="flex-1 border-b border-border border-dashed"></div>
                                         </div>
-                                    </a>
-                                @else
-                                    <p class="text-sm text-text-light italic">Tidak ada file - mahasiswa hanya mengirim
-                                        pesan.</p>
-                                @endif
 
-                                @if ($submissionDisetujui->catatan_mahasiswa)
-                                    <div>
-                                        <p class="text-[11px] font-semibold text-text-light uppercase tracking-wider mb-1">
-                                            Pesan Mahasiswa</p>
-                                        <p class="text-sm text-text">{{ $submissionDisetujui->catatan_mahasiswa }}</p>
+                                        <!-- Container Pengiriman per Menit -->
+                                        <div class="space-y-4 pl-4 border-l-2 border-border/60">
+                                            @foreach ($timeGroups as $waktu => $submissionsAtTime)
+                                                <div class="p-5 bg-background border border-border rounded-xl space-y-4">
+
+                                                    <!-- Header Jam:Menit -->
+                                                    <div class="flex items-center justify-between gap-2 border-b border-border/60 pb-3">
+                                                        <span class="text-xs font-bold px-2.5 py-1 rounded-md bg-primary/10 text-primary flex items-center gap-1.5">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                            </svg>
+                                                            Waktu: {{ $waktu }} WIB
+                                                        </span>
+
+                                                    </div>
+
+                                                    <!-- Daftar File yang Diunggah pada Menit Tersebut -->
+                                                    <div class="space-y-2">
+                                                        <p class="text-[11px] font-semibold text-text-light uppercase tracking-wider">
+                                                            File Lampiran ({{ $submissionsAtTime->count() }} File)
+                                                        </p>
+
+                                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                            @foreach ($submissionsAtTime as $submission)
+                                                                @if ($submission->file_path)
+                                                                    <a href="{{ Storage::url($submission->file_path) }}" target="_blank"
+                                                                        class="flex items-center gap-3 bg-surface border border-border p-3 rounded-xl hover:border-primary transition-colors group">
+                                                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                                                            class="h-5 w-5 text-primary shrink-0 group-hover:scale-110 transition-transform"
+                                                                            fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                                                            stroke-width="2">
+                                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                                        </svg>
+                                                                        <div class="flex-1 overflow-hidden">
+                                                                            <p class="text-xs font-semibold text-text truncate">
+                                                                                {{ $submission->file_name ?? 'File Tugas' }}
+                                                                            </p>
+                                                                            <p class="text-[11px] text-text-light mt-0.5">
+                                                                                {{ $submission->file_size ? number_format($submission->file_size / 1024, 0) . ' KB' : 'Ukuran tidak diketahui' }}
+                                                                            </p>
+                                                                        </div>
+                                                                    </a>
+                                                                @endif
+                                                            @endforeach
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Pesan / Catatan Mahasiswa untuk Pengiriman Menit Tersebut -->
+                                                    @php
+                                                        $catatanList = $submissionsAtTime->pluck('catatan_mahasiswa')->filter()->unique();
+                                                    @endphp
+
+                                                    @if ($catatanList->isNotEmpty())
+                                                        <div class="pt-2 border-t border-border/60">
+                                                            <p class="text-[11px] font-semibold text-text-light uppercase tracking-wider mb-1">
+                                                                Pesan Mahasiswa
+                                                            </p>
+                                                            @foreach ($catatanList as $catatan)
+                                                                <p class="text-sm text-text bg-surface p-3 rounded-lg border border-border mt-1">
+                                                                    {{ $catatan }}
+                                                                </p>
+                                                            @endforeach
+                                                        </div>
+                                                    @endif
+
+                                                </div>
+                                            @endforeach
+                                        </div>
                                     </div>
-                                @endif
-
-                                <p class="text-xs text-text-light">
-                                    Dikumpulkan pada: {{ $submissionDisetujui->created_at->translatedFormat('d F Y, H:i') }}
-                                </p>
+                                @endforeach
                             </div>
-                        </div>
-                    @endif
+                        @else
+                            <div class="p-5 bg-background border border-border rounded-xl text-center text-sm text-text-light italic">
+                                Belum ada riwayat pengiriman tugas.
+                            </div>
+                        @endif
+                    </div>
 
                     <!-- Timeline / Riwayat Waktu -->
                     <div>

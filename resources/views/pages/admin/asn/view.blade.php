@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-
+    {{-- {{ $detailAsn }} --}}
     <main class="w-full p-4 md:p-8 bg-background min-h-screen font-montserrat">
         <section class="container-dalam max-w-4xl mx-auto">
 
@@ -18,7 +18,12 @@
                     <div class="absolute -top-16 flex items-end">
                         <div
                             class="w-32 h-32 rounded-full border-4 border-surface bg-background overflow-hidden shadow-sm flex items-center justify-center">
-                            @if (!empty($detailAsn->avatar))
+                            @if ($detailAsn->asnProfile?->avatar)
+                                {{-- Foto dari relasi asnProfile --}}
+                                <img src="{{ asset('storage/' . $detailAsn->asnProfile->avatar) }}"
+                                    alt="Foto {{ $detailAsn->name }}" class="w-full h-full object-cover">
+                            @elseif (!empty($detailAsn->avatar))
+                                {{-- Fallback foto dari tabel user --}}
                                 <img src="{{ asset('storage/' . $detailAsn->avatar) }}" alt="Foto {{ $detailAsn->name }}"
                                     class="w-full h-full object-cover">
                             @else

@@ -11,6 +11,7 @@
 </head>
 
 <body class="font-montserrat bg-background">
+    @include('layouts.components.toast-notification')
     @yield('content')
     @include('components.modal-alert')
 </body>

@@ -21,8 +21,8 @@
 
                         <!-- Avatar -->
                         <div class="flex-shrink-0">
-                            @if ($profil->avatar)
-                                <img src="{{ asset('storage/' . $profil->avatar) }}" alt="Foto {{ $profil->name }}"
+                            @if ($profil->asnProfile?->avatar)
+                                <img src="{{ asset('storage/' . $profil->asnProfile->avatar) }}" alt="Foto {{ $profil->name }}"
                                     class="w-24 h-24 rounded-full object-cover border-4 border-white shadow-sm">
                             @else
                                 <div
@@ -38,7 +38,7 @@
                                 <div>
                                     <h2 class="text-2xl font-bold text-text">{{ $profil->name }}</h2>
                                     <p class="text-sm font-medium text-text-light mt-1">
-                                        NIP. {{ $profil->asnProfile->nip ?? '-' }}
+                                        NIP. {{ $profil->asnProfile?->nip ?? '-' }}
                                     </p>
                                 </div>
 
@@ -60,7 +60,7 @@
 
                             <div
                                 class="mt-4 inline-block px-4 py-2 bg-white border border-border rounded-lg text-sm font-semibold text-text shadow-sm">
-                                {{ $profil->asnProfile->jabatan ?? 'Jabatan Belum Diatur' }}
+                                {{ $profil->asnProfile?->jabatan ?? 'Jabatan Belum Diatur' }}
                             </div>
                         </div>
                     </div>
@@ -84,27 +84,27 @@
 
                         <div class="space-y-1">
                             <p class="text-xs font-semibold text-text-light uppercase tracking-wide">Unit Kerja</p>
-                            <p class="text-sm font-medium text-text">{{ $profil->asnProfile->unit_kerja ?? '-' }}</p>
+                            <p class="text-sm font-medium text-text">{{ $profil->asnProfile?->unit_kerja ?? '-' }}</p>
                         </div>
 
                         <div class="space-y-1">
                             <p class="text-xs font-semibold text-text-light uppercase tracking-wide">Tanggal Lahir</p>
                             <p class="text-sm font-medium text-text">
-                                {{ $profil->asnProfile->tanggal_lahir ? \Carbon\Carbon::parse($profil->asnProfile->tanggal_lahir)->translatedFormat('d F Y') : '-' }}
+                                {{ $profil->asnProfile?->tanggal_lahir ? \Carbon\Carbon::parse($profil->asnProfile->tanggal_lahir)->translatedFormat('d F Y') : '-' }}
                             </p>
                         </div>
 
                         <div class="space-y-1 md:col-span-2">
                             <p class="text-xs font-semibold text-text-light uppercase tracking-wide">Alamat Lengkap</p>
                             <p class="text-sm font-medium text-text leading-relaxed">
-                                {{ $profil->asnProfile->alamat ?? 'Alamat belum ditambahkan.' }}
+                                {{ $profil->asnProfile?->alamat ?? 'Alamat belum ditambahkan.' }}
                             </p>
                         </div>
 
                     </div>
                 </div>
 
-                <!-- Bagian 3: Tombol Aksi (Diperbaiki Padding & Alignment-nya) -->
+                <!-- Bagian 3: Tombol Aksi -->
                 <div class="px-6 sm:px-8 pb-6 pt-4 border-t border-border/60 flex flex-col-reverse sm:flex-row gap-3 justify-end items-center">
                     <x-buttonv2 href="{{ route('asn-index') }}" color="primary" class="w-full sm:w-auto">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
@@ -114,7 +114,7 @@
                         Kembali
                     </x-buttonv2>
 
-                    <x-buttonv2 href="{{ route('asn-profil-form') }}"  color="accent-dark" class="w-full sm:w-auto">
+                    <x-buttonv2 href="{{ route('asn-profil-form') }}" color="accent-dark" class="w-full sm:w-auto">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
                             stroke-width="2" class="w-4 h-4">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />

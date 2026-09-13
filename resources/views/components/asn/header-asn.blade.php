@@ -1,6 +1,5 @@
 {{-- Header Component ASN --}}
-<header
-    class="w-full p-2">
+<header class="w-full p-2">
 
     <div class="w-full flex items-center justify-between gap-3 container-dalam">
 
@@ -9,15 +8,21 @@
             <a href="{{ route('asn-detail-profil') }}"
                 class="flex items-center gap-2.5 sm:gap-3 p-1.5 pr-3 sm:pr-4 bg-background/50 hover:bg-background border border-border/60 hover:border-primary/40 rounded-full transition-all duration-300 group shadow-xs hover:shadow-sm min-w-0">
 
-                <!-- Avatar Ikon ASN -->
-                <figure
-                    class="h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20 group-hover:bg-primary group-hover:text-white transition-all duration-300 shadow-xs">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                        stroke-width="1.5" class="w-5 h-5">
-                        <circle cx="12" cy="8" r="4" />
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 20a8 8 0 0116 0" />
-                    </svg>
-                </figure>
+                <!-- Foto Profil / Avatar Ikon ASN -->
+                @if (auth()->user()->asnProfile?->avatar)
+                    <img src="{{ asset('storage/' . auth()->user()->asnProfile->avatar) }}"
+                        alt="{{ auth()->user()->name }}"
+                        class="h-9 w-9 sm:h-10 sm:w-10 rounded-full object-cover shrink-0 border border-primary/20 shadow-xs">
+                @else
+                    <figure
+                        class="h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20 group-hover:bg-primary group-hover:text-white transition-all duration-300 shadow-xs">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            stroke-width="1.5" class="w-5 h-5">
+                            <circle cx="12" cy="8" r="4" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 20a8 8 0 0116 0" />
+                        </svg>
+                    </figure>
+                @endif
 
                 <!-- Informasi Text (Otomatis Truncate di Layar Kecil) -->
                 <div class="flex flex-col justify-center min-w-0 pr-1">

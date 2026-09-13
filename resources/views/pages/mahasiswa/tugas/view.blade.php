@@ -2,24 +2,13 @@
 
 @section('content')
     <main class="w-full p-4 md:p-8 bg-background min-h-screen font-montserrat">
-        <section class="container-dalam max-w-4xl mx-auto">
+        <section class="container-dalam max-w-4xl mx-auto space-y-6">
 
-            <!-- Alert Sukses (Jika berhasil) -->
-            @if (session('success'))
-                <div class="mb-6 p-4 bg-success/10 border border-success rounded-lg flex items-center gap-3 shadow-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-success shrink-0" viewBox="0 0 20 20"
-                        fill="currentColor">
-                        <path fill-rule="evenodd"
-                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                            clip-rule="evenodd" />
-                    </svg>
-                    <span class="text-sm font-medium text-success">{{ session('success') }}</span>
-                </div>
-            @endif
 
-            <!-- Alert Error (Jika gagal/ada peringatan) -->
+
+            <!-- Alert Error -->
             @if (session('error'))
-                <div class="mb-6 p-4 bg-danger/10 border border-danger rounded-lg flex items-center gap-3 shadow-sm">
+                <div class="p-4 bg-danger/10 border border-danger rounded-lg flex items-center gap-3 shadow-sm">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-danger shrink-0" viewBox="0 0 20 20"
                         fill="currentColor">
                         <path fill-rule="evenodd"
@@ -32,15 +21,64 @@
 
             <div class="bg-surface rounded-[10px] shadow-sm border border-border overflow-hidden">
 
-                <!-- Header Card Detail -->
-                <div class="p-6 md:p-8 border-b border-border bg-background">
-                    <div class="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-2">
-                        <h1 class="text-2xl font-bold text-text leading-snug">
-                            {{ $detailTugas->judul }}
-                        </h1>
+                <!-- Header Profil Pemberi Tugas (Posisi Paling Atas & Foto Besar) -->
+                <div class="p-6 md:p-8 bg-background border-b border-border flex flex-col items-center justify-center text-center">
+                    <div class="relative mb-3">
+                        @if ($detailTugas->asn?->asnProfile?->avatar)
+                            <img src="{{ asset('storage/' . $detailTugas->asn->asnProfile->avatar) }}"
+                                alt="{{ $detailTugas->asn->name ?? 'ASN' }}"
+                                class="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover border-4 border-surface shadow-md ring-4 ring-primary/20">
+                        @else
+                            <div
+                                class="w-24 h-24 md:w-32 md:h-32 rounded-full bg-primary-light/20 text-primary-dark flex items-center justify-center font-bold text-3xl md:text-4xl border-4 border-surface shadow-md ring-4 ring-primary/20">
+                                {{ strtoupper(substr($detailTugas->asn->name ?? 'A', 0, 1)) }}
+                            </div>
+                        @endif
+                    </div>
+
+                    <span class="text-[11px] font-semibold text-text-light uppercase tracking-wider bg-surface px-3 py-1 rounded-full border border-border mb-2">
+                        Pembuat Tugas
+                    </span>
+
+
+                    <h2 class="text-lg md:text-xl font-bold text-text">
+                        {{ $detailTugas->asn->name ?? '-' }}
+                    </h2>
+
+
+                    @if ($detailTugas->asn?->phone)
+                        <p class="text-xs md:text-sm text-text-light flex items-center gap-1.5 mt-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                            </svg>
+                            {{ $detailTugas->asn->phone }}
+                        </p>
+                    @endif
+                </div>
+
+                <!-- Body Card Detail Tugas -->
+                <div class="p-6 md:p-8 space-y-6">
+
+                    <!-- Judul Tugas & Status Badge -->
+                    <div class="flex flex-col md:flex-row md:items-start justify-between gap-4 pb-6 border-b border-border">
+                        <div>
+                            <h1 class="text-xl md:text-2xl font-bold text-text leading-snug">
+                                {{ $detailTugas->judul }}
+                            </h1>
+                            <p class="text-xs text-text-light flex items-center gap-1.5 mt-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Dibuat pada: {{ \Carbon\Carbon::parse($detailTugas->created_at)->translatedFormat('d F Y, H:i') }} WIB
+                            </p>
+                        </div>
 
                         <!-- Status Badge -->
-                        <div class="shrink-0 mt-1 md:mt-0">
+                        <div class="shrink-0">
                             @if (strtolower($detailTugas->status) === 'tersedia')
                                 <span
                                     class="inline-flex px-3 py-1 bg-success/10 text-success text-xs font-bold rounded-full uppercase tracking-wider border border-success/20">
@@ -55,78 +93,42 @@
                         </div>
                     </div>
 
-                    <p class="text-sm text-text-light flex items-center gap-1.5">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        Dibuat pada: {{ \Carbon\Carbon::parse($detailTugas->created_at)->translatedFormat('d F Y, H:i') }}
-                        WIB
-                    </p>
-                </div>
-
-                <!-- Body Card Detail -->
-                <div class="p-6 md:p-8 space-y-8">
-
-                    <!-- Info Grid (Deadline & Pembuat) -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-5 bg-background border border-border rounded-xl">
-                        <!-- Deadline -->
+                    <!-- Highlight Card Deadline -->
+                    <div class="p-4 md:p-5 bg-danger/5 border border-danger/20 rounded-xl flex items-center gap-4">
+                        <div class="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-danger/10 text-danger flex items-center justify-center shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:h-6 md:w-6" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                        </div>
                         <div>
-                            <p class="text-xs font-semibold text-text-light uppercase tracking-wider mb-1.5">Tenggat Waktu
-                                (Deadline)</p>
-                            <p class="text-base font-bold text-danger flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                                    stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                </svg>
+                            <p class="text-[11px] font-semibold text-text-light uppercase tracking-wider">Tenggat Waktu (Deadline)</p>
+                            <p class="text-sm md:text-base font-bold text-danger">
                                 {{ \Carbon\Carbon::parse($detailTugas->deadline)->translatedFormat('l, d F Y - H:i') }} WIB
                             </p>
-                        </div>
-
-                        <!-- Pembuat (ASN) -->
-                        <div>
-                            <p class="text-xs font-semibold text-text-light uppercase tracking-wider mb-1.5">Pemberi Tugas
-                                (ASN)</p>
-                            <div class="flex items-center gap-3">
-                                <div
-                                    class="w-10 h-10 rounded-full bg-primary-light/20 text-primary-dark flex items-center justify-center font-bold text-sm shrink-0 border border-primary/20">
-                                    {{ strtoupper(substr($detailTugas->asn->name ?? 'A', 0, 1)) }}
-                                </div>
-                                <div>
-                                    <p class="text-sm font-bold text-text">{{ $detailTugas->asn->name ?? '-' }}</p>
-                                    <p class="text-xs text-text-light flex items-center gap-1 mt-0.5">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none"
-                                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                                        </svg>
-                                        {{ $detailTugas->asn->phone ?? '-' }}
-                                    </p>
-                                </div>
-                            </div>
                         </div>
                     </div>
 
                     <!-- Deskripsi Tugas -->
                     <div>
-                        <h2 class="text-sm font-semibold text-text-light uppercase tracking-wider mb-3">Deskripsi / Detail
-                            Pekerjaan</h2>
-
-                        <div class="text-sm text-text leading-relaxed bg-surface border border-border p-5 rounded-xl ">
-                            {{ $detailTugas->deskripsi }}</div>
+                        <h2 class="text-xs font-semibold text-text-light uppercase tracking-wider mb-3">Deskripsi / Detail Pekerjaan</h2>
+                        <div class="text-sm text-text leading-relaxed bg-background border border-border p-5 rounded-xl">
+                            {{ $detailTugas->deskripsi }}
+                        </div>
                     </div>
+
+                    <!-- Lampiran dari ASN -->
                     @if ($detailTugas->attachments->isNotEmpty())
                         <div>
-                            <h2 class="text-sm font-semibold text-text-light uppercase tracking-wider mb-3">
+                            <h2 class="text-xs font-semibold text-text-light uppercase tracking-wider mb-3">
                                 Lampiran dari ASN
                             </h2>
 
                             <div class="space-y-2">
                                 @foreach ($detailTugas->attachments as $lampiran)
                                     <a href="{{ Storage::url($lampiran->file_path) }}" target="_blank"
-                                        class="flex items-center gap-3 bg-surface border border-border p-4 rounded-xl hover:border-primary transition-colors">
+                                        class="flex items-center gap-3 bg-background border border-border p-4 rounded-xl hover:border-primary transition-colors">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary shrink-0"
                                             fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -150,9 +152,6 @@
                 <div
                     class="p-6 md:px-8 md:py-6 bg-background border-t border-border flex flex-col sm:flex-row justify-between items-center gap-4">
 
-                    <!-- Tombol Kembali -->
-
-
                     <x-buttonv2 href="{{ route('tugas') }}" color="primary" class="w-full sm:w-auto">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor" stroke-width="3">
@@ -162,10 +161,8 @@
                     </x-buttonv2>
 
                     @if ($detailTugas->status === 'tersedia')
-                        <form method="POST" action="{{ route('mahasiswa-tugas-ambil', $detailTugas->id) }}">
+                        <form method="POST" action="{{ route('mahasiswa-tugas-ambil', $detailTugas->id) }}" class="w-full sm:w-auto">
                             @csrf
-
-
                             <x-buttonv2 type="submit" color="accent-dark" class="w-full sm:w-auto">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">

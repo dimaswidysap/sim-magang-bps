@@ -12,7 +12,6 @@
                     </p>
                 </div>
 
-
                 <x-buttonv2 href="{{ route('berita-index') }}" color="accent-dark" class="w-full sm:w-auto">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="3">
@@ -88,37 +87,63 @@
                                     Lampiran Saat Ini
                                 </label>
 
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                                     @foreach ($berita->attachments as $lampiran)
-                                        <!-- Card Lampiran dengan Checkbox Hapus -->
-                                        <label
-                                            class="relative flex items-start gap-3 p-3 border border-border rounded-xl bg-background cursor-pointer overflow-hidden transition-colors hover:border-danger/50 select-none">
+                                        @php
+                                            $ext = strtolower(pathinfo($lampiran->file_name, PATHINFO_EXTENSION));
+                                            $isImage = in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg']);
+                                            $filePath = asset('storage/' . ($lampiran->file_path ?? $lampiran->file_name));
+                                        @endphp
 
-                                            <!-- Checkbox (menggunakan class peer untuk mengatur style elemen disekitarnya) -->
-                                            <input type="checkbox" name="hapus_lampiran[]" value="{{ $lampiran->id }}"
-                                                class="peer mt-0.5 w-4 h-4 text-danger border-border rounded focus:ring-danger accent-danger relative z-10 cursor-pointer">
+                                        <!-- Card Lampiran -->
+                                        <div id="card-{{ $lampiran->id }}" class="relative border border-border rounded-xl p-2.5 bg-background flex flex-col justify-between transition-all select-none overflow-hidden group">
 
-                                            <!-- Highlight merah saat dicentang -->
-                                            <div
-                                                class="absolute inset-0 bg-danger/5 opacity-0 peer-checked:opacity-100 transition-opacity border-danger">
-                                            </div>
-                                            <div
-                                                class="absolute inset-0 border border-transparent peer-checked:border-danger rounded-xl transition-colors pointer-events-none">
+                                            <!-- Checkbox tersembunyi untuk backend -->
+                                            <input type="checkbox" name="hapus_lampiran[]" value="{{ $lampiran->id }}" id="hapus-{{ $lampiran->id }}" class="hidden">
+
+                                            <!-- Tombol Icon Hapus di Pojok Kanan Atas -->
+                                            <button type="button" onclick="toggleDeleteExisting('{{ $lampiran->id }}')"
+                                                class="absolute top-2 right-2 z-20 p-1.5 rounded-full bg-white/90 shadow-md text-text-light hover:text-danger hover:bg-white transition-colors"
+                                                title="Hapus file ini">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
+
+                                            <!-- Overlay Ketika Ditandai Hapus (High Contrast & Clear UI) -->
+                                            <div id="overlay-{{ $lampiran->id }}" class="hidden absolute inset-0 rounded-[14px] bg-slate-900/85 z-30 flex flex-col items-center justify-center p-2 text-center backdrop-blur-xs transition-all">
+                                                <div class="w-8 h-8 rounded-full bg-danger/20 flex items-center justify-center text-danger mb-1.5">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                    </svg>
+                                                </div>
+                                                <span class="text-xs font-bold text-white mb-2 tracking-wide">Akan Dihapus</span>
+                                                <button type="button" onclick="toggleDeleteExisting('{{ $lampiran->id }}')"
+                                                    class="px-3 py-1.5 bg-white hover:bg-slate-100 text-danger text-[11px] font-bold rounded-lg shadow-sm transition-all flex items-center gap-1 active:scale-95">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                                                    </svg>
+                                                    Batal Hapus
+                                                </button>
                                             </div>
 
-                                            <!-- Info File -->
-                                            <div
-                                                class="flex-1 overflow-hidden relative z-10 flex flex-col justify-center min-h-[1.5rem]">
-                                                <p
-                                                    class="text-sm font-semibold text-text truncate peer-checked:text-danger peer-checked:line-through transition-all">
-                                                    {{ $lampiran->file_name }}
-                                                </p>
-                                                <p
-                                                    class="text-[10px] text-text-light peer-checked:text-danger mt-0.5 transition-colors">
-                                                    Centang untuk menghapus file ini
-                                                </p>
-                                            </div>
-                                        </label>
+                                            <!-- Preview Visual (Gambar vs Dokumen) -->
+                                            @if ($isImage)
+                                                <img src="{{ $filePath }}" alt="{{ $lampiran->file_name }}" class="h-24 overflow-hidden w-full object-cover rounded-lg mb-2 border border-border/40">
+                                            @else
+                                                <div class="h-24 w-full bg-surface overflow-hidden rounded-lg mb-2 flex flex-col items-center justify-center text-text-light border border-border/50">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mb-1 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                                    </svg>
+                                                    <span class="text-[10px] font-bold text-text-light tracking-wider uppercase">{{ $ext }}</span>
+                                                </div>
+                                            @endif
+
+                                            <!-- Info Nama File -->
+                                            <p class="text-[11px] font-semibold text-text truncate w-full px-1" title="{{ $lampiran->file_name }}">
+                                                {{ $lampiran->file_name }}
+                                            </p>
+                                        </div>
                                     @endforeach
                                 </div>
                             </div>
@@ -129,15 +154,14 @@
                             <label class="block text-sm font-semibold text-text-light uppercase tracking-wider mb-2">
                                 Tambah Lampiran Baru <span class="normal-case font-normal text-[11px]">(Opsional)</span>
                             </label>
-                            <div
-                                class="border-2 border-dashed border-border rounded-xl p-4 bg-[#F8FAFC] hover:border-primary transition-colors">
-                                <input type="file" name="lampiran[]" multiple
+                            <div class="border-2 border-dashed border-border rounded-xl p-4 bg-[#F8FAFC] hover:border-primary transition-colors">
+                                <input type="file" name="lampiran[]" id="lampiran-input" multiple
                                     class="block w-full text-sm text-text-light cursor-pointer
-                                file:mr-4 file:py-2 file:px-4
-                                file:rounded-lg file:border-0
-                                file:text-xs file:font-semibold
-                                file:bg-primary file:text-white
-                                hover:file:bg-primary-dark transition-colors">
+                                    file:mr-4 file:py-2 file:px-4
+                                    file:rounded-lg file:border-0
+                                    file:text-xs file:font-semibold
+                                    file:bg-primary file:text-white
+                                    hover:file:bg-primary-dark transition-colors">
                                 <p class="text-[11px] text-text-light mt-2.5 flex items-center gap-1.5">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-primary" fill="none"
                                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -146,6 +170,10 @@
                                     </svg>
                                     Anda dapat memilih lebih dari satu file tambahan (Maks. 10 MB per file).
                                 </p>
+
+                                <!-- Grid Preview Lampiran Baru -->
+                                <div id="preview-container" class="overflow-hidden mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 hidden border-t border-border pt-4">
+                                </div>
                             </div>
                         </div>
 
@@ -168,4 +196,114 @@
 
         </section>
     </main>
+
+    <!-- JavaScript Handler -->
+    <script>
+        // Toggle Status Hapus Lampiran Saat Ini
+        function toggleDeleteExisting(id) {
+            const checkbox = document.getElementById(`hapus-${id}`);
+            const overlay = document.getElementById(`overlay-${id}`);
+            const card = document.getElementById(`card-${id}`);
+
+            checkbox.checked = !checkbox.checked;
+
+            if (checkbox.checked) {
+                overlay.classList.remove('hidden');
+                card.classList.add('border-danger', 'ring-1', 'ring-danger');
+            } else {
+                overlay.classList.add('hidden');
+                card.classList.remove('border-danger', 'ring-1', 'ring-danger');
+            }
+        }
+
+        // Script Preview & Hapus Lampiran Baru
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileInput = document.getElementById('lampiran-input');
+            const previewContainer = document.getElementById('preview-container');
+
+            let selectedFiles = new DataTransfer();
+
+            fileInput.addEventListener('change', function(e) {
+                for (let i = 0; i < e.target.files.length; i++) {
+                    selectedFiles.items.add(e.target.files[i]);
+                }
+                fileInput.files = selectedFiles.files;
+                renderPreviews();
+            });
+
+            function removeNewFile(index) {
+                selectedFiles.items.remove(index);
+                fileInput.files = selectedFiles.files;
+                renderPreviews();
+            }
+
+            function renderPreviews() {
+                previewContainer.innerHTML = '';
+                const files = selectedFiles.files;
+
+                if (files.length > 0) {
+                    previewContainer.classList.remove('hidden');
+
+                    Array.from(files).forEach((file, index) => {
+                        const card = document.createElement('div');
+                        card.className = 'relative border border-border rounded-xl p-2.5 bg-white flex flex-col items-center justify-between text-center shadow-xs overflow-hidden group select-none';
+
+                        // Tombol Icon Hapus di Pojok Kanan Atas Preview File Baru
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.type = 'button';
+                        deleteBtn.className = 'absolute top-2 right-2 z-20 p-1.5 rounded-full bg-white/90 shadow-md text-text-light hover:text-danger hover:bg-white transition-colors';
+                        deleteBtn.title = 'Hapus file ini';
+                        deleteBtn.innerHTML = `
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        `;
+                        deleteBtn.onclick = function() {
+                            removeNewFile(index);
+                        };
+                        card.appendChild(deleteBtn);
+
+                        if (file.type.startsWith('image/')) {
+                            // Render Preview Gambar
+                            const img = document.createElement('img');
+                            img.src = URL.createObjectURL(file);
+                            img.className = 'h-24 w-full object-cover rounded-lg mb-2 border border-border/40';
+                            img.onload = () => URL.revokeObjectURL(img.src);
+                            card.appendChild(img);
+                        } else {
+                            // Render Icon Dokumen
+                            const ext = file.name.split('.').pop().toUpperCase();
+                            const iconBox = document.createElement('div');
+                            iconBox.className = 'h-24 overflow-hidden w-full bg-background rounded-lg mb-2 flex flex-col items-center justify-center text-text-light border border-border/50';
+                            iconBox.innerHTML = `
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mb-1 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                </svg>
+                                <span class="text-[10px] font-bold text-text-light tracking-wider">${ext}</span>
+                            `;
+                            card.appendChild(iconBox);
+                        }
+
+                        // Nama File
+                        const fileName = document.createElement('p');
+                        fileName.className = 'text-[11px] font-semibold text-text truncate w-full px-1';
+                        fileName.title = file.name;
+                        fileName.textContent = file.name;
+                        card.appendChild(fileName);
+
+                        // Ukuran File
+                        const fileSize = document.createElement('span');
+                        fileSize.className = 'text-[10px] text-text-light mt-0.5';
+                        const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+                        fileSize.textContent = `${sizeMB} MB`;
+                        card.appendChild(fileSize);
+
+                        previewContainer.appendChild(card);
+                    });
+                } else {
+                    previewContainer.classList.add('hidden');
+                }
+            }
+        });
+    </script>
 @endsection

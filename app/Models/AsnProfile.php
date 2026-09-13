@@ -9,11 +9,20 @@ class AsnProfile extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id','alamat', 'tanggal_lahir', 'nip', 'jabatan', 'unit_kerja'];
+    protected $fillable = [
+        'user_id',
+        'alamat',
+        'tanggal_lahir',
+        'nip',
+        'jabatan',
+        'unit_kerja',
+        'avatar', // Ditambahkan ke fillable
+    ];
 
     protected $casts = [
         'tanggal_lahir' => 'date',
     ];
+
     public function user()
     {
         return $this->belongsTo(User::class);

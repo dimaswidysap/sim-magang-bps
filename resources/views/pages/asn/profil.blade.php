@@ -101,27 +101,29 @@
                     </h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-background p-5 rounded-xl border border-border">
 
-                        <!-- Input Foto Profil dengan Tampilan Foto Lama -->
+                        <!-- Input Foto Profil dengan Live Preview -->
                         <div
                             class="md:col-span-2 flex flex-col sm:flex-row sm:items-center gap-6 p-4 border border-border rounded-lg bg-surface">
 
-                            <!-- Foto Lama / Inisial -->
-                            <div class="flex-shrink-0">
-                                @if ($profil->avatar)
-                                    <img src="{{ asset('storage/' . $profil->avatar) }}" alt="Foto Profil Lama"
-                                        class="w-20 h-20 rounded-full object-cover border-4 border-white shadow-md bg-background">
-                                @else
-                                    <div
-                                        class="w-20 h-20 rounded-full border-4 border-white shadow-md bg-primary/10 text-primary flex items-center justify-center text-3xl font-bold uppercase">
-                                        {{ substr($profil->name, 0, 1) }}
-                                    </div>
-                                @endif
+                            <!-- Container Preview Foto / Inisial -->
+                            <div class="flex-shrink-0 relative">
+                                <!-- Element Gambar Preview -->
+                                <img id="avatar-preview"
+                                    src="{{ $profil->asnProfile?->avatar ? asset('storage/' . $profil->asnProfile->avatar) : '' }}"
+                                    alt="Preview Foto Profil"
+                                    class="w-20 h-20 rounded-full object-cover border-4 border-white shadow-md bg-background {{ $profil->asnProfile?->avatar ? '' : 'hidden' }}">
+
+                                <!-- Element Placeholder (jika belum ada foto) -->
+                                <div id="avatar-placeholder"
+                                    class="w-20 h-20 rounded-full border-4 border-white shadow-md bg-primary/10 text-primary flex items-center justify-center text-3xl font-bold uppercase {{ $profil->asnProfile?->avatar ? 'hidden' : '' }}">
+                                    {{ substr($profil->name, 0, 1) }}
+                                </div>
                             </div>
 
                             <!-- Input File -->
                             <div class="flex-1">
                                 <label class="block text-sm font-medium text-text mb-1.5">Ubah Foto Profil</label>
-                                <input type="file" name="avatar" accept="image/*"
+                                <input type="file" id="avatar-input" name="avatar" accept="image/*"
                                     class="block w-full text-sm text-text-light
                                     file:mr-4 file:py-2.5 file:px-4
                                     file:rounded-lg file:border-0
@@ -129,7 +131,7 @@
                                     file:bg-primary/10 file:text-primary
                                     hover:file:bg-primary/20
                                     cursor-pointer border border-border rounded-lg bg-background focus:outline-none transition-colors">
-                                <p class="text-xs text-text-light mt-1.5">* Format: JPG, PNG, maksimal 2MB. Biarkan kosong
+                                <p class="text-xs text-text-light mt-1.5">* Format: JPG, PNG, WEBP, maksimal 2MB. Biarkan kosong
                                     jika tidak ingin mengubah foto.</p>
                             </div>
                         </div>
@@ -143,7 +145,7 @@
                         <div>
                             <label class="block text-sm font-medium text-text-light mb-1.5">Tanggal Lahir</label>
                             <input type="date" name="tanggal_lahir"
-                                value="{{ old('tanggal_lahir', $profil->asnProfile->tanggal_lahir ? \Carbon\Carbon::parse($profil->asnProfile->tanggal_lahir)->format('Y-m-d') : '') }}"
+                                value="{{ old('tanggal_lahir', $profil->asnProfile?->tanggal_lahir ? \Carbon\Carbon::parse($profil->asnProfile->tanggal_lahir)->format('Y-m-d') : '') }}"
                                 class="w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors">
                         </div>
 
@@ -160,7 +162,7 @@
                             <label class="block text-sm font-medium text-text-light mb-1.5">Alamat Lengkap</label>
                             <textarea name="alamat" rows="3"
                                 class="w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors resize-none placeholder-gray-400"
-                                placeholder="Masukkan alamat domisili lengkap...">{{ old('alamat', $profil->asnProfile->alamat ?? '') }}</textarea>
+                                placeholder="Masukkan alamat domisili lengkap...">{{ old('alamat', $profil->asnProfile?->alamat ?? '') }}</textarea>
                         </div>
                     </div>
                 </div>
@@ -180,19 +182,19 @@
                             <label class="block text-sm font-medium text-text-light mb-1.5">Nomor Induk Pegawai
                                 (NIP)</label>
                             <input type="text" name="nip"
-                                value="{{ old('nip', $profil->asnProfile->nip ?? '') }}"
+                                value="{{ old('nip', $profil->asnProfile?->nip ?? '') }}"
                                 class="hanya-angka w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors font-mono tracking-wider">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-text-light mb-1.5">Jabatan</label>
                             <input type="text" name="jabatan"
-                                value="{{ old('jabatan', $profil->asnProfile->jabatan ?? '') }}"
+                                value="{{ old('jabatan', $profil->asnProfile?->jabatan ?? '') }}"
                                 class="w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-text-light mb-1.5">Unit Kerja</label>
                             <input type="text" name="unit_kerja"
-                                value="{{ old('unit_kerja', $profil->asnProfile->unit_kerja ?? '') }}"
+                                value="{{ old('unit_kerja', $profil->asnProfile?->unit_kerja ?? '') }}"
                                 class="w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors">
                         </div>
                     </div>
@@ -223,4 +225,34 @@
             </form>
         </section>
     </main>
+
+    <!-- Script Live Preview Foto Profil -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const avatarInput = document.getElementById('avatar-input');
+            const avatarPreview = document.getElementById('avatar-preview');
+            const avatarPlaceholder = document.getElementById('avatar-placeholder');
+
+            avatarInput.addEventListener('change', function (e) {
+                const file = e.target.files[0];
+
+                if (file) {
+                    const reader = new FileReader();
+
+                    reader.onload = function (event) {
+                        // Pasang data gambar ke src avatarPreview
+                        avatarPreview.src = event.target.result;
+
+                        // Tampilkan image preview & sembunyikan placeholder inisial
+                        avatarPreview.classList.remove('hidden');
+                        if (avatarPlaceholder) {
+                            avatarPlaceholder.classList.add('hidden');
+                        }
+                    };
+
+                    reader.readAsDataURL(file);
+                }
+            });
+        });
+    </script>
 @endsection
