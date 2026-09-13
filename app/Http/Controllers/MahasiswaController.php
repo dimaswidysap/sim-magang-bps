@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use App\Models\User;
-use App\Models\PeriodeMagang;
 use App\Models\MahasiswaProfile;
 use App\Models\Skill;
 use App\Models\Tugas;
@@ -124,19 +124,19 @@ class MahasiswaController extends Controller
         return view('pages.mahasiswa.tugas-saya.index', compact('dataTugas'));
     }
 
-   public function detailTugasSaya($id)
-{
-    $detailTugas = Tugas::with([
-        'anggota',
-        'asn',
-        'attachments',
-        'submissions' => function ($query) {
-            $query->latest();
-        }
-    ])->findOrFail($id);
+    public function detailTugasSaya($id)
+    {
+        $detailTugas = Tugas::with([
+            'anggota',
+            'asn',
+            'attachments',
+            'submissions' => function ($query) {
+                $query->latest();
+            },
+        ])->findOrFail($id);
 
-    return view('pages.mahasiswa.tugas-saya.view', compact('detailTugas'));
-}
+        return view('pages.mahasiswa.tugas-saya.view', compact('detailTugas'));
+    }
 
     public function profil()
     {
@@ -162,8 +162,8 @@ class MahasiswaController extends Controller
 
         $validated = $request->validate(
             [
+                'foto_profil' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048', // <-- VALIDASI FOTO PROFIL
                 'name' => 'required|string|max:255',
-                // 'phone' => 'nullable|integer|max:13',
                 'phone' => 'nullable|string|max:13',
                 'instansi_asal' => 'required|string|max:255',
                 'nim' => [
@@ -182,13 +182,18 @@ class MahasiswaController extends Controller
                 'skills.*' => 'exists:skills,id',
             ],
             [
+                // Pesan error untuk field foto_profil
+                'foto_profil.image' => 'File foto profil harus berupa gambar.',
+                'foto_profil.mimes' => 'Format foto profil yang diperbolehkan hanya: jpeg, png, jpg, atau webp.',
+                'foto_profil.max' => 'Ukuran foto profil maksimal 2 MB.',
+
                 // Pesan error untuk field name
                 'name.required' => 'Nama lengkap wajib diisi.',
                 'name.string' => 'Nama lengkap harus berupa teks.',
                 'name.max' => 'Nama lengkap maksimal 255 karakter.',
 
                 // Pesan error untuk field phone
-                'phone.string' => 'Nomor telepon harus berupa teks angka.', // Ubah phone.integer menjadi phone.string
+                'phone.string' => 'Nomor telepon harus berupa teks angka.',
                 'phone.max' => 'Nomor telepon maksimal 13 karakter.',
 
                 // Pesan error untuk field instansi_asal
@@ -224,23 +229,39 @@ class MahasiswaController extends Controller
             ],
         );
 
-        $user->update([
-            'name' => $validated['name'],
-            'phone' => $validated['phone'] ?? null,
-        ]);
+       // LOGIKA UPLOAD FOTO PROFIL
+$profile = $user->mahasiswaProfile;
+$fotoProfilPath = $profile?->foto_profil_path;
 
-        $profile = MahasiswaProfile::updateOrCreate(
-            ['user_id' => $user->id],
-            [
-                'periode_magang_id' => $validated['periode_magang_id'] ?? null,
-                'nim' => $validated['nim'],
-                'instansi_asal' => $validated['instansi_asal'],
-                'jenjang' => $validated['jenjang'] ?? null,
-                'jurusan' => $validated['jurusan'] ?? null,
-                'tanggal_mulai' => $validated['tanggal_mulai'] ?? null,
-                'tanggal_selesai' => $validated['tanggal_selesai'] ?? null,
-            ],
-        );
+if ($request->hasFile('foto_profil')) {
+    // Hapus foto lama dari storage jika ada
+    if ($fotoProfilPath && Storage::disk('public')->exists($fotoProfilPath)) {
+        Storage::disk('public')->delete($fotoProfilPath);
+    }
+
+    // Upload foto baru
+    $fotoProfilPath = $request->file('foto_profil')->store('foto_profil', 'public');
+}
+
+$user->update([
+    'name' => $validated['name'],
+    'phone' => $validated['phone'] ?? null,
+]);
+
+$profile = MahasiswaProfile::updateOrCreate(
+    ['user_id' => $user->id],
+    [
+        'foto_profil_path' => $fotoProfilPath,
+        'periode_magang_id' => $validated['periode_magang_id'] ?? null,
+        'nim' => $validated['nim'],
+        'instansi_asal' => $validated['instansi_asal'],
+        'jenjang' => $validated['jenjang'] ?? null,
+        'jurusan' => $validated['jurusan'] ?? null,
+        'tanggal_mulai' => $validated['tanggal_mulai'] ?? null,
+        'tanggal_selesai' => $validated['tanggal_selesai'] ?? null,
+        'alamat' => $request->input('alamat'), // Tambahkan field alamat jika perlu di-update
+    ]
+);
 
         $profile->skills()->sync($validated['skills'] ?? []);
 

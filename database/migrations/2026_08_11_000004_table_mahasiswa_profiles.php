@@ -11,6 +11,7 @@ return new class extends Migration
         Schema::create('mahasiswa_profiles', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->unique()->constrained('users')->cascadeOnDelete();
+            $table->string('foto_profil_path')->nullable();
             $table->string('nim')->nullable();
             $table->string('instansi_asal')->nullable();
             $table->enum('jenjang', ['SMA/SMK', 'D3', 'D4', 'S1', 'S2'])->nullable();

@@ -5,18 +5,49 @@
 <main class="w-full p-4 md:p-8 bg-background min-h-screen font-montserrat">
     <section class="max-w-5xl mx-auto space-y-6">
 
-        <!-- Header Halaman -->
+        @php
+            // Logika pengecekan foto profil mahasiswa / user
+            $avatarPath = $mahasiswa->foto_profil_path
+                ?? ($mahasiswa->foto
+                ?? ($mahasiswa->avatar
+                ?? ($mahasiswa->user?->foto_profil_path
+                ?? ($mahasiswa->user?->avatar
+                ?? ($mahasiswa->user?->foto ?? null)))));
+
+            $avatarUrl = null;
+            if ($avatarPath) {
+                $avatarUrl = filter_var($avatarPath, FILTER_VALIDATE_URL)
+                    ? $avatarPath
+                    : asset('storage/' . $avatarPath);
+            }
+        @endphp
+
+        <!-- Header Halaman + Foto Profil -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
-            <div>
-                <h1 class="text-2xl font-bold text-text leading-snug">Logbook Mahasiswa</h1>
-                <p class="text-sm font-semibold text-primary mt-1 flex items-center gap-1.5">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                    {{ $mahasiswa->user->name }}
-                    -
-                    {{ $mahasiswa->jurusan }}
-                </p>
+            <div class="flex items-center gap-4">
+
+                <!-- Wrapper Foto Profil Agak Besar -->
+                <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-primary/10 text-primary-dark flex items-center justify-center text-xl sm:text-2xl font-bold shrink-0 border-2 border-primary/20 overflow-hidden shadow-sm">
+                    @if ($avatarUrl)
+                        <img src="{{ $avatarUrl }}" alt="{{ $mahasiswa->user->name ?? 'Mahasiswa' }}" class="w-full h-full object-cover">
+                    @else
+                        {{ strtoupper(substr($mahasiswa->user->name ?? 'M', 0, 1)) }}
+                    @endif
+                </div>
+
+                <!-- Informasi Mahasiswa -->
+                <div>
+                    <h1 class="text-2xl font-bold text-text leading-snug">Logbook Mahasiswa</h1>
+                    <p class="text-sm font-semibold text-primary mt-1 flex items-center gap-1.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        {{ $mahasiswa->user->name ?? '-' }}
+                        -
+                        {{ $mahasiswa->jurusan ?? '-' }}
+                    </p>
+                </div>
+
             </div>
 
             <x-buttonv2 href="{{ route('asn-index') }}" color="accent-dark" class="w-full sm:w-auto">

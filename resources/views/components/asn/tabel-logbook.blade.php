@@ -11,10 +11,8 @@
                 <tr>
                     <th class="px-6 py-4 text-xs font-bold text-text-light uppercase tracking-wider">Nama Mahasiswa</th>
                     <th class="px-6 py-4 text-xs font-bold text-text-light uppercase tracking-wider">Jurusan</th>
-                    <th class="px-6 py-4 text-xs font-bold text-text-light uppercase tracking-wider text-center">Tugas
-                        Aktif</th>
-                    <th class="px-6 py-4 text-xs font-bold text-text-light uppercase tracking-wider text-center">Tugas
-                        Selesai</th>
+                    <th class="px-6 py-4 text-xs font-bold text-text-light uppercase tracking-wider text-center">Tugas Aktif</th>
+                    <th class="px-6 py-4 text-xs font-bold text-text-light uppercase tracking-wider text-center">Tugas Selesai</th>
                     <th class="px-6 py-4 text-xs font-bold text-text-light uppercase tracking-wider text-right">Aksi</th>
                 </tr>
             </thead>
@@ -22,13 +20,33 @@
             <!-- Table Body -->
             <tbody class="divide-y divide-border">
                 @forelse ($daftarMahasiswa as $mhs)
+                    @php
+                        // Cek lokasi foto profil (pada model $mhs atau relasi user)
+                        $avatarPath = $mhs->foto_profil_path
+                            ?? ($mhs->foto
+                            ?? ($mhs->avatar
+                            ?? ($mhs->user?->foto_profil_path
+                            ?? ($mhs->user?->avatar
+                            ?? ($mhs->user?->foto ?? null)))));
+
+                        $avatarUrl = null;
+                        if ($avatarPath) {
+                            $avatarUrl = filter_var($avatarPath, FILTER_VALIDATE_URL)
+                                ? $avatarPath
+                                : asset('storage/' . $avatarPath);
+                        }
+                    @endphp
+
                     <tr class="data-row hover:bg-primary/5 transition-colors duration-200">
-                        <!-- Kolom Nama -->
+                        <!-- Kolom Nama & Foto Profil -->
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-3">
-                                <div
-                                    class="w-8 h-8 rounded-full bg-primary/10 text-primary-dark flex items-center justify-center text-xs font-bold shrink-0 border border-primary/20">
-                                    {{ strtoupper(substr($mhs->user->name, 0, 1)) }}
+                                <div class="w-8 h-8 rounded-full bg-primary/10 text-primary-dark flex items-center justify-center text-xs font-bold shrink-0 border border-primary/20 overflow-hidden">
+                                    @if ($avatarUrl)
+                                        <img src="{{ $avatarUrl }}" alt="{{ $mhs->user->name }}" class="w-full h-full object-cover">
+                                    @else
+                                        {{ strtoupper(substr($mhs->user->name ?? 'M', 0, 1)) }}
+                                    @endif
                                 </div>
                                 <span class="text-sm font-bold text-text">{{ $mhs->user->name }}</span>
                             </div>
@@ -44,13 +62,11 @@
                         <!-- Kolom Jumlah Tugas Aktif -->
                         <td class="px-6 py-4 text-center">
                             @if ($mhs->jumlah_tugas_aktif > 0)
-                                <span
-                                    class="inline-flex items-center justify-center min-w-[2rem] px-2 py-1 bg-warning/10 text-warning-dark text-xs font-bold rounded-full border border-warning/20">
+                                <span class="inline-flex items-center justify-center min-w-[2rem] px-2 py-1 bg-warning/10 text-warning-dark text-xs font-bold rounded-full border border-warning/20">
                                     {{ $mhs->jumlah_tugas_aktif }}
                                 </span>
                             @else
-                                <span
-                                    class="inline-flex items-center justify-center min-w-[2rem] px-2 py-1 bg-background border border-border text-text-light text-xs font-bold rounded-full">
+                                <span class="inline-flex items-center justify-center min-w-[2rem] px-2 py-1 bg-background border border-border text-text-light text-xs font-bold rounded-full">
                                     0
                                 </span>
                             @endif
@@ -59,13 +75,11 @@
                         <!-- Kolom Jumlah Tugas Selesai -->
                         <td class="px-6 py-4 text-center">
                             @if ($mhs->jumlah_tugas_selesai > 0)
-                                <span
-                                    class="inline-flex items-center justify-center min-w-[2rem] px-2 py-1 bg-warning/10 text-warning-dark text-xs font-bold rounded-full border border-warning/20">
+                                <span class="inline-flex items-center justify-center min-w-[2rem] px-2 py-1 bg-warning/10 text-warning-dark text-xs font-bold rounded-full border border-warning/20">
                                     {{ $mhs->jumlah_tugas_selesai }}
                                 </span>
                             @else
-                                <span
-                                    class="inline-flex items-center justify-center min-w-[2rem] px-2 py-1 bg-background border border-border text-text-light text-xs font-bold rounded-full">
+                                <span class="inline-flex items-center justify-center min-w-[2rem] px-2 py-1 bg-background border border-border text-text-light text-xs font-bold rounded-full">
                                     0
                                 </span>
                             @endif
@@ -109,12 +123,37 @@
     <!-- ========================================== -->
     <div class="block md:hidden bg-background p-4 space-y-4">
         @forelse ($daftarMahasiswa as $mhs)
+            @php
+                $avatarPath = $mhs->foto_profil_path
+                    ?? ($mhs->foto
+                    ?? ($mhs->avatar
+                    ?? ($mhs->user?->foto_profil_path
+                    ?? ($mhs->user?->avatar
+                    ?? ($mhs->user?->foto ?? null)))));
+
+                $avatarUrl = null;
+                if ($avatarPath) {
+                    $avatarUrl = filter_var($avatarPath, FILTER_VALIDATE_URL)
+                        ? $avatarPath
+                        : asset('storage/' . $avatarPath);
+                }
+            @endphp
+
             <div class="bg-surface border border-border rounded-xl p-4 shadow-sm data-row">
 
-                <!-- Field: Nama -->
-                <div class="flex justify-between items-start py-2">
+                <!-- Field: Nama & Foto -->
+                <div class="flex justify-between items-center py-2">
                     <span class="text-[11px] font-bold text-text-light uppercase tracking-wider w-1/3">Nama:</span>
-                    <span class="text-sm font-bold text-text text-right w-2/3">{{ $mhs->user->name }}</span>
+                    <div class="flex items-center gap-2 justify-end w-2/3">
+                        <div class="w-7 h-7 rounded-full bg-primary/10 text-primary-dark flex items-center justify-center text-[10px] font-bold shrink-0 border border-primary/20 overflow-hidden">
+                            @if ($avatarUrl)
+                                <img src="{{ $avatarUrl }}" alt="{{ $mhs->user->name }}" class="w-full h-full object-cover">
+                            @else
+                                {{ strtoupper(substr($mhs->user->name ?? 'M', 0, 1)) }}
+                            @endif
+                        </div>
+                        <span class="text-sm font-bold text-text text-right truncate">{{ $mhs->user->name }}</span>
+                    </div>
                 </div>
 
                 <!-- Field: Jurusan -->
@@ -125,17 +164,14 @@
 
                 <!-- Field: Tugas Aktif -->
                 <div class="flex justify-between items-center py-2">
-                    <span class="text-[11px] font-bold text-text-light uppercase tracking-wider w-1/3">Tugas
-                        Aktif:</span>
+                    <span class="text-[11px] font-bold text-text-light uppercase tracking-wider w-1/3">Tugas Aktif:</span>
                     <div class="w-2/3 text-right">
                         @if ($mhs->jumlah_tugas_aktif > 0)
-                            <span
-                                class="inline-flex items-center justify-center min-w-[3rem] px-2.5 py-1 bg-warning/10 text-warning-dark text-xs font-bold rounded-md border border-warning/20">
+                            <span class="inline-flex items-center justify-center min-w-[3rem] px-2.5 py-1 bg-warning/10 text-warning-dark text-xs font-bold rounded-md border border-warning/20">
                                 {{ $mhs->jumlah_tugas_aktif }}
                             </span>
                         @else
-                            <span
-                                class="inline-flex items-center justify-center min-w-[3rem] px-2.5 py-1 bg-background border border-border text-text-light text-xs font-bold rounded-md">
+                            <span class="inline-flex items-center justify-center min-w-[3rem] px-2.5 py-1 bg-background border border-border text-text-light text-xs font-bold rounded-md">
                                 0
                             </span>
                         @endif
@@ -144,17 +180,14 @@
 
                 <!-- Field: Tugas Selesai -->
                 <div class="flex justify-between items-center py-2">
-                    <span class="text-[11px] font-bold text-text-light uppercase tracking-wider w-1/3">Tugas
-                        Selesai:</span>
+                    <span class="text-[11px] font-bold text-text-light uppercase tracking-wider w-1/3">Tugas Selesai:</span>
                     <div class="w-2/3 text-right">
                         @if ($mhs->jumlah_tugas_selesai > 0)
-                            <span
-                                class="inline-flex items-center justify-center min-w-[3rem] px-2.5 py-1 bg-warning/10 text-warning-dark text-xs font-bold rounded-md border border-warning/20">
+                            <span class="inline-flex items-center justify-center min-w-[3rem] px-2.5 py-1 bg-warning/10 text-warning-dark text-xs font-bold rounded-md border border-warning/20">
                                 {{ $mhs->jumlah_tugas_selesai }}
                             </span>
                         @else
-                            <span
-                                class="inline-flex items-center justify-center min-w-[3rem] px-2.5 py-1 bg-background border border-border text-text-light text-xs font-bold rounded-md">
+                            <span class="inline-flex items-center justify-center min-w-[3rem] px-2.5 py-1 bg-background border border-border text-text-light text-xs font-bold rounded-md">
                                 0
                             </span>
                         @endif

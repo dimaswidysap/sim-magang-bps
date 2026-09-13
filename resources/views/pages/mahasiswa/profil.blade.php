@@ -95,34 +95,44 @@
 
                     <div class="bg-background p-5 rounded-xl border border-border space-y-6">
 
-                        <!-- Placeholder Foto Profil (Fitur Mendatang) -->
-                        <div class="flex flex-col sm:flex-row items-center gap-5 p-4 bg-surface rounded-xl border border-border">
-                            <div class="w-20 h-20 rounded-full bg-primary/10 border-2 border-primary/20 flex items-center justify-center shrink-0 overflow-hidden">
-                                @if (!empty($profil->avatar))
-                                    <img src="{{ asset('storage/' . $profil->avatar) }}" alt="{{ $profil->name }}" class="w-full h-full object-cover">
-                                @else
-                                    <span class="text-2xl font-bold text-primary">{{ strtoupper(substr($profil->name ?? 'M', 0, 1)) }}</span>
-                                @endif
-                            </div>
-                            <div class="flex-1 text-center sm:text-left space-y-2">
-                                <div>
-                                    <label class="block text-sm font-semibold text-text">Foto Profil</label>
-                                    <p class="text-xs text-text-light mt-0.5">Format file: JPG, JPEG, PNG (Maks. 2MB)</p>
-                                </div>
-                                <div class="flex flex-wrap items-center justify-center sm:justify-start gap-3">
-                                    <input type="file" name="avatar" id="avatar" accept="image/*" class="hidden" disabled>
-                                    <label for="avatar" class="cursor-not-allowed opacity-60 px-3.5 py-1.5 bg-background border border-border rounded-lg text-xs font-medium text-text flex items-center gap-2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-text-light" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                                        </svg>
-                                        Pilih Foto
-                                    </label>
-                                    <span class="text-[11px] font-semibold text-amber-600 bg-amber-50 dark:bg-amber-950/40 px-2.5 py-1 rounded-md border border-amber-200/50">
-                                        * Fitur unggah foto segera hadir
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
+                        <!-- Foto Profil -->
+                       <!-- Foto Profil -->
+<div class="flex flex-col sm:flex-row items-center gap-5 p-4 bg-surface rounded-xl border border-border">
+    @php
+        $hasFoto = !empty($profil->mahasiswaProfile?->foto_profil_path);
+        $fotoUrl = $hasFoto ? asset('storage/' . $profil->mahasiswaProfile->foto_profil_path) : '#';
+    @endphp
+
+    <!-- Preview Foto / Inisial -->
+    <div class="w-20 h-20 rounded-full bg-primary/10 border-2 border-primary/20 flex items-center justify-center shrink-0 overflow-hidden relative">
+        <img id="avatar-preview"
+             src="{{ $fotoUrl }}"
+             alt="{{ $profil->name }}"
+             class="w-full h-full object-cover {{ !$hasFoto ? 'hidden' : '' }}">
+
+        <span id="avatar-initial" class="text-2xl font-bold text-primary {{ $hasFoto ? 'hidden' : '' }}">
+            {{ strtoupper(substr($profil->name ?? 'M', 0, 1)) }}
+        </span>
+    </div>
+
+    <div class="flex-1 text-center sm:text-left space-y-2">
+        <div>
+            <label class="block text-sm font-semibold text-text">Foto Profil</label>
+            <p class="text-xs text-text-light mt-0.5">Format file: JPG, JPEG, PNG, WEBP (Maks. 2MB)</p>
+        </div>
+        <div class="flex flex-wrap items-center justify-center sm:justify-start gap-3">
+            {{-- PERBAIKAN: Ubah name="avatar" menjadi name="foto_profil" --}}
+            <input type="file" name="foto_profil" id="avatar" accept="image/png, image/jpeg, image/jpg, image/webp" class="hidden">
+            <label for="avatar" class="cursor-pointer hover:border-primary transition-colors px-3.5 py-1.5 bg-background border border-border rounded-lg text-xs font-medium text-text flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-text-light" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                </svg>
+                Pilih Foto
+            </label>
+            <span id="avatar-filename" class="text-xs text-text-light italic"></span>
+        </div>
+    </div>
+</div>
 
                         <!-- Grid Input Informasi Pribadi -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -273,4 +283,25 @@
             </form>
         </section>
     </main>
+
+    <!-- Script Live Preview Foto Profil -->
+    <script>
+        document.getElementById('avatar').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const preview = document.getElementById('avatar-preview');
+            const initial = document.getElementById('avatar-initial');
+            const fileNameSpan = document.getElementById('avatar-filename');
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    preview.src = event.target.result;
+                    preview.classList.remove('hidden');
+                    if (initial) initial.classList.add('hidden');
+                };
+                reader.readAsDataURL(file);
+                fileNameSpan.textContent = file.name;
+            }
+        });
+    </script>
 @endsection

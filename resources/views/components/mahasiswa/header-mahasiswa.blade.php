@@ -1,38 +1,61 @@
 {{-- Header Component --}}
-<header
-    class="w-full p-2 transition-all duration-300">
+<header class="w-full p-2 transition-all duration-300">
 
     <div class="w-full flex items-center justify-between gap-3 container-dalam">
+
+        @php
+            $user = auth()->user();
+            $profileRelation = $user?->mahasiswaProfile ?? $user?->mahasiswa_profile;
+
+            // Ambil path foto dari relasi atau tabel user
+            $avatarPath = $profileRelation?->foto_profil_path
+                ?? ($profileRelation?->foto
+                ?? ($profileRelation?->avatar
+                ?? ($user?->avatar ?? $user?->foto ?? null)));
+
+            $avatarUrl = null;
+            if ($avatarPath) {
+                $avatarUrl = filter_var($avatarPath, FILTER_VALIDATE_URL)
+                    ? $avatarPath
+                    : asset('storage/' . $avatarPath);
+            }
+        @endphp
 
         <!-- Profil Mahasiswa -->
         <div class="flex items-center min-w-0 font-montserrat">
             <a href="{{ route('profil-magang') }}"
                 class="flex items-center gap-2.5 sm:gap-3 p-1.5 pr-3 sm:pr-4 bg-background/50 hover:bg-background border border-border/60 hover:border-primary/40 rounded-full transition-all duration-300 group shadow-xs hover:shadow-sm min-w-0">
 
-                <!-- Avatar Ikon Mahasiswa -->
+                <!-- Avatar / Foto Profil Mahasiswa -->
                 <figure
-                    class="h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20 group-hover:bg-primary group-hover:text-white transition-all duration-300 shadow-xs">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                        stroke-width="1.5" class="w-5 h-5">
-                        <!-- Topi Wisuda -->
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4L3 8l9 4 9-4-9-4z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M7 10v3c0 2 2.5 4 5 4s5-2 5-4v-3" />
-                        <!-- Kepala -->
-                        <circle cx="12" cy="18" r="2" />
-                        <!-- Badan -->
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.5 22a3.5 3.5 0 017 0" />
-                    </svg>
+                    class="h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20 group-hover:border-primary transition-all duration-300 shadow-xs overflow-hidden">
+                    @if ($avatarUrl)
+                        <img src="{{ $avatarUrl }}" alt="{{ $user->name ?? 'User' }}"
+                            class="w-full h-full object-cover">
+                    @else
+                        <!-- Fallback Ikon Mahasiswa jika belum ada foto -->
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            stroke-width="1.5" class="w-5 h-5 group-hover:scale-110 transition-transform">
+                            <!-- Topi Wisuda -->
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4L3 8l9 4 9-4-9-4z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M7 10v3c0 2 2.5 4 5 4s5-2 5-4v-3" />
+                            <!-- Kepala -->
+                            <circle cx="12" cy="18" r="2" />
+                            <!-- Badan -->
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.5 22a3.5 3.5 0 017 0" />
+                        </svg>
+                    @endif
                 </figure>
 
                 <!-- Informasi Text (Otomatis Truncate di Layar Kecil) -->
                 <div class="flex flex-col justify-center min-w-0 pr-1">
                     <span
                         class="font-bold text-text text-xs sm:text-sm leading-tight group-hover:text-primary transition-colors duration-300 truncate max-w-[120px] xs:max-w-[160px] sm:max-w-[220px] md:max-w-xs">
-                        {{ auth()->user()->name }}
+                        {{ $user->name }}
                     </span>
                     <span
                         class="text-[10px] sm:text-[11px] font-medium text-text-light mt-0.5 truncate max-w-[120px] xs:max-w-[160px] sm:max-w-[220px] md:max-w-xs">
-                        {{ auth()->user()->email }}
+                        {{ $user->email }}
                     </span>
                 </div>
 

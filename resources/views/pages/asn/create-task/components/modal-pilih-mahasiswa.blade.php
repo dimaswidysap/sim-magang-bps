@@ -28,13 +28,26 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
 
                 @foreach ($daftarMahasiswa as $mhs)
-                    {{--
-                        Ubah struktur Label.
-                        Sekarang menampung hidden input dan Card UI
-                    --}}
+                    @php
+                        // Logika pengecekan foto profil tiap mahasiswa
+                        $avatarPath = $mhs->foto_profil_path
+                            ?? ($mhs->foto
+                            ?? ($mhs->avatar
+                            ?? ($mhs->user?->foto_profil_path
+                            ?? ($mhs->user?->avatar
+                            ?? ($mhs->user?->foto ?? null)))));
+
+                        $avatarUrl = null;
+                        if ($avatarPath) {
+                            $avatarUrl = filter_var($avatarPath, FILTER_VALIDATE_URL)
+                                ? $avatarPath
+                                : asset('storage/' . $avatarPath);
+                        }
+                    @endphp
+
                     <label for="mhs-modal-{{ $mhs->id }}" class="relative block cursor-pointer group">
 
-                        {{-- Checkbox Asli (Disembunyikan dengan sr-only dan dijadikan 'peer') --}}
+                        {{-- Checkbox Asli (Disembunyikan dengan sr-only) --}}
                         <input type="checkbox" name="mahasiswa_ids[]" value="{{ $mhs->id }}"
                             id="mhs-modal-{{ $mhs->id }}"
                             form="form-tugas-asn"
@@ -42,34 +55,35 @@
                             class="mhs-checkbox peer sr-only"
                             onchange="updateSelectedCount()">
 
-                        {{--
-                            Card UI Mahasiswa
-                            Akan berubah background menjadi aksen transparan & border aksen jika checkbox di atas 'checked'
-                        --}}
+                        {{-- Card UI Mahasiswa --}}
                         <div class="flex items-center justify-between p-4 bg-surface border border-border rounded-xl group-hover:border-primary group-hover:shadow-sm transition-all peer-checked:bg-accent-dark/10 peer-checked:border-accent-dark peer-checked:ring-1 peer-checked:ring-accent-dark">
 
                             <div class="flex items-center gap-4">
-                                {{-- Avatar Circle --}}
-                                <div class="w-10 h-10 rounded-full bg-primary-light/20 text-primary flex items-center justify-center font-bold text-sm uppercase">
-                                    {{ substr($mhs->user->name, 0, 1) }}
+                                {{-- Avatar / Foto Profil --}}
+                                <div class="w-10 h-10 rounded-full bg-primary-light/20 text-primary flex items-center justify-center font-bold text-sm uppercase shrink-0 overflow-hidden border border-border/50">
+                                    @if ($avatarUrl)
+                                        <img src="{{ $avatarUrl }}" alt="{{ $mhs->user->name ?? 'Mahasiswa' }}" class="w-full h-full object-cover">
+                                    @else
+                                        {{ strtoupper(substr($mhs->user->name ?? 'M', 0, 1)) }}
+                                    @endif
                                 </div>
 
                                 {{-- Informasi Mahasiswa --}}
                                 <div>
                                     <div class="font-semibold text-sm text-text group-hover:text-primary transition-colors">
-                                        {{ $mhs->user->name }}
+                                        {{ $mhs->user->name ?? '-' }}
                                     </div>
                                     <div class="text-xs text-text-light mt-0.5">
-                                        {{ $mhs->jenjang }} - {{ $mhs->jurusan }}
+                                        {{ $mhs->jenjang ?? '' }} - {{ $mhs->jurusan ?? '' }}
                                     </div>
                                     <div class="text-[10px] font-medium text-text-light mt-1 px-2 py-0.5 bg-background border border-border/50 rounded-md inline-block">
-                                        {{ $mhs->instansi_asal }}
+                                        {{ $mhs->instansi_asal ?? '-' }}
                                     </div>
                                 </div>
                             </div>
 
-                            {{-- Indikator Centang Estetik (Opsional, muncul jika terpilih) --}}
-                            <div class="opacity-0 peer-checked:opacity-100 text-accent-dark transition-opacity duration-300 transform scale-50 peer-checked:scale-100">
+                            {{-- Indikator Centang --}}
+                            <div class="opacity-0 peer-checked:opacity-100 text-accent-dark transition-opacity duration-300 transform scale-50 peer-checked:scale-100 shrink-0">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                                 </svg>

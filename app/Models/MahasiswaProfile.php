@@ -4,12 +4,27 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class MahasiswaProfile extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'nim', 'instansi_asal', 'alamat',',jenjang', 'jurusan','tanggal_lahir', 'tanggal_mulai', 'tanggal_selesai', 'status', 'surat_pengantar_path', 'catatan'];
+    protected $fillable = [
+        'user_id',
+        'foto_profil_path',
+        'nim',
+        'instansi_asal',
+        'alamat',
+        'jenjang',
+        'jurusan',
+        'tanggal_lahir',
+        'tanggal_mulai',
+        'tanggal_selesai',
+        'status',
+        'surat_pengantar_path',
+        'catatan'
+    ];
 
     protected function casts(): array
     {
@@ -20,17 +35,38 @@ class MahasiswaProfile extends Model
         ];
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | ACCESSORS
+    |--------------------------------------------------------------------------
+    */
+
+    // Accessor untuk URL foto profil / avatar default
+    public function getFotoProfilUrlAttribute(): string
+    {
+        if ($this->foto_profil_path && Storage::disk('public')->exists($this->foto_profil_path)) {
+            return Storage::url($this->foto_profil_path);
+        }
+
+        // Fallback jika belum upload foto
+        return 'https://ui-avatars.com/api/?name=' . urlencode($this->user->name ?? 'User') . '&color=7F9CF5&background=EBF4FF';
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | RELATIONSHIPS & SCOPES
+    |--------------------------------------------------------------------------
+    */
+
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-
     public function scopeMahasiswaAktif($query)
     {
         return $query->where('status', 'aktif');
     }
-
 
     public function skills()
     {
@@ -42,38 +78,25 @@ class MahasiswaProfile extends Model
         return $this->hasMany(Tugas::class);
     }
 
-    // Semua undangan tugas yang PERNAH diterima mahasiswa ini (sebagai anggota, bukan ketua)
     public function undanganTugas()
     {
         return $this->hasMany(TugasAnggota::class);
     }
 
-    // Cuma undangan yang masih menunggu jawaban (belum diterima/ditolak)
     public function undanganMenunggu()
     {
         return $this->hasMany(TugasAnggota::class)->where('status', 'diundang');
     }
 
-    /**
-     * Filter mahasiswa yang akunnya masih aktif (users.is_active = 1).
-     * Mahasiswa yang dinonaktifkan admin tidak akan ikut terambil.
-     */
     public function scopeAktif($query)
     {
         return $query
-            ->where('status', 'aktif') // <-- Filter status di table mahasiswaProfile
+            ->where('status', 'aktif')
             ->whereHas('user', function ($q) {
-                $q->where('is_active', true); // <-- Filter is_active di table users
-                // Opsional: $q->where('role', 'mahasiswa'); jika ingin memastikan rolenya
+                $q->where('is_active', true);
             });
     }
 
-    /**
-     * 1 query tunggal - tambahkan 2 kolom hitungan (jumlah_tugas_aktif dan
-     * jumlah_tugas_selesai) ke setiap baris mahasiswa_profiles, mencakup
-     * peran sebagai KETUA (tugas.mahasiswa_profile_id) maupun ANGGOTA
-     * (tugas_anggota dengan status diterima).
-     */
     public function scopeDenganStatistikTugas($query)
     {
         return $query->selectRaw("mahasiswa_profiles.*,
