@@ -124,12 +124,19 @@ class MahasiswaController extends Controller
         return view('pages.mahasiswa.tugas-saya.index', compact('dataTugas'));
     }
 
-    public function detailTugasSaya($id)
-    {
-        $detailTugas = Tugas::with('anggota')->findOrFail($id);
+   public function detailTugasSaya($id)
+{
+    $detailTugas = Tugas::with([
+        'anggota',
+        'asn',
+        'attachments',
+        'submissions' => function ($query) {
+            $query->latest();
+        }
+    ])->findOrFail($id);
 
-        return view('pages.mahasiswa.tugas-saya.view', compact('detailTugas'));
-    }
+    return view('pages.mahasiswa.tugas-saya.view', compact('detailTugas'));
+}
 
     public function profil()
     {

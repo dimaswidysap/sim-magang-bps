@@ -20,12 +20,10 @@ class TugasanggotacontrollerInvite extends Controller
             abort(403, 'Anda bukan bagian dari tugas ini, tidak bisa mengundang orang lain.');
         }
 
-        // PERBAIKAN 1: Filter siapa saja yang disembunyikan dari daftar undangan
-        // Kumpulkan ID ketua tugas
+        // Filter siapa saja yang disembunyikan dari daftar undangan
         $idSudahTerlibat = collect([$tugas->mahasiswa_profile_id]);
 
         // Kumpulkan ID anggota yang statusnya 'diundang' atau 'diterima'
-        // Yang statusnya 'ditolak' TIDAK dimasukkan ke sini agar muncul lagi di form
         $idAnggotaTerlibat = $tugas
             ->anggota()
             ->whereIn('status', ['diundang', 'diterima'])
@@ -35,7 +33,11 @@ class TugasanggotacontrollerInvite extends Controller
         $idSudahTerlibat = $idSudahTerlibat->merge($idAnggotaTerlibat)->filter()->toArray();
 
         // Ambil daftar mahasiswa yang belum terlibat
-        $daftarMahasiswa = MahasiswaProfile::whereNotIn('id', $idSudahTerlibat)->where('status', 'aktif')->whereHas('user', fn($q) => $q->where('is_active', true))->with('user')->get();
+        $daftarMahasiswa = MahasiswaProfile::whereNotIn('id', $idSudahTerlibat)
+            ->where('status', 'aktif')
+            ->whereHas('user', fn($q) => $q->where('is_active', true))
+            ->with('user')
+            ->get();
 
         return view('pages.mahasiswa.tugas-saya.invite', compact('tugas', 'daftarMahasiswa'));
     }
@@ -53,54 +55,60 @@ class TugasanggotacontrollerInvite extends Controller
             return back()->with('error', 'Tugas ini sudah selesai, tidak bisa menambah anggota lagi.');
         }
 
+        // Validasi: Pastikan input berbentuk Array dan minimal pilih 1
         $validated = $request->validate([
-            'mahasiswa_profile_id' => 'required|exists:mahasiswa_profiles,id',
+            'mahasiswa_profile_ids'   => 'required|array|min:1',
+            'mahasiswa_profile_ids.*' => 'exists:mahasiswa_profiles,id',
+        ], [
+            'mahasiswa_profile_ids.required' => 'Pilihlah setidaknya satu mahasiswa untuk diundang.',
+            'mahasiswa_profile_ids.min'      => 'Pilihlah setidaknya satu mahasiswa untuk diundang.',
         ]);
 
-        // Cegah undang diri sendiri
-        if ((int) $validated['mahasiswa_profile_id'] === $mahasiswaProfileSaya->id) {
-            return back()->with('error', 'Tidak bisa mengundang diri sendiri.');
+        $invitedCount = 0;
+
+        // Loop setiap ID mahasiswa yang dipilih
+        foreach ($validated['mahasiswa_profile_ids'] as $mhsId) {
+            $mhsId = (int) $mhsId;
+
+            // Cegah undang diri sendiri
+            if ($mhsId === $mahasiswaProfileSaya->id) {
+                continue;
+            }
+
+            // Validasi apakah dia ketua / sedang aktif
+            $isKetua = $tugas->mahasiswa_profile_id == $mhsId;
+            $isAnggotaAktif = $tugas->anggota()
+                ->where('mahasiswa_profile_id', $mhsId)
+                ->whereIn('status', ['diundang', 'diterima'])
+                ->exists();
+
+            if ($isKetua || $isAnggotaAktif) {
+                continue;
+            }
+
+            // Update atau buat undangan baru
+            TugasAnggota::updateOrCreate(
+                [
+                    'tugas_id' => $tugas->id,
+                    'mahasiswa_profile_id' => $mhsId,
+                ],
+                [
+                    'status' => 'diundang',
+                    'diundang_oleh' => $mahasiswaProfileSaya->id,
+                    'sumber' => 'undangan_teman',
+                ]
+            );
+
+            $invitedCount++;
         }
 
-        // PERBAIKAN 2: Validasi apakah dia sedang diundang atau sudah jadi anggota
-        $isKetua = $tugas->mahasiswa_profile_id == $validated['mahasiswa_profile_id'];
-
-        $isAnggotaAktif = $tugas
-            ->anggota()
-            ->where('mahasiswa_profile_id', $validated['mahasiswa_profile_id'])
-            ->whereIn('status', ['diundang', 'diterima']) // Cek hanya yang aktif/menunggu
-            ->exists();
-
-        if ($isKetua || $isAnggotaAktif) {
-            return back()->with('error', 'Mahasiswa ini sudah terlibat di tugas ini.');
+        if ($invitedCount === 0) {
+            return back()->with('error', 'Tidak ada mahasiswa baru yang berhasil diundang (mungkin sudah menjadi anggota/ketua).');
         }
 
-        // PERBAIKAN 3: Gunakan updateOrCreate, bukan create!
-        // Jika sebelumnya dia menolak (ada di database dgn status 'ditolak'), datanya cukup di-update.
-        // Jika belum ada sama sekali, data baru akan dibuat (create).
-        TugasAnggota::updateOrCreate(
-            [
-                'tugas_id' => $tugas->id,
-                'mahasiswa_profile_id' => $validated['mahasiswa_profile_id'],
-            ],
-            [
-                'status' => 'diundang',
-                'diundang_oleh' => $mahasiswaProfileSaya->id,
-                'sumber' => 'undangan_teman',
-            ],
-        );
-
-        // Catatan: belum ada tabel notifikasi - undangan ini baru "terlihat"
-        // kalau mahasiswa yang diundang buka halaman daftar undangannya sendiri.
-        // Fitur notifikasi menyusul setelah alur terima/tolak selesai.
-
-        return redirect()->route('tugas-saya')->with('success', 'Undangan berhasil dikirim.');
+        return redirect()->route('tugas-saya')->with('success', "Berhasil mengundang {$invitedCount} mahasiswa ke tugas ini.");
     }
 
-    /**
-     * Cek apakah mahasiswa ini boleh mengundang orang lain ke tugas ini -
-     * yaitu kalau dia ketua ATAU anggota yang statusnya sudah diterima.
-     */
     private function bolehUndang(Tugas $tugas, ?MahasiswaProfile $mahasiswaProfile): bool
     {
         if (!$mahasiswaProfile) {

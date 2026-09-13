@@ -109,20 +109,21 @@ class TugasSubmissionController extends Controller
     }
 
     public function detailSubmission($tugasId)
-{
-    $tugas = Tugas::query()->where('id', $tugasId)
-        ->where('asn_id', Auth::id())
-        ->with([
-            'mahasiswaProfile.user',
-            'anggota' => fn($q) => $q->where('status', 'diterima')->with('mahasiswaProfile.user'),
-            'anggotaDiterima.mahasiswaProfile.user',
-            // PERBAIKAN: Hapus with('files')
-            'submissions' => fn($q) => $q->latest(),
-        ])
-        ->firstOrFail();
+    {
+        $tugas = Tugas::query()
+            ->where('id', $tugasId)
+            ->where('asn_id', Auth::id())
+            ->with([
+                'mahasiswaProfile.user',
+                'anggota' => fn($q) => $q->where('status', 'diterima')->with('mahasiswaProfile.user'),
+                'anggotaDiterima.mahasiswaProfile.user',
+                // PERBAIKAN: Hapus with('files')
+                'submissions' => fn($q) => $q->latest(),
+            ])
+            ->firstOrFail();
 
-    return view('pages.asn.submission-detail', compact('tugas'));
-}
+        return view('pages.asn.submission-detail', compact('tugas'));
+    }
 
     public function approveSubmission($submissionId)
     {

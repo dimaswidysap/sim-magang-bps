@@ -113,272 +113,247 @@
                 </div>
 
                 <!-- Kolom Kanan: Riwayat Pengumpulan -->
-                <div class="lg:col-span-2 space-y-6">
+                <!-- Kolom Kanan: Riwayat Pengumpulan -->
+<div class="lg:col-span-2 space-y-6">
 
-                    <h2 class="text-lg font-bold text-text flex items-center gap-2 border-b border-border pb-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none"
-                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        Riwayat Pengumpulan
-                    </h2>
+    <h2 class="text-lg font-bold text-text flex items-center gap-2 border-b border-border pb-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none"
+            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        Riwayat Pengumpulan
+    </h2>
 
-                    @if ($tugas->submissions->isEmpty())
-                        <div class="py-12 bg-surface border border-border rounded-xl text-center shadow-sm">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-border mb-3"
-                                fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            <p class="font-bold text-text">Belum Ada Pengumpulan</p>
-                            <p class="text-sm text-text-light mt-1">Mahasiswa belum mengumpulkan hasil tugas ini.</p>
+    @if ($tugas->submissions->isEmpty())
+        <div class="py-12 bg-surface border border-border rounded-xl text-center shadow-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-border mb-3"
+                fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <p class="font-bold text-text">Belum Ada Pengumpulan</p>
+            <p class="text-sm text-text-light mt-1">Mahasiswa belum mengumpulkan hasil tugas ini.</p>
+        </div>
+    @else
+        @php
+            // Mengelompokkan submission berdasarkan jam & menit pengumpulan
+            $groupedSubmissions = $tugas->submissions->groupBy(function($item) {
+                return \Carbon\Carbon::parse($item->created_at)->format('Y-m-d H:i');
+            });
+        @endphp
+
+        <div class="space-y-6">
+            @foreach ($groupedSubmissions as $timeString => $submissionsBatch)
+                @php
+                    // Ambil record pertama sebagai representasi metadata (status, pesan, id submission)
+                    $primarySubmission = $submissionsBatch->first();
+                    $isLatestBatch = $loop->first;
+                @endphp
+
+                <div class="bg-surface border {{ $isLatestBatch ? 'border-primary' : 'border-border' }} rounded-xl shadow-sm overflow-hidden relative">
+
+                    <!-- Label Terbaru (Hanya untuk batch pertama) -->
+                    @if ($isLatestBatch)
+                        <div class="absolute top-0 right-0 bg-primary text-white text-[10px] font-bold px-3 py-1 rounded-bl-lg uppercase tracking-wider">
+                            Terbaru
                         </div>
                     @endif
 
-                    <div class="space-y-6">
-                        @foreach ($tugas->submissions as $submission)
-                            <div
-                                class="bg-surface border {{ $loop->first ? 'border-primary' : 'border-border' }} rounded-xl shadow-sm overflow-hidden relative">
+                    <div class="p-5 md:p-6 space-y-5">
 
-                                <!-- Label Terbaru (Hanya untuk item pertama) -->
-                                @if ($loop->first)
-                                    <div
-                                        class="absolute top-0 right-0 bg-primary text-white text-[10px] font-bold px-3 py-1 rounded-bl-lg uppercase tracking-wider">
-                                        Terbaru
-                                    </div>
+                        <!-- Meta Pengiriman -->
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div>
+                                <p class="text-[11px] font-semibold text-text-light uppercase tracking-wider mb-0.5">
+                                    Dikirim Pada
+                                </p>
+                                <p class="text-sm font-bold text-text">
+                                    {{ \Carbon\Carbon::parse($timeString)->translatedFormat('d M Y, H:i') }} WIB
+                                </p>
+                            </div>
+
+                            <!-- Status Badge -->
+                            <div>
+                                @if (strtolower($primarySubmission->status) === 'menunggu')
+                                    <span class="inline-flex px-3 py-1 bg-warning/10 text-warning text-xs font-bold rounded-full uppercase tracking-wider border border-warning/20">
+                                        Menunggu Review
+                                    </span>
+                                @elseif (strtolower($primarySubmission->status) === 'revisi')
+                                    <span class="inline-flex px-3 py-1 bg-danger/10 text-danger text-xs font-bold rounded-full uppercase tracking-wider border border-danger/20">
+                                        Revisi
+                                    </span>
+                                @elseif (in_array(strtolower($primarySubmission->status), ['disetujui', 'selesai']))
+                                    <span class="inline-flex px-3 py-1 bg-success/10 text-success text-xs font-bold rounded-full uppercase tracking-wider border border-success/20">
+                                        Disetujui
+                                    </span>
+                                @else
+                                    <span class="inline-flex px-3 py-1 bg-background text-text-light text-xs font-bold rounded-full uppercase tracking-wider border border-border">
+                                        {{ $primarySubmission->status }}
+                                    </span>
                                 @endif
+                            </div>
+                        </div>
 
-                                <div class="p-5 md:p-6 space-y-5">
+                        <hr class="border-border">
 
-                                    <!-- Meta Pengiriman -->
-                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                                        <div>
-                                            <p
-                                                class="text-[11px] font-semibold text-text-light uppercase tracking-wider mb-0.5">
-                                                Dikirim Pada</p>
-                                            <p class="text-sm font-bold text-text">
-                                                {{ \Carbon\Carbon::parse($submission->created_at)->translatedFormat('d M Y, H:i') }}
-                                                WIB</p>
-                                        </div>
+                        <!-- Container Semua Lampiran File Pada Waktu Yang Sama -->
+                        <div>
+                            <p class="text-[11px] font-semibold text-text-light uppercase tracking-wider mb-2.5">
+                                Lampiran File ({{ $submissionsBatch->whereNotNull('file_path')->count() }})
+                            </p>
 
-                                        <!-- Status Badge -->
-                                        <div>
-                                            @if (strtolower($submission->status) === 'menunggu')
-                                                <span
-                                                    class="inline-flex px-3 py-1 bg-warning/10 text-warning text-xs font-bold rounded-full uppercase tracking-wider border border-warning/20">
-                                                    Menunggu Review
-                                                </span>
-                                            @elseif (strtolower($submission->status) === 'revisi')
-                                                <span
-                                                    class="inline-flex px-3 py-1 bg-danger/10 text-danger text-xs font-bold rounded-full uppercase tracking-wider border border-danger/20">
-                                                    Revisi
-                                                </span>
-                                            @elseif (strtolower($submission->status) === 'disetujui' || strtolower($submission->status) === 'selesai')
-                                                <span
-                                                    class="inline-flex px-3 py-1 bg-success/10 text-success text-xs font-bold rounded-full uppercase tracking-wider border border-success/20">
-                                                    Disetujui
-                                                </span>
-                                            @else
-                                                <span
-                                                    class="inline-flex px-3 py-1 bg-background text-text-light text-xs font-bold rounded-full uppercase tracking-wider border border-border">
-                                                    {{ $submission->status }}
-                                                </span>
-                                            @endif
-                                        </div>
-                                    </div>
+                            @if ($submissionsBatch->whereNotNull('file_path')->isNotEmpty())
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    @foreach ($submissionsBatch as $subFile)
+                                        @if ($subFile->file_path)
+                                            @php
+                                                $extension = strtolower(pathinfo($subFile->file_path, PATHINFO_EXTENSION));
+                                                $isImage = in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg']);
+                                            @endphp
 
-                                    <hr class="border-border">
-
-                                    <!-- Pesan & Lampiran -->
-                                    <div class="space-y-4">
-
-                                        <!-- Lampiran File -->
-                                        <div>
-                                            <p
-                                                class="text-[11px] font-semibold text-text-light uppercase tracking-wider mb-2">
-                                                Lampiran File</p>
-                                            @if ($submission->file_path)
-                                                @php
-                                                    $extension = strtolower(
-                                                        pathinfo($submission->file_path, PATHINFO_EXTENSION),
-                                                    );
-                                                    $isImage = in_array($extension, [
-                                                        'jpg',
-                                                        'jpeg',
-                                                        'png',
-                                                        'gif',
-                                                        'webp',
-                                                        'svg',
-                                                    ]);
-                                                @endphp
-
-                                                @if ($isImage && $loop->first)
-                                                    <!-- Preview Foto Kecil Ringkas (Khusus Pengumpulan Terbaru) -->
-                                                    <div
-                                                        class="inline-flex items-center gap-3 p-2.5 bg-background border border-border hover:border-primary rounded-lg transition-colors max-w-full sm:max-w-md">
-                                                        <a href="{{ Storage::url($submission->file_path) }}"
-                                                            target="_blank" class="shrink-0">
-                                                            <img src="{{ Storage::url($submission->file_path) }}"
-                                                                alt="{{ $submission->file_name ?? 'Preview Foto' }}"
-                                                                class="w-14 h-14 object-cover rounded-md border border-border hover:opacity-80 transition-opacity">
-                                                        </a>
-                                                        <div class="overflow-hidden space-y-1">
-                                                            <p class="text-xs font-medium text-text truncate">
-                                                                {{ $submission->file_name ?? 'Lampiran Foto' }}
-                                                            </p>
-                                                            <a href="{{ Storage::url($submission->file_path) }}"
-                                                                target="_blank" download
-                                                                class="inline-flex items-center gap-1 text-[11px] text-primary hover:underline font-semibold">
-                                                                <svg xmlns="http://www.w3.org/2000/svg"
-                                                                    class="h-3.5 w-3.5" fill="none"
-                                                                    viewBox="0 0 24 24" stroke="currentColor"
-                                                                    stroke-width="2">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                                                </svg>
-                                                                Lihat / Unduh Foto
-                                                            </a>
-                                                        </div>
-                                                    </div>
-                                                @else
-                                                    <!-- Tampilan Card Standar (Dokumen ATAU Pengumpulan Revisi Lama) -->
-                                                    <a href="{{ Storage::url($submission->file_path) }}" target="_blank"
-                                                        class="inline-flex items-center gap-2 p-3 bg-background border border-border hover:border-primary rounded-lg transition-colors group w-full sm:w-auto">
-                                                        <div
-                                                            class="w-8 h-8 rounded bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
-                                                                fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                                                                stroke-width="2">
-                                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                            </svg>
-                                                        </div>
-                                                        <span
-                                                            class="text-sm font-medium text-text group-hover:text-primary transition-colors line-clamp-1">
-                                                            {{ $submission->file_name ?? 'Download Lampiran' }}
-                                                        </span>
+                                            @if ($isImage)
+                                                <!-- Card Item File Format Gambar -->
+                                                <div class="flex items-center gap-3 p-2.5 bg-background border border-border hover:border-primary rounded-lg transition-colors overflow-hidden">
+                                                    <a href="{{ Storage::url($subFile->file_path) }}" target="_blank" class="shrink-0">
+                                                        <img src="{{ Storage::url($subFile->file_path) }}"
+                                                            alt="{{ $subFile->file_name ?? 'Preview' }}"
+                                                            class="w-12 h-12 object-cover rounded-md border border-border hover:opacity-80 transition-opacity">
                                                     </a>
-                                                @endif
+                                                    <div class="overflow-hidden space-y-0.5">
+                                                        <p class="text-xs font-medium text-text truncate" title="{{ $subFile->file_name }}">
+                                                            {{ $subFile->file_name ?? 'Lampiran Foto' }}
+                                                        </p>
+                                                        <a href="{{ Storage::url($subFile->file_path) }}" target="_blank" download
+                                                            class="inline-flex items-center gap-1 text-[11px] text-primary hover:underline font-semibold">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                            </svg>
+                                                            Lihat / Unduh
+                                                        </a>
+                                                    </div>
+                                                </div>
                                             @else
-                                                <p
-                                                    class="text-sm text-text-light italic px-3 py-2 bg-background border border-border rounded-lg border-dashed">
-                                                    Tidak ada lampiran file.
-                                                </p>
+                                                <!-- Card Item File Dokumen / Lainya -->
+                                                <a href="{{ Storage::url($subFile->file_path) }}" target="_blank"
+                                                    class="flex items-center gap-3 p-3 bg-background border border-border hover:border-primary rounded-lg transition-colors group">
+                                                    <div class="w-9 h-9 rounded bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                        </svg>
+                                                    </div>
+                                                    <div class="overflow-hidden">
+                                                        <p class="text-xs font-medium text-text group-hover:text-primary transition-colors truncate" title="{{ $subFile->file_name }}">
+                                                            {{ $subFile->file_name ?? 'Download Lampiran' }}
+                                                        </p>
+                                                        <span class="text-[10px] text-text-light uppercase tracking-wider font-semibold">
+                                                            {{ strtoupper($extension) }}
+                                                        </span>
+                                                    </div>
+                                                </a>
                                             @endif
-                                        </div>
-
-                                        <!-- Pesan Mahasiswa -->
-                                        @if ($submission->catatan_mahasiswa)
-                                            <div>
-                                                <p
-                                                    class="text-[11px] font-semibold text-text-light uppercase tracking-wider mb-2">
-                                                    Pesan Mahasiswa</p>
-                                                <div
-                                                    class="text-sm text-text leading-relaxed bg-[#F8FAFC] border border-border p-4 rounded-lg">
-                                                    {{ $submission->catatan_mahasiswa }}</div>
-                                            </div>
                                         @endif
+                                    @endforeach
+                                </div>
+                            @else
+                                <p class="text-sm text-text-light italic px-3 py-2 bg-background border border-border rounded-lg border-dashed">
+                                    Tidak ada lampiran file.
+                                </p>
+                            @endif
+                        </div>
 
-                                        <!-- Pesan ASN (Feedback sebelumnya) -->
-                                        @if ($submission->catatan_asn)
-                                            <div>
-                                                <p
-                                                    class="text-[11px] font-semibold text-text-light uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                                                    <svg xmlns="http://www.w3.org/2000/svg"
-                                                        class="h-3.5 w-3.5 text-primary" viewBox="0 0 20 20"
-                                                        fill="currentColor">
-                                                        <path fill-rule="evenodd"
-                                                            d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z"
-                                                            clip-rule="evenodd" />
-                                                    </svg>
-                                                    Catatan / Feedback Anda Sebelumnya
-                                                </p>
-                                                <div
-                                                    class="text-sm text-text leading-relaxed bg-primary/5 border border-primary/20 p-4 rounded-lg">
-                                                    {{ $submission->catatan_asn }}</div>
-                                            </div>
-                                        @endif
+                        <!-- Pesan Mahasiswa (Menggunakan catatan dari submission utama batch ini) -->
+                        @if ($primarySubmission->catatan_mahasiswa)
+                            <div>
+                                <p class="text-[11px] font-semibold text-text-light uppercase tracking-wider mb-2">Pesan Mahasiswa</p>
+                                <div class="text-sm text-text leading-relaxed bg-[#F8FAFC] border border-border p-4 rounded-lg">
+                                    {{ $primarySubmission->catatan_mahasiswa }}
+                                </div>
+                            </div>
+                        @endif
 
-                                    </div>
+                        <!-- Pesan ASN (Feedback Sebelumnya) -->
+                        @if ($primarySubmission->catatan_asn)
+                            <div>
+                                <p class="text-[11px] font-semibold text-text-light uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-primary" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd" />
+                                    </svg>
+                                    Catatan / Feedback Anda Sebelumnya
+                                </p>
+                                <div class="text-sm text-text leading-relaxed bg-primary/5 border border-primary/20 p-4 rounded-lg">
+                                    {{ $primarySubmission->catatan_asn }}
+                                </div>
+                            </div>
+                        @endif
+
+                    </div>
+
+                    <!-- Tindakan Review (Hanya muncul untuk batch paling baru & berstatus menunggu) -->
+                    @if ($isLatestBatch && strtolower($primarySubmission->status) === 'menunggu' && strtolower($tugas->status) === 'menunggu_review')
+                        <div class="bg-primary/5 border-t border-primary/20 p-5 md:p-6">
+                            <h3 class="text-sm font-bold text-primary-dark uppercase tracking-wider mb-4 flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Tindakan Evaluasi
+                            </h3>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Opsi 1: Minta Revisi -->
+                                <div class="bg-surface border border-border p-4 rounded-xl">
+                                    <form data-confirm="Apakah anda yakin ingin meminta revisi?"
+                                        method="POST"
+                                        action="{{ route('asn-submission-revisi', $primarySubmission->id) }}"
+                                        class="m-0 space-y-3">
+                                        @csrf
+                                        <label class="block text-xs font-semibold text-text-light uppercase tracking-wider">
+                                            Minta Revisi Tugas
+                                        </label>
+                                        <textarea name="catatan_asn" rows="3" required placeholder="Tuliskan bagian mana yang perlu diperbaiki..."
+                                            class="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-text focus:outline-none focus:border-danger focus:ring-1 focus:ring-danger transition-colors resize-y"></textarea>
+
+                                        <x-buttonv2 type="submit" color="danger" class="w-full sm:w-full">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                                            </svg>
+                                            Minta Revisi
+                                        </x-buttonv2>
+                                    </form>
                                 </div>
 
-                                <!-- Tindakan Review (Hanya muncul jika item paling atas dan statusnya menunggu) -->
-                                @if ($loop->first && strtolower($submission->status) === 'menunggu' && strtolower($tugas->status) === 'menunggu_review')
-                                    <div class="bg-primary/5 border-t border-primary/20 p-5 md:p-6">
-                                        <h3
-                                            class="text-sm font-bold text-primary-dark uppercase tracking-wider mb-4 flex items-center gap-2">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                            </svg>
-                                            Tindakan Evaluasi
-                                        </h3>
-
-                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <!-- Opsi 1: Minta Revisi -->
-                                            <div class="bg-surface border border-border p-4 rounded-xl">
-                                                <form data-confirm="Apakah anda yakin ingin meminta revisi?"
-                                                    method="POST"
-                                                    action="{{ route('asn-submission-revisi', $submission->id) }}"
-                                                    class="m-0 space-y-3">
-                                                    @csrf
-                                                    <label
-                                                        class="block text-xs font-semibold text-text-light uppercase tracking-wider">Minta
-                                                        Revisi Tugas</label>
-                                                    <textarea name="catatan_asn" rows="3" required placeholder="Tuliskan bagian mana yang perlu diperbaiki..."
-                                                        class="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-text focus:outline-none focus:border-danger focus:ring-1 focus:ring-danger transition-colors resize-y"></textarea>
-
-                                                    <x-buttonv2 type="submit" color="danger" class="w-full sm:w-full">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5"
-                                                            fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                                                            stroke-width="2">
-                                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                                d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-                                                        </svg>
-                                                        Minta Revisi
-                                                    </x-buttonv2>
-                                                </form>
-                                            </div>
-
-                                            <!-- Opsi 2: Setujui -->
-                                            <div
-                                                class="bg-surface border border-border p-4 rounded-xl flex flex-col justify-between">
-                                                <div>
-                                                    <label
-                                                        class="block text-xs font-semibold text-text-light uppercase tracking-wider mb-2">Terima
-                                                        Tugas</label>
-                                                    <p class="text-xs text-text-light leading-relaxed">Jika hasil pekerjaan
-                                                        sudah sesuai standar dan tidak ada yang perlu direvisi, Anda dapat
-                                                        menyetujui tugas ini. Status tugas akan berubah menjadi Selesai.</p>
-                                                </div>
-                                                <form method="POST"
-                                                    action="{{ route('asn-submission-approve', $submission->id) }}"
-                                                    class="m-0 mt-3"
-                                                    data-confirm="Anda yakin ingin menyetujui tugas ini?">
-                                                    @csrf
-
-                                                    <x-buttonv2 type="submit" color="accent-dark"
-                                                        class="w-full sm:w-full">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
-                                                            fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                                                            stroke-width="3">
-                                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                                d="M5 13l4 4L19 7" />
-                                                        </svg>
-                                                        Setujui & Selesaikan
-                                                    </x-buttonv2>
-                                                </form>
-                                            </div>
-                                        </div>
+                                <!-- Opsi 2: Setujui -->
+                                <div class="bg-surface border border-border p-4 rounded-xl flex flex-col justify-between">
+                                    <div>
+                                        <label class="block text-xs font-semibold text-text-light uppercase tracking-wider mb-2">
+                                            Terima Tugas
+                                        </label>
+                                        <p class="text-xs text-text-light leading-relaxed">
+                                            Jika hasil pekerjaan sudah sesuai standar dan tidak ada yang perlu direvisi, Anda dapat menyetujui tugas ini. Status tugas akan berubah menjadi Selesai.
+                                        </p>
                                     </div>
-                                @endif
-
+                                    <form method="POST"
+                                        action="{{ route('asn-submission-approve', $primarySubmission->id) }}"
+                                        class="m-0 mt-3"
+                                        data-confirm="Anda yakin ingin menyetujui tugas ini?">
+                                        @csrf
+                                        <x-buttonv2 type="submit" color="accent-dark" class="w-full sm:w-full">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                            Setujui & Selesaikan
+                                        </x-buttonv2>
+                                    </form>
+                                </div>
                             </div>
-                        @endforeach
-                    </div>
+                        </div>
+                    @endif
                 </div>
+            @endforeach
+        </div>
+    @endif
+
+</div>
 
             </div>
         </section>
