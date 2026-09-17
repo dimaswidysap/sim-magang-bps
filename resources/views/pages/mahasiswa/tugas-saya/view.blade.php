@@ -144,6 +144,64 @@
                         </div>
                     @endif
 
+
+                    <!-- ================================================================= -->
+                    <!-- NAMA ANGGOTA TIM -->
+                    <!-- ================================================================= -->
+                    @if ($detailTugas->mahasiswaProfile)
+    <div>
+        <h2 class="text-sm font-semibold text-text-light uppercase tracking-wider mb-3">
+            Tim Pelaksana
+        </h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+            <!-- KETUA (Pemilik Tugas) -->
+            <div class="flex items-center gap-3 bg-surface border border-border p-4 rounded-xl shadow-sm">
+                <!-- Avatar / Inisial -->
+                <div class="w-10 h-10 rounded-full bg-primary/10 text-primary-dark flex items-center justify-center font-bold text-sm shrink-0 border border-primary/20">
+                    {{ strtoupper(substr($detailTugas->mahasiswaProfile->user->name ?? 'A', 0, 1)) }}
+                </div>
+                <!-- Detail Nama & Role -->
+                <div>
+                    <p class="text-sm font-bold text-text">
+                        {{ $detailTugas->mahasiswaProfile->user->name ?? 'Nama Tidak Diketahui' }}
+                    </p>
+                    <p class="text-xs font-semibold text-primary">
+                        Ketua
+                    </p>
+                </div>
+            </div>
+
+            <!-- ANGGOTA (Dari Relasi TugasAnggota) -->
+            @if ($detailTugas->anggota && $detailTugas->anggota->isNotEmpty())
+                @foreach ($detailTugas->anggota as $anggota)
+                    {{-- FILTER: Hanya tampilkan anggota jika statusnya BUKAN 'pending' dan BUKAN 'ditolak' --}}
+                    @if ($anggota->mahasiswaProfile && $anggota->mahasiswaProfile->user && !in_array(strtolower($anggota->status), ['pending', 'ditolak']))
+                        <div class="flex items-center gap-3 bg-surface border border-border p-4 rounded-xl shadow-sm">
+                            <!-- Avatar / Inisial -->
+                            <div class="w-10 h-10 rounded-full bg-primary/10 text-primary-dark flex items-center justify-center font-bold text-sm shrink-0 border border-primary/20">
+                                {{ strtoupper(substr($anggota->mahasiswaProfile->user->name ?? 'A', 0, 1)) }}
+                            </div>
+                            <!-- Detail Nama & Role -->
+                            <div>
+                                <p class="text-sm font-bold text-text">
+                                    {{ $anggota->mahasiswaProfile->user->name ?? 'Nama Tidak Diketahui' }}
+                                </p>
+                                <p class="text-xs font-semibold text-text-light">
+                                    Anggota
+                                </p>
+                            </div>
+                        </div>
+                    @endif
+                @endforeach
+            @endif
+
+        </div>
+    </div>
+@endif
+                    <!-- ================================================================= -->
+
+
                     <!-- PESAN REVISI TERBARU DARI ASN (Teks Saja) -->
                     @if (strtolower($detailTugas->status) === 'revisi' && isset($detailTugas->latestSubmission) && $detailTugas->latestSubmission->catatan_asn)
                         <div class="p-5 bg-danger/10 border border-danger/30 rounded-xl space-y-2">
@@ -302,7 +360,7 @@
 
                     <div class="flex gap-4">
                         {{-- AJAK TEMAN --}}
-                        @if ($detailTugas->status !== 'selesai' && auth()->user()->mahasiswaProfile->id == $detailTugas->mahasiswa_profile_id)
+                        @if ($detailTugas->status !== 'selesai' && auth()->check() && auth()->user()->mahasiswaProfile && auth()->user()->mahasiswaProfile->id == $detailTugas->mahasiswa_profile_id)
                             <x-buttonv2 href="{{ route('mahasiswa-tugas-undang', $detailTugas->id) }}" color="accent-dark"
                                 class="w-full sm:w-auto">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"

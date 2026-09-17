@@ -10,8 +10,7 @@ use App\Http\Controllers\toolsController;
 //
 use App\Http\Controllers\Admin\AdminMahasiswa;
 use App\Http\Controllers\Admin\adminAsn;
-// use App\Http\Controllers\Admin\AdminAsn as AdminAdminAsn;
-use App\Http\Controllers\Admin\PeriodeMagangController;
+
 use App\Http\Controllers\Admin\AdminSkill;
 //
 use App\Http\Controllers\Asn\TugasController;
@@ -25,7 +24,7 @@ use App\Http\Controllers\Mahasiswa\TugasMahasiswaControllerAmbil;
 use App\Http\Controllers\BeritaController;
 use App\Http\Controllers\Mahasiswa\MagangLogbookController;
 //
-use App\Http\Controllers\Tools\GenerateFasihController;
+
 
 Route::get('/', function () {
     return view('home.index');
