@@ -8,7 +8,7 @@
             <div class="bg-surface rounded-md shadow-sm border border-border overflow-hidden">
 
                 <!-- Header Cover Banner -->
-                <div class="h-32 md:h-44 bg-gradient-to-r from-primary-dark via-primary to-secondary relative"></div>
+                <div class="h-32 md:h-44 bg-linear-to-r from-primary-dark via-primary to-secondary relative"></div>
 
                 <!-- Section Top Profil & Foto -->
                 <div class="px-6 md:px-10 pb-6 relative">
@@ -100,17 +100,15 @@
                             </p>
                         </div>
                         <div class="mt-5">
-                            <a href="#"
-                                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 active:bg-indigo-800 transition-colors duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                                <!-- Icon Kunci (SVG) -->
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                                    xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 0121 9z">
-                                    </path>
-                                </svg>
-                                <span>Ganti kata sandi akun</span>
-                            </a>
+                            <form method="POST" action="{{ route('password.email') }}"
+                                data-confirm="Tautan untuk membuat kata sandi baru akan dikirim ke {{ auth()->user()->email }}. Lanjutkan?">
+                                @csrf
+                                <button type="submit"
+                                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 active:bg-indigo-800 transition-colors duration-200 shadow-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                                    {{-- svg ikon kunci Anda tetap di sini --}}
+                                    <span>Ganti kata sandi akun</span>
+                                </button>
+                            </form>
                         </div>
                     </div>
 

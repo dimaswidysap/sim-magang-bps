@@ -23,12 +23,22 @@ use App\Http\Controllers\Mahasiswa\TugasMahasiswaControllerAmbil;
 //
 use App\Http\Controllers\BeritaController;
 use App\Http\Controllers\Mahasiswa\MagangLogbookController;
+//controller reset password
+use App\http\Controllers\PasswordResetController;
 //
 
 
 Route::get('/', function () {
     return view('home.index');
 })->name('landing-page');
+
+Route::post('/password/email', [PasswordResetController::class, 'sendLink'])
+    ->middleware(['auth', 'role:mahasiswa', 'throttle:5,1'])->name('password.email');
+
+Route::get('/reset-password/{token}', [PasswordResetController::class, 'showResetForm'])->name('password.reset');
+Route::post('/reset-password', [PasswordResetController::class, 'reset'])
+    ->middleware('throttle:6,1')->name('password.update');
+
 
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login-form');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
