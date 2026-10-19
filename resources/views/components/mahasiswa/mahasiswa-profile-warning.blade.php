@@ -25,7 +25,7 @@
         </div>
 
         <!-- Tombol Call to Action (CTA) -->
-        <a href="{{ route('mahasiswa-profil-update') }}"
+        <a href="{{ route('mahasiswa-profil-form', $profil->id) }}"
             class="shrink-0 w-full sm:w-auto bg-warning hover:bg-orange-500 text-white text-xs md:text-sm font-bold px-5 py-2.5 rounded-lg transition-colors shadow-sm text-center inline-flex justify-center items-center gap-2 mt-2 sm:mt-0">
             <span>Lengkapi Profil</span>
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"

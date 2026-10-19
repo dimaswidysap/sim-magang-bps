@@ -175,6 +175,7 @@ class MahasiswaController extends Controller
                 ],
                 'jenjang' => 'nullable|in:SMA/SMK,D3,D4,S1,S2',
                 'jurusan' => 'nullable|string|max:255',
+                'tanggal_lahir' => 'nullable|date',
                 'tanggal_mulai' => 'nullable|date',
                 'tanggal_selesai' => 'nullable|date|after_or_equal:tanggal_mulai',
                 'periode_magang_id' => 'nullable|exists:periode_magang,id',
@@ -229,39 +230,40 @@ class MahasiswaController extends Controller
             ],
         );
 
-       // LOGIKA UPLOAD FOTO PROFIL
-$profile = $user->mahasiswaProfile;
-$fotoProfilPath = $profile?->foto_profil_path;
+        // LOGIKA UPLOAD FOTO PROFIL
+        $profile = $user->mahasiswaProfile;
+        $fotoProfilPath = $profile?->foto_profil_path;
 
-if ($request->hasFile('foto_profil')) {
-    // Hapus foto lama dari storage jika ada
-    if ($fotoProfilPath && Storage::disk('public')->exists($fotoProfilPath)) {
-        Storage::disk('public')->delete($fotoProfilPath);
-    }
+        if ($request->hasFile('foto_profil')) {
+            // Hapus foto lama dari storage jika ada
+            if ($fotoProfilPath && Storage::disk('public')->exists($fotoProfilPath)) {
+                Storage::disk('public')->delete($fotoProfilPath);
+            }
 
-    // Upload foto baru
-    $fotoProfilPath = $request->file('foto_profil')->store('foto_profil', 'public');
-}
+            // Upload foto baru
+            $fotoProfilPath = $request->file('foto_profil')->store('foto_profil', 'public');
+        }
 
-$user->update([
-    'name' => $validated['name'],
-    'phone' => $validated['phone'] ?? null,
-]);
+        $user->update([
+            'name' => $validated['name'],
+            'phone' => $validated['phone'] ?? null,
+        ]);
 
-$profile = MahasiswaProfile::updateOrCreate(
-    ['user_id' => $user->id],
-    [
-        'foto_profil_path' => $fotoProfilPath,
-        'periode_magang_id' => $validated['periode_magang_id'] ?? null,
-        'nim' => $validated['nim'],
-        'instansi_asal' => $validated['instansi_asal'],
-        'jenjang' => $validated['jenjang'] ?? null,
-        'jurusan' => $validated['jurusan'] ?? null,
-        'tanggal_mulai' => $validated['tanggal_mulai'] ?? null,
-        'tanggal_selesai' => $validated['tanggal_selesai'] ?? null,
-        'alamat' => $request->input('alamat'), // Tambahkan field alamat jika perlu di-update
-    ]
-);
+        $profile = MahasiswaProfile::updateOrCreate(
+            ['user_id' => $user->id],
+            [
+                'foto_profil_path' => $fotoProfilPath,
+                'periode_magang_id' => $validated['periode_magang_id'] ?? null,
+                'nim' => $validated['nim'],
+                'instansi_asal' => $validated['instansi_asal'],
+                'jenjang' => $validated['jenjang'] ?? null,
+                'jurusan' => $validated['jurusan'] ?? null,
+                'tanggal_lahir' => $validated['tanggal_lahir'] ?? null,
+                'tanggal_mulai' => $validated['tanggal_mulai'] ?? null,
+                'tanggal_selesai' => $validated['tanggal_selesai'] ?? null,
+                'alamat' => $request->input('alamat'), // Tambahkan field alamat jika perlu di-update
+            ],
+        );
 
         $profile->skills()->sync($validated['skills'] ?? []);
 

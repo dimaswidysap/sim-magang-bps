@@ -6,8 +6,8 @@
 
             <!-- Header Halaman -->
             <div class="mb-8 pb-4 border-b border-border">
-                <h1 class="text-2xl font-bold text-text">Form Data Mahasiswa Magang</h1>
-                <p class="text-sm text-text-light mt-1">Lengkapi informasi akun, data diri, dan periode magang di bawah ini.
+                <h1 class="text-2xl font-bold text-text">Buat Akun Magang/PKL</h1>
+                <p class="text-sm text-text-light mt-1">Lengkapi informasi nama, email dan password!
                 </p>
             </div>
 

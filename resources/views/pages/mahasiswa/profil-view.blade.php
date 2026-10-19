@@ -20,10 +20,10 @@
                             $profileRelation = $profil->mahasiswaProfile ?? $profil->mahasiswa_profile;
 
                             // PERBAIKAN: Utamakan pengecekan kolom foto_profil_path
-                            $avatarPath = $profileRelation?->foto_profil_path
-                                ?? ($profileRelation?->foto
-                                ?? ($profileRelation?->avatar
-                                ?? ($profil->avatar ?? $profil->foto ?? null)));
+                            $avatarPath =
+                                $profileRelation?->foto_profil_path ??
+                                ($profileRelation?->foto ??
+                                    ($profileRelation?->avatar ?? ($profil->avatar ?? ($profil->foto ?? null))));
 
                             $avatarUrl = null;
                             if ($avatarPath) {
@@ -35,13 +35,15 @@
 
                         <!-- Wrapper Foto Profil -->
                         <div class="relative group w-32 h-32 md:w-36 md:h-36 shrink-0">
-                            <div class="w-full h-full rounded-full border-4 border-surface bg-background shadow-md overflow-hidden flex items-center justify-center">
+                            <div
+                                class="w-full h-full rounded-full border-4 border-surface bg-background shadow-md overflow-hidden flex items-center justify-center">
                                 @if ($avatarUrl)
                                     <img src="{{ $avatarUrl }}" alt="{{ $profil->name ?? 'Foto Profil' }}"
                                         class="w-full h-full object-cover">
                                 @else
                                     <!-- Fallback Inisial Nama jika tidak ada foto -->
-                                    <div class="w-full h-full bg-primary/10 text-primary flex items-center justify-center text-4xl md:text-5xl font-bold uppercase">
+                                    <div
+                                        class="w-full h-full bg-primary/10 text-primary flex items-center justify-center text-4xl md:text-5xl font-bold uppercase">
                                         {{ strtoupper(substr($profil->name ?? 'M', 0, 1)) }}
                                     </div>
                                 @endif
@@ -64,19 +66,20 @@
 
                         <!-- Status Badge & Action -->
                         <div class="flex items-center gap-3">
-                            <span class="text-xs font-semibold text-text-light uppercase tracking-wider">Status Magang:</span>
+                            <span class="text-xs font-semibold text-text-light uppercase tracking-wider">Status
+                                Magang:</span>
                             @php
-                                $statusMagang = strtolower(
-                                    $profileRelation?->status ?? 'nonaktif'
-                                );
+                                $statusMagang = strtolower($profileRelation?->status ?? 'nonaktif');
                             @endphp
                             @if ($statusMagang === 'aktif')
-                                <span class="inline-flex px-3.5 py-1.5 bg-success/10 border border-success/20 text-success-dark text-xs font-bold rounded-full items-center gap-1.5">
+                                <span
+                                    class="inline-flex px-3.5 py-1.5 bg-success/10 border border-success/20 text-success-dark text-xs font-bold rounded-full items-center gap-1.5">
                                     <span class="w-2 h-2 rounded-full bg-success animate-pulse"></span>
                                     Aktif
                                 </span>
                             @else
-                                <span class="inline-flex px-3.5 py-1.5 bg-text-light/10 border border-border text-text-light text-xs font-bold rounded-full items-center gap-1.5">
+                                <span
+                                    class="inline-flex px-3.5 py-1.5 bg-text-light/10 border border-border text-text-light text-xs font-bold rounded-full items-center gap-1.5">
                                     <span class="w-2 h-2 rounded-full bg-text-light"></span>
                                     {{ ucfirst($statusMagang) }}
                                 </span>
@@ -91,9 +94,23 @@
                             <p class="font-mono font-medium text-primary">NIM.
                                 {{ $profileRelation?->nim ?? '-' }}</p>
                             <span>•</span>
-                            <p class="uppercase font-semibold tracking-wide text-xs bg-background border border-border px-2.5 py-0.5 rounded-md text-text-light">
+                            <p
+                                class="uppercase font-semibold tracking-wide text-xs bg-background border border-border px-2.5 py-0.5 rounded-md text-text-light">
                                 {{ $profil->role ?? 'Mahasiswa' }}
                             </p>
+                        </div>
+                        <div class="mt-5">
+                            <a href="#"
+                                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 active:bg-indigo-800 transition-colors duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                                <!-- Icon Kunci (SVG) -->
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 0121 9z">
+                                    </path>
+                                </svg>
+                                <span>Ganti kata sandi akun</span>
+                            </a>
                         </div>
                     </div>
 
@@ -116,23 +133,27 @@
                             Informasi Akademik & Magang
                         </h2>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 bg-background p-6 rounded-xl border border-border">
+                        <div
+                            class="grid grid-cols-1 md:grid-cols-2 gap-5 bg-background p-6 rounded-xl border border-border">
                             <div>
-                                <p class="text-xs font-semibold text-text-light uppercase tracking-wider mb-1">Instansi Asal</p>
+                                <p class="text-xs font-semibold text-text-light uppercase tracking-wider mb-1">Instansi Asal
+                                </p>
                                 <p class="font-medium text-text text-sm">
                                     {{ $profileRelation?->instansi_asal ?? '-' }}
                                 </p>
                             </div>
 
                             <div>
-                                <p class="text-xs font-semibold text-text-light uppercase tracking-wider mb-1">Jenjang & Program Studi</p>
+                                <p class="text-xs font-semibold text-text-light uppercase tracking-wider mb-1">Jenjang &
+                                    Program Studi</p>
                                 <p class="font-medium text-text text-sm">
                                     {{ $profileRelation?->jenjang ?? '' }} - {{ $profileRelation?->jurusan ?? '-' }}
                                 </p>
                             </div>
 
                             <div class="md:col-span-2">
-                                <p class="text-xs font-semibold text-text-light uppercase tracking-wider mb-1">Periode Magang</p>
+                                <p class="text-xs font-semibold text-text-light uppercase tracking-wider mb-1">Periode
+                                    Magang</p>
                                 <div class="font-medium text-text text-sm flex items-center gap-2">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary shrink-0"
                                         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -164,26 +185,31 @@
                             Kontak & Data Pribadi
                         </h2>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 bg-background p-6 rounded-xl border border-border">
+                        <div
+                            class="grid grid-cols-1 md:grid-cols-2 gap-5 bg-background p-6 rounded-xl border border-border">
                             <div>
                                 <p class="text-xs font-semibold text-text-light uppercase tracking-wider mb-1">Email</p>
                                 <p class="font-medium text-text text-sm">{{ $profil->email ?? '-' }}</p>
                             </div>
 
                             <div>
-                                <p class="text-xs font-semibold text-text-light uppercase tracking-wider mb-1">No. Telepon / WhatsApp</p>
+                                <p class="text-xs font-semibold text-text-light uppercase tracking-wider mb-1">No. Telepon /
+                                    WhatsApp</p>
                                 <p class="font-medium text-text text-sm">{{ $profil->phone ?? '-' }}</p>
                             </div>
 
                             <div>
-                                <p class="text-xs font-semibold text-text-light uppercase tracking-wider mb-1">Tanggal Lahir</p>
+                                <p class="text-xs font-semibold text-text-light uppercase tracking-wider mb-1">Tanggal Lahir
+                                </p>
                                 @php
                                     $tglLahir = $profileRelation?->tanggal_lahir;
                                 @endphp
                                 <p class="font-medium text-text text-sm">
                                     @if ($tglLahir)
                                         {{ \Carbon\Carbon::parse($tglLahir)->translatedFormat('d F Y') }}
-                                        <span class="text-xs text-text-light font-normal">({{ \Carbon\Carbon::parse($tglLahir)->age }} tahun)</span>
+                                        <span
+                                            class="text-xs text-text-light font-normal">({{ \Carbon\Carbon::parse($tglLahir)->age }}
+                                            tahun)</span>
                                     @else
                                         -
                                     @endif
@@ -191,7 +217,8 @@
                             </div>
 
                             <div class="md:col-span-2">
-                                <p class="text-xs font-semibold text-text-light uppercase tracking-wider mb-1">Alamat Tempat Tinggal</p>
+                                <p class="text-xs font-semibold text-text-light uppercase tracking-wider mb-1">Alamat Tempat
+                                    Tinggal</p>
                                 <p class="font-medium text-text text-sm leading-relaxed">
                                     {{ $profileRelation?->alamat ?? '-' }}
                                 </p>
@@ -217,8 +244,9 @@
                             @if (count($skills) > 0)
                                 <div class="flex flex-wrap gap-2">
                                     @foreach ($skills as $skill)
-                                        <span class="px-3.5 py-1.5 bg-surface border border-border text-primary font-medium text-xs rounded-lg shadow-sm">
-                                            {{ is_object($skill) ? ($skill->nama_skill ?? $skill->nama) : ($skill['nama_skill'] ?? $skill) }}
+                                        <span
+                                            class="px-3.5 py-1.5 bg-surface border border-border text-primary font-medium text-xs rounded-lg shadow-sm">
+                                            {{ is_object($skill) ? $skill->nama_skill ?? $skill->nama : $skill['nama_skill'] ?? $skill }}
                                         </span>
                                     @endforeach
                                 </div>
@@ -229,20 +257,28 @@
                     </div>
 
                     <!-- Footer Action Buttons -->
-                    <div class="bg-footer rounded-xl border-t border-border px-6 md:px-10 py-5 flex flex-col sm:flex-row gap-3 sm:justify-between items-center font-montserrat">
+                    <div
+                        class="bg-footer rounded-xl border-t border-border px-6 md:px-10 py-5 flex flex-col sm:flex-row gap-3 sm:justify-between items-center font-montserrat">
 
                         <!-- Tombol Kembali (Kiri) -->
-                        <x-buttonv2 href="{{ route('mahasiswa-index') }}" color="accent-primary" class="w-full sm:w-auto">
-                            <svg xmlns="http://www.w3.org/2000/svg" stroke-width="3" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                        <x-buttonv2 href="{{ route('mahasiswa-index') }}" color="accent-primary"
+                            class="w-full sm:w-auto">
+                            <svg xmlns="http://www.w3.org/2000/svg" stroke-width="3" class="h-4 w-4" viewBox="0 0 20 20"
+                                fill="currentColor">
+                                <path fill-rule="evenodd"
+                                    d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                                    clip-rule="evenodd" />
                             </svg>
                             Kembali
                         </x-buttonv2>
 
                         <!-- Tombol Edit Data (Kanan) -->
-                        <x-buttonv2 href="{{ route('mahasiswa-profil-form', $profil->id) }}" color="accent-dark" class="w-full sm:w-auto">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3" class="w-4 h-4">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 3.487a2.25 2.25 0 113.182 3.182L8.25 18.463 3 21l2.537-5.25L16.862 3.487z" />
+                        <x-buttonv2 href="{{ route('mahasiswa-profil-form', $profil->id) }}" color="accent-dark"
+                            class="w-full sm:w-auto">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="3" class="w-4 h-4">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M16.862 3.487a2.25 2.25 0 113.182 3.182L8.25 18.463 3 21l2.537-5.25L16.862 3.487z" />
                             </svg>
                             Edit profil saya
                         </x-buttonv2>
