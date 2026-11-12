@@ -70,12 +70,6 @@ class User extends Authenticatable
             $q->where('status', 'aktif');
         });
     }
-    public function scopeProfileNonAktif($query)
-    {
-        return $query->whereHas('mahasiswaProfile', function ($q) {
-            $q->where('status', 'pending');
-        });
-    }
 
     public function scopeProfileSelesai($query)
     {

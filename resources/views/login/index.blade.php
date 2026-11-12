@@ -12,11 +12,8 @@
         <!-- Login Card / Sidebar -->
         <section
             class="absolute z-10 flex flex-col justify-center overflow-y-auto transition-all duration-300
-            /* Mobile: Melayang di tengah, efek Glassmorphism */
             top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
             w-[90%] h-[90%] max-w-md rounded-3xl bg-black/40 backdrop-blur-md shadow-2xl
-
-            /* Tablet & Desktop (md ke atas): Mepet KANAN, tinggi 100%, solid background */
             md:top-0 md:right-0 md:left-auto md:translate-x-0 md:translate-y-0
             md:h-screen md:w-[50%] lg:w-[35%] md:max-w-none md:rounded-none
             md:bg-background md:backdrop-blur-none md:shadow-[-4px_0_24px_rgba(0,0,0,0.05)] md:border-l md:border-border">

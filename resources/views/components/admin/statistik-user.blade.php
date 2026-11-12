@@ -34,7 +34,7 @@
 
                 <!-- Data Pending -->
                 <div>
-                    <h2 class="text-2xl md:text-3xl font-bold text-text leading-none">{{ $jumlahMahasiswaNonAktif->count() }}</h2>
+                    <h2 class="text-2xl md:text-3xl font-bold text-text leading-none">{{ $jumlahMahasiswaPending->count() }}</h2>
                     <p class="text-[10px] md:text-[11px] text-accent font-bold flex items-center gap-1.5 mt-1.5 uppercase tracking-wide">
                         <span class="w-1.5 h-1.5 rounded-full bg-accent"></span> Pending
                     </p>

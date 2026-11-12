@@ -19,7 +19,6 @@ class AdminController extends Controller
     {
         return [
             'aktif' => User::mahasiswa()->profileAktif()->with('mahasiswaProfile')->get(),
-            'nonAktif' => User::mahasiswa()->profileNonAktif()->with('mahasiswaProfile')->get(),
             'selesai' => User::mahasiswa()->profileSelesai()->with('mahasiswaProfile')->get(),
             'batal' => User::mahasiswa()->profileBatal()->with('mahasiswaProfile')->get(),
             'pending' => User::mahasiswa()->profilePending()->with('mahasiswaProfile')->get(),
@@ -44,7 +43,6 @@ class AdminController extends Controller
         return view('pages.admin.index', [
             'daftarMahasiswaProfilWarning' => $daftarMahasiswaProfilWarning,
             'jumlahMahasiswaAktif' => $statistik['aktif'],
-            'jumlahMahasiswaNonAktif' => $statistik['nonAktif'],
             'jumlahMahasiswaSelesai' => $statistik['selesai'],
             'jumlahMahasiswaBatal' => $statistik['batal'],
             'jumlahMahasiswaPending' => $statistik['pending'],

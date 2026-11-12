@@ -54,7 +54,7 @@
                                     d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
                             </svg>
                         </x-slot>
-                        Mahasiswa
+                        Magang/PKL
                     </x-nav-link>
                 </li>
                 <!-- Menu Asn -->
@@ -71,7 +71,7 @@
                                 <path d="M13 15h5" />
                             </svg>
                         </x-slot>
-                        ASN
+                        ASN (Pembimbing magang)
                     </x-nav-link>
                 </li>
                 <li class="text-bold font-black text-white/50 text-[10px] ml-[5%] translate-y-2.5 mb-1">Management
@@ -88,7 +88,7 @@
                                     d="M3 19a5 5 0 0110 0M11 19a5 5 0 0110 0" />
                             </svg>
                         </x-slot>
-                        Skill
+                        Skills (Keahlian)
                     </x-nav-link>
                 </li>
                 @include('components.button-logout')

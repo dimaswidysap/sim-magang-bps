@@ -58,7 +58,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        Dibuat pada: {{ \Carbon\Carbon::parse($detailTugas->created_at)->translatedFormat('d F Y, H:i') }} WIB
+                        Dibuat pada: {{ \Carbon\Carbon::parse($detailTugas->created_at)->translatedFormat('d F Y, H:i') }}
+                        WIB
                     </p>
                 </div>
 
@@ -149,61 +150,70 @@
                     <!-- NAMA ANGGOTA TIM -->
                     <!-- ================================================================= -->
                     @if ($detailTugas->mahasiswaProfile)
-    <div>
-        <h2 class="text-sm font-semibold text-text-light uppercase tracking-wider mb-3">
-            Tim Pelaksana
-        </h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <h2 class="text-sm font-semibold text-text-light uppercase tracking-wider mb-3">
+                                Tim Pelaksana
+                            </h2>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
-            <!-- KETUA (Pemilik Tugas) -->
-            <div class="flex items-center gap-3 bg-surface border border-border p-4 rounded-xl shadow-sm">
-                <!-- Avatar / Inisial -->
-                <div class="w-10 h-10 rounded-full bg-primary/10 text-primary-dark flex items-center justify-center font-bold text-sm shrink-0 border border-primary/20">
-                    {{ strtoupper(substr($detailTugas->mahasiswaProfile->user->name ?? 'A', 0, 1)) }}
-                </div>
-                <!-- Detail Nama & Role -->
-                <div>
-                    <p class="text-sm font-bold text-text">
-                        {{ $detailTugas->mahasiswaProfile->user->name ?? 'Nama Tidak Diketahui' }}
-                    </p>
-                    <p class="text-xs font-semibold text-primary">
-                        Ketua
-                    </p>
-                </div>
-            </div>
+                                <!-- KETUA (Pemilik Tugas) -->
+                                <div
+                                    class="flex items-center gap-3 bg-surface border border-border p-4 rounded-xl shadow-sm">
+                                    <!-- Avatar / Inisial -->
+                                    <div
+                                        class="w-10 h-10 rounded-full bg-primary/10 text-primary-dark flex items-center justify-center font-bold text-sm shrink-0 border border-primary/20">
+                                        {{ strtoupper(substr($detailTugas->mahasiswaProfile->user->name ?? 'A', 0, 1)) }}
+                                    </div>
+                                    <!-- Detail Nama & Role -->
+                                    <div>
+                                        <p class="text-sm font-bold text-text">
+                                            {{ $detailTugas->mahasiswaProfile->user->name ?? 'Nama Tidak Diketahui' }}
+                                        </p>
+                                        <p class="text-xs font-semibold text-primary">
+                                            Ketua
+                                        </p>
+                                    </div>
+                                </div>
 
-            <!-- ANGGOTA (Dari Relasi TugasAnggota) -->
-            @if ($detailTugas->anggota && $detailTugas->anggota->isNotEmpty())
-                @foreach ($detailTugas->anggota as $anggota)
-                    {{-- FILTER: Hanya tampilkan anggota jika statusnya BUKAN 'pending' dan BUKAN 'ditolak' --}}
-                    @if ($anggota->mahasiswaProfile && $anggota->mahasiswaProfile->user && !in_array(strtolower($anggota->status), ['pending', 'ditolak']))
-                        <div class="flex items-center gap-3 bg-surface border border-border p-4 rounded-xl shadow-sm">
-                            <!-- Avatar / Inisial -->
-                            <div class="w-10 h-10 rounded-full bg-primary/10 text-primary-dark flex items-center justify-center font-bold text-sm shrink-0 border border-primary/20">
-                                {{ strtoupper(substr($anggota->mahasiswaProfile->user->name ?? 'A', 0, 1)) }}
-                            </div>
-                            <!-- Detail Nama & Role -->
-                            <div>
-                                <p class="text-sm font-bold text-text">
-                                    {{ $anggota->mahasiswaProfile->user->name ?? 'Nama Tidak Diketahui' }}
-                                </p>
-                                <p class="text-xs font-semibold text-text-light">
-                                    Anggota
-                                </p>
+                                <!-- ANGGOTA (Dari Relasi TugasAnggota) -->
+                                @if ($detailTugas->anggota && $detailTugas->anggota->isNotEmpty())
+                                    @foreach ($detailTugas->anggota as $anggota)
+                                        {{-- FILTER: Hanya tampilkan anggota jika statusnya BUKAN 'pending' dan BUKAN 'ditolak' --}}
+                                        @if (
+                                            $anggota->mahasiswaProfile &&
+                                                $anggota->mahasiswaProfile->user &&
+                                                !in_array(strtolower($anggota->status), ['pending', 'ditolak']))
+                                            <div
+                                                class="flex items-center gap-3 bg-surface border border-border p-4 rounded-xl shadow-sm">
+                                                <!-- Avatar / Inisial -->
+                                                <div
+                                                    class="w-10 h-10 rounded-full bg-primary/10 text-primary-dark flex items-center justify-center font-bold text-sm shrink-0 border border-primary/20">
+                                                    {{ strtoupper(substr($anggota->mahasiswaProfile->user->name ?? 'A', 0, 1)) }}
+                                                </div>
+                                                <!-- Detail Nama & Role -->
+                                                <div>
+                                                    <p class="text-sm font-bold text-text">
+                                                        {{ $anggota->mahasiswaProfile->user->name ?? 'Nama Tidak Diketahui' }}
+                                                    </p>
+                                                    <p class="text-xs font-semibold text-text-light">
+                                                        Anggota
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        @endif
+                                    @endforeach
+                                @endif
+
                             </div>
                         </div>
                     @endif
-                @endforeach
-            @endif
-
-        </div>
-    </div>
-@endif
                     <!-- ================================================================= -->
 
 
                     <!-- PESAN REVISI TERBARU DARI ASN (Teks Saja) -->
-                    @if (strtolower($detailTugas->status) === 'revisi' && isset($detailTugas->latestSubmission) && $detailTugas->latestSubmission->catatan_asn)
+                    @if (strtolower($detailTugas->status) === 'revisi' &&
+                            isset($detailTugas->latestSubmission) &&
+                            $detailTugas->latestSubmission->catatan_asn)
                         <div class="p-5 bg-danger/10 border border-danger/30 rounded-xl space-y-2">
                             <h2 class="text-xs font-bold text-danger uppercase tracking-wider flex items-center gap-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-danger shrink-0"
@@ -214,7 +224,8 @@
                                 </svg>
                                 Pesan Revisi dari ASN
                             </h2>
-                            <div class="text-sm text-text leading-relaxed font-medium bg-surface/60 border border-danger/20 p-4 rounded-lg">
+                            <div
+                                class="text-sm text-text leading-relaxed font-medium bg-surface/60 border border-danger/20 p-4 rounded-lg">
                                 {{ $detailTugas->latestSubmission->catatan_asn }}
                             </div>
                         </div>
@@ -233,7 +244,8 @@
                         @endphp
 
                         <div class="border-t border-border pt-6">
-                            <h2 class="text-sm font-semibold text-text-light uppercase tracking-wider mb-4 flex items-center gap-2">
+                            <h2
+                                class="text-sm font-semibold text-text-light uppercase tracking-wider mb-4 flex items-center gap-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary" fill="none"
                                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -247,36 +259,47 @@
                                     @php
                                         // Urutan pengumpulan (Pengumpulan #1, #2, dst.)
                                         $groupNumber = $totalGroups - $loop->index;
-                                        $formattedTime = \Carbon\Carbon::parse($timestampKey)->translatedFormat('d F Y, H:i');
+                                        $formattedTime = \Carbon\Carbon::parse($timestampKey)->translatedFormat(
+                                            'd F Y, H:i',
+                                        );
 
                                         // Ambil catatan mahasiswa & ASN yang ada di dalam batch pengumpulan ini
-                                        $catatanMahasiswa = $submissionsInGroup->pluck('catatan_mahasiswa')->filter()->first();
+                                        $catatanMahasiswa = $submissionsInGroup
+                                            ->pluck('catatan_mahasiswa')
+                                            ->filter()
+                                            ->first();
                                         $catatanAsn = $submissionsInGroup->pluck('catatan_asn')->filter()->first();
                                     @endphp
 
                                     <div class="p-5 bg-background border border-border rounded-xl space-y-4">
 
                                         <!-- Header Container Batch Pengumpulan -->
-                                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-border/60">
+                                        <div
+                                            class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-border/60">
                                             <div class="flex items-center gap-2">
-                                                <span class="px-2.5 py-0.5 bg-primary/10 text-primary text-xs font-bold rounded-full border border-primary/20">
+                                                <span
+                                                    class="px-2.5 py-0.5 bg-primary/10 text-primary text-xs font-bold rounded-full border border-primary/20">
                                                     Pengumpulan #{{ $groupNumber }}
                                                 </span>
 
                                                 @if (strtolower($detailTugas->status) === 'selesai' && $loop->first)
-                                                    <span class="px-2.5 py-0.5 bg-success/10 text-success text-xs font-bold rounded-full border border-success/20">
+                                                    <span
+                                                        class="px-2.5 py-0.5 bg-success/10 text-success text-xs font-bold rounded-full border border-success/20">
                                                         Diterima (Selesai)
                                                     </span>
                                                 @elseif ($catatanAsn)
-                                                    <span class="px-2.5 py-0.5 bg-danger/10 text-danger text-xs font-bold rounded-full border border-danger/20">
+                                                    <span
+                                                        class="px-2.5 py-0.5 bg-danger/10 text-danger text-xs font-bold rounded-full border border-danger/20">
                                                         Perlu Revisi
                                                     </span>
                                                 @endif
                                             </div>
 
                                             <span class="text-xs text-text-light font-medium flex items-center gap-1">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5"
+                                                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                 </svg>
                                                 {{ $formattedTime }} WIB
                                             </span>
@@ -285,10 +308,12 @@
                                         <!-- Catatan Mahasiswa pada batch ini (Jika ada) -->
                                         @if ($catatanMahasiswa)
                                             <div>
-                                                <p class="text-xs font-semibold text-text-light uppercase tracking-wider mb-1">
+                                                <p
+                                                    class="text-xs font-semibold text-text-light uppercase tracking-wider mb-1">
                                                     Catatan Mahasiswa:
                                                 </p>
-                                                <p class="text-sm text-text font-medium bg-surface p-3 rounded-lg border border-border">
+                                                <p
+                                                    class="text-sm text-text font-medium bg-surface p-3 rounded-lg border border-border">
                                                     {{ $catatanMahasiswa }}
                                                 </p>
                                             </div>
@@ -304,15 +329,18 @@
                                                     @if ($submission->file_path)
                                                         <a href="{{ $submission->file_url }}" target="_blank"
                                                             class="flex items-center gap-3 p-3 bg-surface border border-border rounded-xl hover:border-primary transition-colors group">
-                                                            <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                            <div
+                                                                class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
+                                                                    fill="none" viewBox="0 0 24 24"
+                                                                    stroke="currentColor" stroke-width="2">
                                                                     <path stroke-linecap="round" stroke-linejoin="round"
                                                                         d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                                                 </svg>
                                                             </div>
                                                             <div class="min-w-0 flex-1">
-                                                                <p class="text-xs font-semibold text-text truncate group-hover:text-primary transition-colors">
+                                                                <p
+                                                                    class="text-xs font-semibold text-text truncate group-hover:text-primary transition-colors">
                                                                     {{ $submission->file_name ?? 'Download File' }}
                                                                 </p>
                                                                 <p class="text-[10px] text-text-light mt-0.5">
@@ -329,8 +357,11 @@
                                         @if ($catatanAsn)
                                             <div class="p-3 bg-danger/5 border border-danger/20 rounded-lg">
                                                 <p class="text-xs font-bold text-danger mb-1 flex items-center gap-1.5">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5"
+                                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
                                                     </svg>
                                                     Pesan Revisi dari ASN:
                                                 </p>
@@ -347,7 +378,8 @@
                 </div>
 
                 <!-- Footer Card / Aksi -->
-                <div class="p-6 md:px-8 md:py-6 bg-background border-t border-border flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div
+                    class="p-6 md:px-8 md:py-6 bg-background border-t border-border flex flex-col sm:flex-row justify-between items-center gap-4">
 
                     <!-- Tombol Kembali -->
                     <x-buttonv2 href="{{ route('tugas-saya') }}" color="primary" class="w-full sm:w-auto">
@@ -360,11 +392,15 @@
 
                     <div class="flex gap-4">
                         {{-- AJAK TEMAN --}}
-                        @if ($detailTugas->status !== 'selesai' && auth()->check() && auth()->user()->mahasiswaProfile && auth()->user()->mahasiswaProfile->id == $detailTugas->mahasiswa_profile_id)
-                            <x-buttonv2 href="{{ route('mahasiswa-tugas-undang', $detailTugas->id) }}" color="accent-dark"
-                                class="w-full sm:w-auto">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                                    stroke="currentColor" stroke-width="2">
+                        @if (
+                            $detailTugas->status !== 'selesai' &&
+                                auth()->check() &&
+                                auth()->user()->mahasiswaProfile &&
+                                auth()->user()->mahasiswaProfile->id == $detailTugas->mahasiswa_profile_id)
+                            <x-buttonv2 href="{{ route('mahasiswa-tugas-undang', $detailTugas->id) }}"
+                                color="accent-dark" class="w-full sm:w-auto">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round"
                                         d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                                 </svg>

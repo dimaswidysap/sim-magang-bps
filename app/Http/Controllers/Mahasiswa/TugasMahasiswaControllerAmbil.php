@@ -8,7 +8,8 @@ use Illuminate\Http\Request;
 use App\Models\Tugas;
 use App\Models\TugasAnggota;
 use App\Models\Logbook;
-
+use App\Models\User;
+use App\Models\MahasiswaProfile;
 
 class TugasMahasiswaControllerAmbil extends Controller
 {
@@ -27,8 +28,14 @@ class TugasMahasiswaControllerAmbil extends Controller
     {
         $mahasiswaProfileSaya = auth()->user()->mahasiswaProfile;
 
+        // 1. Pastikan profil sudah ada terlebih dahulu sebelum mengecek kolomnya
         if (!$mahasiswaProfileSaya) {
             return back()->with('error', 'Lengkapi profil Anda dulu sebelum mengambil tugas.');
+        }
+
+        // 2. Langsung cek status dari objek $mahasiswaProfileSaya yang sudah diambil
+        if ($mahasiswaProfileSaya->status !== 'aktif') {
+            return back()->with('error', 'Status magang Anda tidak aktif, silakan hubungi pembimbing magang');
         }
 
         // Cek 1 tugas aktif - sama persis dengan pengecekan di terimaUndangan(),
