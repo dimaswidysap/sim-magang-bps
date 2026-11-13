@@ -33,7 +33,6 @@
             <form method="POST" action="{{ route('admin-asn-store') }}" class="space-y-8"
                 data-confirm="Apakah anda yakin ingin menambah data?">
                 @csrf
-
                 <!-- SECTION 1: Data Akun & Kontak -->
                 <div>
                     <h2 class="text-lg font-semibold text-primary mb-4 flex items-center gap-2">
@@ -51,20 +50,17 @@
                                 placeholder="Masukkan nama lengkap"
                                 class="w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors">
                         </div>
-
                         <div>
                             <label class="block text-sm font-medium text-text-light mb-1.5">Email</label>
                             <input type="email" name="email" value="{{ old('email') }}" placeholder="contoh@gmail.com"
                                 class="w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors">
                         </div>
-
                         <div>
                             <label class="block text-sm font-medium text-text-light mb-1.5">No. HP</label>
                             <input type="text" name="phone" value="{{ old('phone') }}"
                                 placeholder="Contoh: 08123456789"
                                 class="hanya-angka w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors">
                         </div>
-
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-text-light mb-1.5">Password</label>
                             <input type="password" name="password" placeholder="Buat password untuk akun ini"
@@ -72,7 +68,6 @@
                         </div>
                     </div>
                 </div>
-
                 <!-- SECTION 2: Data Kedinasan -->
                 <div>
                     <h2 class="text-lg font-semibold text-primary mb-4 flex items-center gap-2">
@@ -100,34 +95,49 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-text-light mb-1.5">Unit Kerja</label>
-                            <input type="text" name="unit_kerja" value="{{ old('unit_kerja') }}"
-                                placeholder="Contoh: BPS Kabupaten Madiun"
+                            <select name="unit_kerja"
                                 class="w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors">
+                                <option value="" disabled selected>Pilih Unit Kerja</option>
+                                <option value="Umum" {{ old('unit_kerja') == 'Umum' ? 'selected' : '' }}>Umum</option>
+                                <option value="Statistik Sosial"
+                                    {{ old('unit_kerja') == 'Statistik Sosial' ? 'selected' : '' }}>Statistik Sosial
+                                </option>
+                                <option value="Statistik Produksi"
+                                    {{ old('unit_kerja') == 'Statistik Produksi' ? 'selected' : '' }}>Statistik Produksi
+                                </option>
+                                <option value="Nerwilis" {{ old('unit_kerja') == 'Nerwilis' ? 'selected' : '' }}>Nerwilis
+                                </option>
+                                <option value="Statistik Distribusi"
+                                    {{ old('unit_kerja') == 'Statistik Distribusi' ? 'selected' : '' }}>Statistik
+                                    Distribusi</option>
+                                <option value="Pengelolaan dan Layanan Statistik"
+                                    {{ old('unit_kerja') == 'Pengelolaan dan Layanan Statistik' ? 'selected' : '' }}>
+                                    Pengelolaan dan Layanan Statistik</option>
+                                <option
+                                    value="Pembinaan Statistik Sektoral & Evaluasi Penyelenggaraan Statistik Sektoral (EPSS)"
+                                    {{ old('unit_kerja') == 'Pembinaan Statistik Sektoral & Evaluasi Penyelenggaraan Statistik Sektoral (EPSS)' ? 'selected' : '' }}>
+                                    Pembinaan Statistik Sektoral & Evaluasi Penyelenggaraan Statistik Sektoral (EPSS)
+                                </option>
+                                <option value="Kepala Satker" {{ old('unit_kerja') == 'Kepala Satker' ? 'selected' : '' }}>
+                                    Kepala Satker</option>
+                            </select>
                         </div>
                     </div>
                 </div>
-
                 <hr class="border-border mt-8">
-
                 <!-- Footer Buttons -->
                 <div class="flex flex-col sm:flex-row justify-end items-center gap-4 pt-4">
                     <!-- Tombol Kembali -->
-
-
-
-
                     <x-buttonv2 href="{{ route('admin-asn') }}" color="primary" class="w-full sm:w-auto">
-
                         kembali
                     </x-buttonv2>
                     <x-buttonv2 type="submit" color="accent-dark" class="w-full sm:w-auto">
-                        <svg xmlns="http://www.w3.org/2000/svg" stroke-width="3" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor" stroke-width="2">
+                        <svg xmlns="http://www.w3.org/2000/svg" stroke-width="3" class="h-4 w-4" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                         </svg>
                         Simpan Data
                     </x-buttonv2>
-
                 </div>
 
             </form>
