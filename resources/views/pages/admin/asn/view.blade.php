@@ -218,7 +218,7 @@
 
                     </div>
                     <!-- Tombol Kembali (Di Sisi Kiri Footer) -->
-                    <x-buttonv2 href="{{ route('admin-asn') }}" color="primary" class="w-full sm:w-auto">
+                    <x-buttonv2 href="{{ url()->previous() }}" color="primary" class="w-full sm:w-auto">
                         <svg xmlns="http://www.w3.org/2000/svg" stroke-width="3" class="h-4 w-4" viewBox="0 0 20 20"
                             fill="currentColor">
                             <path fill-rule="evenodd"

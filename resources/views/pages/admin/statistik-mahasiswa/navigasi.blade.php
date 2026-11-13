@@ -1,6 +1,5 @@
-
 <!-- Navigation Tabs -->
-<div class="mb-6 border-b border-border overflow-x-auto scrollbar-none">
+<div class="flex items-center justify-between mb-6 border-b border-border overflow-x-auto scrollbar-none">
     <nav class="flex space-x-2 md:space-x-4 min-w-max pb-2">
 
         <a href="{{ route('magang-aktif') }}"
@@ -28,4 +27,14 @@
         </a>
 
     </nav>
+    <div class="mb-5 flex justify-start">
+        <a href="{{ route('admin-index') }}"
+            class="inline-flex items-center gap-2 px-4 py-2 text-xs md:text-sm font-semibold text-text-light bg-surface border border-border rounded-lg shadow-sm hover:bg-background transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Kembali
+        </a>
+    </div>
 </div>

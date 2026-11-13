@@ -118,7 +118,7 @@
                             </button>
                         </div>
                     @else
-                        <a href="#" class="px-3 py-1.5 bg-primary/10 text-primary-dark text-xs font-semibold rounded-lg hover:bg-primary/20">
+                        <a href={{ route('admin-mahasiswa-detail', $id) }} class="px-3 py-1.5 bg-primary/10 text-primary-dark text-xs font-semibold rounded-lg hover:bg-primary/20">
                             Detail
                         </a>
                     @endif

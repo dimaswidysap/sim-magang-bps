@@ -78,7 +78,7 @@ Route::prefix('admin')
     ->group(function () {
         Route::get('/', [AdminController::class, 'adminIndex'])->name('admin-index');
 
-        // Management Mahasiswa
+        // Management peserta magang/PKL
         Route::get('/mahasiswa', [AdminController::class, 'adminMahasiswa'])->name('admin-mahasiswa');
         Route::get('/mahasiswa/create', [AdminMahasiswa::class, 'showForm'])->name('admin.mahasiswa.create');
         Route::post('/mahasiswa', [AdminMahasiswa::class, 'storeMahasiswa'])->name('admin.mahasiswa.store');
