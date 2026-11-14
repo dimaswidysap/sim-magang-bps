@@ -9,10 +9,21 @@ class TugasAnggota extends Model
 {
     use HasFactory;
 
+    public const STATUS_DIUNDANG = 'diundang';
+    public const STATUS_DITERIMA = 'diterima';
+    public const STATUS_DITOLAK = 'ditolak';
+
+    public const SUMBER_UNDANGAN_TEMAN = 'undangan_teman';
+    public const SUMBER_DITUGASKAN_ASN = 'ditugaskan_asn';
+
     protected $table = 'tugas_anggota';
 
     protected $fillable = [
-        'tugas_id', 'mahasiswa_profile_id', 'status', 'diundang_oleh', 'sumber',
+        'tugas_id',
+        'mahasiswa_profile_id',
+        'status',
+        'diundang_oleh',
+        'sumber',
     ];
 
     public function tugas()
@@ -32,11 +43,11 @@ class TugasAnggota extends Model
 
     public function scopeDiterima($query)
     {
-        return $query->where('status', 'diterima');
+        return $query->where('status', self::STATUS_DITERIMA);
     }
 
     public function scopeMenungguKonfirmasi($query)
     {
-        return $query->where('status', 'diundang');
+        return $query->where('status', self::STATUS_DIUNDANG);
     }
 }

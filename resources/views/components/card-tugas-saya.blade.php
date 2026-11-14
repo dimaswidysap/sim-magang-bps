@@ -45,7 +45,7 @@
 
                         <!-- Status -->
                         <td class="px-5 py-4 align-middle">
-                            @if (strtolower($tugas->status) === 'tersedia')
+                              @if ($tugas->status === \App\Enums\StatusTugas::Tersedia)
                                 <span
                                     class="inline-flex px-2.5 py-1 bg-success/10 text-success text-xs font-bold rounded-md uppercase tracking-wide border border-success/20">
                                     {{ $tugas->status }}
@@ -122,7 +122,7 @@
                         <span class="text-xs font-bold text-text-light bg-black/5 px-2 py-0.5 rounded">
                             #{{ $loop->iteration }}
                         </span>
-                        @if (strtolower($tugas->status) === 'tersedia')
+                          @if ($tugas->status === \App\Enums\StatusTugas::Tersedia)
                             <span
                                 class="inline-flex px-2 py-0.5 bg-success/10 text-success text-[10px] font-bold rounded uppercase tracking-wide border border-success/20">
                                 {{ $tugas->status }}

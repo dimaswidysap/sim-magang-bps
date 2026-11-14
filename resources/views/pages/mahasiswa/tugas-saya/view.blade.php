@@ -28,17 +28,17 @@
 
                         <!-- Status Badge -->
                         <div class="shrink-0 mt-1 md:mt-0">
-                            @if (strtolower($detailTugas->status) === 'tersedia')
+                              @if ($detailTugas->status === \App\Enums\StatusTugas::Tersedia)
                                 <span
                                     class="inline-flex px-3 py-1 bg-success/10 text-success text-xs font-bold rounded-full uppercase tracking-wider border border-success/20">
                                     {{ $detailTugas->status }}
                                 </span>
-                            @elseif (strtolower($detailTugas->status) === 'revisi')
+                            @elseif ($detailTugas->status === \App\Enums\StatusTugas::Revisi)
                                 <span
                                     class="inline-flex px-3 py-1 bg-danger/10 text-danger text-xs font-bold rounded-full uppercase tracking-wider border border-danger/20">
                                     Perlu Revisi
                                 </span>
-                            @elseif (strtolower($detailTugas->status) === 'selesai')
+                            @elseif ($detailTugas->status === \App\Enums\StatusTugas::Selesai)
                                 <span
                                     class="inline-flex px-3 py-1 bg-success/10 text-success text-xs font-bold rounded-full uppercase tracking-wider border border-success/20">
                                     Selesai
@@ -211,7 +211,7 @@
 
 
                     <!-- PESAN REVISI TERBARU DARI ASN (Teks Saja) -->
-                    @if (strtolower($detailTugas->status) === 'revisi' &&
+                    @if ($detailTugas->status === \App\Enums\StatusTugas::Revisi &&
                             isset($detailTugas->latestSubmission) &&
                             $detailTugas->latestSubmission->catatan_asn)
                         <div class="p-5 bg-danger/10 border border-danger/30 rounded-xl space-y-2">
@@ -282,7 +282,7 @@
                                                     Pengumpulan #{{ $groupNumber }}
                                                 </span>
 
-                                                @if (strtolower($detailTugas->status) === 'selesai' && $loop->first)
+                                                @if (strtolower($detailTugas == \App\Enums\StatusTugas::Revisi) && $loop->first)
                                                     <span
                                                         class="px-2.5 py-0.5 bg-success/10 text-success text-xs font-bold rounded-full border border-success/20">
                                                         Diterima (Selesai)

@@ -17,26 +17,27 @@
                 </p>
             </div>
 
-            <!-- Alert Error -->
-            @if (session('error') || $errors->any())
-                <div class="mb-6 bg-danger/10 border border-danger p-4 rounded-xl flex items-start gap-3 shadow-sm">
-                    <svg class="h-5 w-5 text-danger shrink-0 mt-0.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
-                        fill="currentColor">
-                        <path fill-rule="evenodd"
-                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                            clip-rule="evenodd" />
-                    </svg>
-                    <div>
-                        <h3 class="text-sm font-semibold text-danger">Terdapat kesalahan:</h3>
-                        <ul class="list-disc list-inside text-sm text-danger mt-1 space-y-1">
-                            @if (session('error'))
-                                <li>{{ session('error') }}</li>
-                            @endif
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
+            <!-- Alert Notifikasi -->
+            @if (session('success'))
+                <div class="mb-5 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-medium">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            @if (session('error'))
+                <div class="mb-5 p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 text-sm font-medium">
+                    {{ session('error') }}
+                </div>
+            @endif
+
+            @if ($errors->any())
+                <div class="mb-5 p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 text-sm">
+                    <p class="font-semibold mb-1">Terdapat kesalahan:</p>
+                    <ul class="list-disc list-inside space-y-0.5">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
                 </div>
             @endif
 
@@ -87,33 +88,39 @@
                             <div id="mahasiswaGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-2 max-h-96 overflow-y-auto pr-1">
                                 @foreach ($daftarMahasiswa as $mhs)
                                     @php
-                                        $isSelected = is_array(old('mahasiswa_profile_ids')) && in_array($mhs->id, old('mahasiswa_profile_ids'));
+                                        $isSibuk = (bool) ($mhs->sedang_tugas_aktif ?? false);
+                                        $isSelected = !$isSibuk && is_array(old('mahasiswa_profile_ids')) && in_array($mhs->id, old('mahasiswa_profile_ids'));
                                     @endphp
-                                    <label class="mahasiswa-card relative block cursor-pointer group" data-search="{{ strtolower($mhs->user->name . ' ' . $mhs->nim) }}">
+                                    <label class="mahasiswa-card relative block {{ $isSibuk ? 'cursor-not-allowed opacity-60' : 'cursor-pointer' }} group"
+                                        data-search="{{ strtolower(($mhs->user->name ?? '') . ' ' . ($mhs->nim ?? '')) }}">
                                         <!-- Checkbox (Array name[]) -->
                                         <input type="checkbox" name="mahasiswa_profile_ids[]" value="{{ $mhs->id }}"
                                             class="mhs-checkbox peer hidden"
+                                            {{ $isSibuk ? 'disabled' : '' }}
                                             {{ $isSelected ? 'checked' : '' }}>
 
                                         <!-- Card Layout -->
-                                        <div class="flex items-center gap-3 p-3.5 bg-background border border-border rounded-xl transition-all peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:ring-1 peer-checked:ring-primary group-hover:border-primary/40">
+                                        <div class="flex items-center gap-3 p-3.5 bg-background border border-border rounded-xl transition-all peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:ring-1 peer-checked:ring-primary {{ $isSibuk ? '' : 'group-hover:border-primary/40' }}">
 
                                             <!-- Avatar Inisial -->
                                             <div class="w-10 h-10 rounded-full bg-primary/10 text-primary font-bold text-sm flex items-center justify-center shrink-0 border border-primary/20">
-                                                {{ strtoupper(substr($mhs->user->name, 0, 2)) }}
+                                                {{ strtoupper(substr($mhs->user->name ?? 'MH', 0, 2)) }}
                                             </div>
 
                                             <!-- Informasi Mahasiswa -->
                                             <div class="flex-1 min-w-0">
-                                                <p class="text-sm font-semibold text-text truncate group-hover:text-primary transition-colors">
-                                                    {{ $mhs->user->name }}
+                                                <p class="text-sm font-semibold text-text truncate {{ $isSibuk ? '' : 'group-hover:text-primary' }} transition-colors">
+                                                    {{ $mhs->user->name ?? 'Mahasiswa' }}
                                                 </p>
                                                 <p class="text-xs text-text-light font-medium">
-                                                    NIM: {{ $mhs->nim }}
+                                                    NIM: {{ $mhs->nim ?? '-' }}
                                                 </p>
+                                                @if ($isSibuk)
+                                                    <span class="inline-block mt-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
+                                                        Sedang mengerjakan tugas lain
+                                                    </span>
+                                                @endif
                                             </div>
-
-
 
                                         </div>
                                     </label>
@@ -154,11 +161,10 @@
         document.addEventListener('DOMContentLoaded', function() {
             const searchInput = document.getElementById('searchMahasiswa');
             const cards = document.querySelectorAll('.mahasiswa-card');
-            const checkboxes = document.querySelectorAll('.mhs-checkbox');
+            const checkboxes = document.querySelectorAll('.mhs-checkbox:not(:disabled)');
             const selectedCountText = document.getElementById('selectedCountText');
             const noMatchMsg = document.getElementById('noMatchMessage');
 
-            // Update Hitungan Mahasiswa Dipilih
             function updateCounter() {
                 const checkedCount = document.querySelectorAll('.mhs-checkbox:checked').length;
                 if (selectedCountText) {
@@ -166,15 +172,12 @@
                 }
             }
 
-            // Sync counter saat pertama kali di-load
             updateCounter();
 
-            // Event listener saat checkbox dicentang/dilepas
             checkboxes.forEach(cb => {
                 cb.addEventListener('change', updateCounter);
             });
 
-            // Fitur Filter Pencarian (Search Bar)
             if (searchInput) {
                 searchInput.addEventListener('input', function() {
                     const query = this.value.toLowerCase().trim();

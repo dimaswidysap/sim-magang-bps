@@ -145,7 +145,7 @@
                         Kembali
                     </x-buttonv2>
 
-                    @if ($detailTugas->status === 'tersedia')
+                      @if ($detailTugas->status === \App\Enums\StatusTugas::Tersedia)
                         <form method="POST" action="{{ route('mahasiswa-tugas-ambil', $detailTugas->id) }}" class="w-full sm:w-auto">
                             @csrf
                             <x-buttonv2 type="submit" color="accent-dark" class="w-full sm:w-auto">

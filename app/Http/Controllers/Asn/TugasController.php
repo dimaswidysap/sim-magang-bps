@@ -356,12 +356,18 @@ class TugasController extends Controller
     public function destroyTugas($id)
     {
         try {
-            $tugas = Tugas::with('attachments')->where('id', $id)->where('asn_id', Auth::id())->firstOrFail();
+            $tugas = Tugas::with(['attachments', 'submissions'])
+                ->where('id', $id)
+                ->where('asn_id', Auth::id())
+                ->firstOrFail();
 
-            $filePaths = $tugas->attachments->pluck('file_path')->filter()->all();
+            $attachmentPaths = $tugas->attachments->pluck('file_path')->filter()->all();
+            $submissionPaths = $tugas->submissions->pluck('file_path')->filter()->all();
+            $filePaths = array_unique(array_merge($attachmentPaths, $submissionPaths));
 
             DB::transaction(function () use ($tugas) {
                 $tugas->attachments()->delete();
+                $tugas->submissions()->delete();
                 $tugas->delete();
             });
 

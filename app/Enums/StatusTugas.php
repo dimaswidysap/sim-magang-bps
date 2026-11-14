@@ -2,6 +2,8 @@
 
 namespace App\Enums;
 
+use DomainException;
+
 enum StatusTugas: string
 {
     case Tersedia = 'tersedia';
@@ -37,6 +39,31 @@ enum StatusTugas: string
             self::MenungguReview => in_array($next, [self::Revisi, self::Selesai], true),
             self::Revisi => in_array($next, [self::MenungguReview, self::Selesai], true),
             self::Selesai => false,
+        };
+    }
+
+    /**
+     * Guard eksekusi transisi: melempar DomainException jika perpindahan status melanggar aturan.
+     */
+    public function transitionTo(self $next, ?string $pesanError = null): self
+    {
+        if (!$this->canTransitionTo($next)) {
+            throw new DomainException(
+                $pesanError ?? "Status tugas tidak dapat diubah dari \"{$this->label()}\" menjadi \"{$next->label()}\"."
+            );
+        }
+
+        return $next;
+    }
+
+    /**
+     * Menjaga agar status tidak mundur saat ASN memperbarui penugasan mahasiswa.
+     */
+    public function statusSetelahDitugaskan(): self
+    {
+        return match ($this) {
+            self::Tersedia => self::Diambil,
+            self::Diambil, self::MenungguReview, self::Revisi, self::Selesai => $this,
         };
     }
 
