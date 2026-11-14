@@ -72,7 +72,7 @@ Route::middleware(['auth', 'role:admin,asn,mahasiswa'])->group(function () {
     Route::get('/generate/download-script', [toolsController::class, 'downloadScript'])->name('generate.downloadScript');
 });
 
-// SUPER ADMIN
+// ADMIN
 Route::prefix('admin')
     ->middleware(['auth', 'role:admin'])
     ->group(function () {

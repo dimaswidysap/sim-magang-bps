@@ -6,7 +6,9 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\View\View;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -15,10 +17,6 @@ class AuthController extends Controller
         return view('login.index');
     }
 
-    /**
-     * Login pakai email untuk semua role (admin, mahasiswa, asn).
-     * Role yang membedakan tujuan redirect setelah login berhasil.
-     */
     public function login(Request $request): RedirectResponse
     {
         $credentials = $request->validate([
@@ -26,7 +24,9 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
-        if (! Auth::attempt($credentials)) {
+        $throttleKey = Str::transliterate(Str::lower($credentials['email'])) . '|' . $request->ip();
+
+        if (!Auth::attempt($credentials)) {
             throw ValidationException::withMessages([
                 'email' => 'Email atau password salah.',
             ]);
@@ -34,12 +34,17 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
-        if (! $user->is_active) {
+        if (!$user->is_active) {
             Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
             throw ValidationException::withMessages([
                 'email' => 'Akun Anda tidak aktif. Hubungi admin.',
             ]);
         }
+
+        RateLimiter::clear($throttleKey);
 
         $request->session()->regenerate();
 
@@ -59,7 +64,7 @@ class AuthController extends Controller
     {
         return match ($role) {
             'admin' => redirect()->route('admin-index'),
-            'asn' => redirect()->route('asn-index'),       // ganti setelah route ASN dibuat
+            'asn' => redirect()->route('asn-index'), // ganti setelah route ASN dibuat
             'mahasiswa' => redirect()->route('mahasiswa-index'), // ganti setelah route mahasiswa dibuat
             default => redirect()->route('login-form'),
         };

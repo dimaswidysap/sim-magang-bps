@@ -36,7 +36,7 @@ class BeritaController extends Controller
             'judul' => 'required|string|max:255',
             'konten' => 'required|string',
             'lampiran' => 'nullable|array',
-            'lampiran.*' => 'file|max:10240|mimes:doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png,gif,svg,webp,bmp,pdf,zip',
+            'lampiran.*' => 'file|max:10240|mimes:doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png,gif,webp,bmp,pdf,zip',
         ]);
 
         $berita = Berita::create([

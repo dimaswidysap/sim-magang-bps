@@ -2,6 +2,7 @@
 
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
+use App\Http\Middleware\EnsureUserIsActive;
 use Illuminate\Foundation\Configuration\Middleware;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -11,6 +12,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => \App\Http\Middleware\CheckRole::class,
         ]);
+        $middleware->web(append: [EnsureUserIsActive::class]);
         $middleware->redirectGuestsTo(fn() => route('login-form'));
     })
     ->withExceptions(function (Exceptions $exceptions): void {

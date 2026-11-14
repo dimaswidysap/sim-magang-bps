@@ -51,28 +51,9 @@ class AdminController extends Controller
         ]);
     }
 
-    public function statistikUser()
-    {
-        $statistik = $this->getStatistikUsers();
 
-        return view('pages.admin.statistik-mahasiswa.index', [
-            'jumlahMahasiswaAktif' => $statistik['aktif'],
-            'jumlahMahasiswaNonAktif' => $statistik['nonAktif'],
-            'jumlahMahasiswaSelesai' => $statistik['selesai'],
-            'jumlahMahasiswaBatal' => $statistik['batal'],
-            'jumlahMahasiswaPending' => $statistik['pending'],
-        ]);
-    }
 
-    public function statistikAsn()
-    {
-        $statistik = $this->getStatistikUsers();
 
-        return view('pages.admin.statistik-asn.index', [
-            'aktif' => $statistik['asnAktif'],
-            'nonAktif' => $statistik['asnNonAktif'],
-        ]);
-    }
 
     public function asnAktif()
     {
@@ -153,10 +134,5 @@ class AdminController extends Controller
         return view('pages.admin.skill.index', compact('dataSkill'));
     }
 
-    public function adminPeriodeMagang()
-    {
-        $periodeMagang = PeriodeMagang::all();
 
-        return view('pages.admin.periode-magang.index', compact('periodeMagang'));
-    }
 }

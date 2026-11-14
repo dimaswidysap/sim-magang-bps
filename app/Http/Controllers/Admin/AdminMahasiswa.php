@@ -122,7 +122,7 @@ class AdminMahasiswa extends Controller
                 'periode_magang_id' => 'nullable|exists:periode_magang,id',
                 'skills' => 'nullable|array',
                 'skills.*' => 'exists:skills,id',
-                'alamat'=>'string'
+                'alamat'=>'nullable|string'
             ],
             [
                 // Pesan error untuk field name
@@ -189,6 +189,7 @@ class AdminMahasiswa extends Controller
                 'email' => $validated['email'],
                 'phone' => $validated['phone'],
                 'password' => !empty($validated['password']) ? Hash::make($validated['password']) : $user->password,
+                'is_active' => $validated['is_active'] ?? false,
             ]);
 
             // updateOrCreate: kalau profile belum ada (mahasiswa belum pernah

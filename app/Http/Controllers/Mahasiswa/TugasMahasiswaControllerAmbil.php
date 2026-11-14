@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Mahasiswa;
-
+use DomainException;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
@@ -10,9 +10,15 @@ use App\Models\TugasAnggota;
 use App\Models\Logbook;
 use App\Models\User;
 use App\Models\MahasiswaProfile;
+use App\Services\PenugasanService;
 
 class TugasMahasiswaControllerAmbil extends Controller
 {
+
+    // service
+    public function __construct(
+        protected PenugasanService $penugasanService
+    ) {}
     //
     public function daftarTugasTersedia()
     {
@@ -26,50 +32,37 @@ class TugasMahasiswaControllerAmbil extends Controller
 
     public function ambilTugas($tugasId)
     {
-        $mahasiswaProfileSaya = auth()->user()->mahasiswaProfile;
+        $mahasiswaProfileId = auth()->user()->mahasiswaProfile?->id;
 
-        // 1. Pastikan profil sudah ada terlebih dahulu sebelum mengecek kolomnya
-        if (!$mahasiswaProfileSaya) {
+        if (!$mahasiswaProfileId) {
             return back()->with('error', 'Lengkapi profil Anda dulu sebelum mengambil tugas.');
         }
 
-        // 2. Langsung cek status dari objek $mahasiswaProfileSaya yang sudah diambil
-        if ($mahasiswaProfileSaya->status !== 'aktif') {
-            return back()->with('error', 'Status magang Anda tidak aktif, silakan hubungi pembimbing magang');
-        }
-
-        // Cek 1 tugas aktif - sama persis dengan pengecekan di terimaUndangan(),
-        // supaya aturannya konsisten dari 2 pintu masuk berbeda (ambil sendiri
-        // vs terima undangan).
-        $sudahJadiKetuaTugasAktif = Tugas::where('mahasiswa_profile_id', $mahasiswaProfileSaya->id)->where('status', '!=', 'selesai')->exists();
-
-        $sudahJadiAnggotaTugasAktif = TugasAnggota::where('mahasiswa_profile_id', $mahasiswaProfileSaya->id)->where('status', 'diterima')->whereHas('tugas', fn($q) => $q->where('status', '!=', 'selesai'))->exists();
-
-        if ($sudahJadiKetuaTugasAktif || $sudahJadiAnggotaTugasAktif) {
-            return back()->with('error', 'Anda masih punya tugas aktif lain. Selesaikan dulu sebelum mengambil tugas baru.');
-        }
-
         try {
-            DB::transaction(function () use ($tugasId, $mahasiswaProfileSaya) {
-                // lockForUpdate() - kunci baris ini, mahasiswa lain yang coba
-                // ambil tugas yang sama di saat bersamaan harus antre.
+            DB::transaction(function () use ($tugasId, $mahasiswaProfileId) {
+                // 1. Lock profil mahasiswa & cek aturan aktif + kuota 1 tugas di dalam transaksi
+                $this->penugasanService->validasiBolehAmbilTugasMandiri($mahasiswaProfileId);
+
+                // 2. Lock baris tugas agar tidak diambil 2 mahasiswa secara bersamaan
                 $tugas = Tugas::where('id', $tugasId)->lockForUpdate()->firstOrFail();
 
                 if ($tugas->status !== 'tersedia') {
-                    throw new \Exception('Tugas ini sudah diambil orang lain.');
+                    throw new DomainException('Tugas ini sudah diambil orang lain.');
                 }
 
                 $tugas->update([
-                    'mahasiswa_profile_id' => $mahasiswaProfileSaya->id,
+                    'mahasiswa_profile_id' => $mahasiswaProfileId,
                     'status' => 'diambil',
+                    'sumber' => 'mandiri',
                     'diambil_at' => now(),
                 ]);
-                Logbook::create([
+
+                Logbook::firstOrCreate([
                     'tugas_id' => $tugas->id,
-                    'mahasiswa_profile_id' => $mahasiswaProfileSaya->id,
+                    'mahasiswa_profile_id' => $mahasiswaProfileId,
                 ]);
             });
-        } catch (\Exception $e) {
+        } catch (DomainException $e) {
             return back()->with('error', $e->getMessage());
         }
 

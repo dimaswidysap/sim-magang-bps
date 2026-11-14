@@ -170,19 +170,22 @@
 
                         <div class="bg-[#F8FAFC] border border-border rounded-xl p-5 sm:p-6">
                             <p class="text-sm text-text-light mb-4">
-                                Pilih mahasiswa yang ditugaskan secara langsung.
+                                Pilih mahasiswa yang ditugaskan secara langsung. Kosongkan semua pilihan jika ingin
+                                menjadikan tugas ini bebas diambil mahasiswa.
                             </p>
 
+                            {{-- Penanda agar backend tetap memproses sinkronisasi meski semua checkbox tidak dicentang --}}
+                            <input type="hidden" name="sync_mahasiswa" value="1">
+
                             @php
-                                $assignedIds = old(
-                                    'mahasiswa_ids',
-                                    array_filter(
-                                        array_merge(
-                                            [$tugas->mahasiswa_profile_id],
-                                            $tugas->anggota->pluck('mahasiswa_profile_id')->toArray(),
-                                        ),
+                                $defaultAssignedIds = array_filter(
+                                    array_merge(
+                                        [$tugas->mahasiswa_profile_id],
+                                        $tugas->anggota->pluck('mahasiswa_profile_id')->toArray(),
                                     ),
                                 );
+
+                                $assignedIds = old('sync_mahasiswa') ? old('mahasiswa_ids', []) : $defaultAssignedIds;
                             @endphp
 
                             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
@@ -210,7 +213,6 @@
                             </div>
                         </div>
                     </div>
-
                     <!-- Section: Skill yang Dibutuhkan -->
                     <div class="mb-8">
                         <h2 class="flex items-center gap-2 text-primary font-bold text-lg mb-4">

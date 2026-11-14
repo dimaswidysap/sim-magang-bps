@@ -38,7 +38,7 @@ class TugasSubmissionController extends Controller
         $validated = $request->validate(
             [
                 'files' => 'nullable|array|required_without:catatan_mahasiswa',
-                'files.*' => 'file|max:10240|mimes:doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png,gif,svg,webp,bmp,pdf,zip',
+                'files.*' => 'file|max:10240|mimes:doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png,gif,webp,bmp,pdf,zip',
                 'catatan_mahasiswa' => 'nullable|string|required_without:files',
             ],
             [

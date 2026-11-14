@@ -168,6 +168,7 @@ class MagangLogbookController extends Controller
     }
 
     // function hapus logbook
+
     public function destroy($id)
     {
         $profil = auth()->user()->mahasiswaProfile;
@@ -178,21 +179,29 @@ class MagangLogbookController extends Controller
 
         $files = $logbook->file_lampiran;
 
-        // Jika terbaca string (efek double-encode atau format data lama)
+        // Konversi JSON menjadi array PHP
         if (is_string($files)) {
             $decoded = json_decode($files, true);
+
             $files = is_array($decoded) ? $decoded : [$files];
         }
 
-        // Hapus seluruh file dari disk publik
+        // Pastikan seluruh file dalam array dihapus
         if (is_array($files)) {
             foreach ($files as $file) {
-                if ($file && Storage::disk('public')->exists($file)) {
-                    Storage::disk('public')->delete($file);
+                if (is_string($file) && !empty($file)) {
+                    // Normalisasi separator path
+                    $file = str_replace('\\', '/', $file);
+
+                    // Hapus file dari storage public
+                    if (Storage::disk('public')->exists($file)) {
+                        Storage::disk('public')->delete($file);
+                    }
                 }
             }
         }
 
+        // Hapus data logbook dari database
         $logbook->delete();
 
         return redirect()->route('mahasiswa-index')->with('success', 'Kegiatan berhasil dihapus.');

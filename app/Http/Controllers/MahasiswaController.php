@@ -126,14 +126,15 @@ class MahasiswaController extends Controller
 
     public function detailTugasSaya($id)
     {
-        $detailTugas = Tugas::with([
-            'anggota',
-            'asn',
-            'attachments',
-            'submissions' => function ($query) {
-                $query->latest();
-            },
-        ])->findOrFail($id);
+        $profil = auth()->user()->mahasiswaProfile;
+
+        if (!$profil) {
+            abort(404);
+        }
+
+        $detailTugas = Tugas::milikMahasiswa($profil->id)
+            ->with(['anggota', 'asn', 'attachments', 'submissions' => fn($query) => $query->latest()])
+            ->findOrFail($id);
 
         return view('pages.mahasiswa.tugas-saya.view', compact('detailTugas'));
     }
@@ -166,13 +167,7 @@ class MahasiswaController extends Controller
                 'name' => 'required|string|max:255',
                 'phone' => 'nullable|string|max:13',
                 'instansi_asal' => 'required|string|max:255',
-                'nim' => [
-                    'required',
-                    'string',
-                    Rule::unique('mahasiswa_profiles', 'nim')
-                        ->where(fn($query) => $query->where('instansi_asal', $request->instansi_asal))
-                        ->ignore(optional($user->mahasiswaProfile)->id),
-                ],
+                'nim' => ['required', 'string', Rule::unique('mahasiswa_profiles', 'nim')->where(fn($query) => $query->where('instansi_asal', $request->instansi_asal))->ignore(optional($user->mahasiswaProfile)->id)],
                 'jenjang' => 'nullable|in:SMA/SMK,D3,D4,S1,S2',
                 'jurusan' => 'nullable|string|max:255',
                 'tanggal_lahir' => 'nullable|date',
