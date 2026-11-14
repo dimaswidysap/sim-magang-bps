@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -36,26 +37,44 @@ class User extends Authenticatable
      */
     public function isProfileComplete(): bool
     {
-        // Pengecekan ini hanya berlaku untuk role 'mahasiswa'
         if ($this->role !== 'mahasiswa') {
             return true;
         }
 
         $profile = $this->mahasiswaProfile;
 
-        // Skenario 1: Data di tabel mahasiswa_profiles belum ada (relasi kosong)
         if (!$profile) {
             return false;
         }
 
-        // Skenario 2: Data ada, tapi kolom-kolom penting masih kosong (null)
-        // Silakan sesuaikan kolom apa saja yang Anda anggap wajib
         if (empty($profile->nim) || empty($profile->instansi_asal) || empty($profile->jenjang) || empty($profile->jurusan) || empty($profile->tanggal_mulai) || empty($profile->tanggal_selesai)) {
             return false;
         }
 
-        // Jika relasi ada dan semua kolom penting sudah terisi
         return true;
+    }
+
+    /**
+     * Pencarian server-side untuk data pengguna (nama, email, no HP, NIM, instansi, jurusan)
+     */
+    public function scopeSearch(Builder $query, ?string $keyword): Builder
+    {
+        $keyword = trim((string) $keyword);
+
+        if ($keyword === '') {
+            return $query;
+        }
+
+        return $query->where(function (Builder $q) use ($keyword) {
+            $q->where('name', 'like', "%{$keyword}%")
+                ->orWhere('email', 'like', "%{$keyword}%")
+                ->orWhere('phone', 'like', "%{$keyword}%")
+                ->orWhereHas('mahasiswaProfile', function (Builder $mq) use ($keyword) {
+                    $mq->where('nim', 'like', "%{$keyword}%")
+                        ->orWhere('instansi_asal', 'like', "%{$keyword}%")
+                        ->orWhere('jurusan', 'like', "%{$keyword}%");
+                });
+        });
     }
 
     public function scopeMahasiswa($query)
@@ -63,11 +82,17 @@ class User extends Authenticatable
         return $query->where('role', 'mahasiswa');
     }
 
-    // Scope baru untuk filter dari tabel relasi
     public function scopeProfileAktif($query)
     {
         return $query->whereHas('mahasiswaProfile', function ($q) {
             $q->where('status', 'aktif');
+        });
+    }
+
+    public function scopeProfileNonAktif($query)
+    {
+        return $query->whereHas('mahasiswaProfile', function ($q) {
+            $q->where('status', 'nonaktif');
         });
     }
 
@@ -77,12 +102,14 @@ class User extends Authenticatable
             $q->where('status', 'selesai');
         });
     }
+
     public function scopeProfileBatal($query)
     {
         return $query->whereHas('mahasiswaProfile', function ($q) {
             $q->where('status', 'dibatalkan');
         });
     }
+
     public function scopeProfilePending($query)
     {
         return $query->whereHas('mahasiswaProfile', function ($q) {

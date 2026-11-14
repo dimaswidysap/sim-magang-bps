@@ -217,7 +217,7 @@
                                 </thead>
                                 <tbody class="divide-y divide-border">
                                     @foreach ($logbookMandiri as $item)
-                                        <tr class="hover:bg-black/[0.02] transition-colors duration-200 group">
+                                        <tr class="hover:bg-black/2 transition-colors duration-200 group">
                                             <!-- Nomor -->
                                             <td
                                                 class="px-5 py-4 align-middle text-center text-xs font-semibold text-text-light">

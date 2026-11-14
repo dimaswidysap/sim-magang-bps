@@ -18,19 +18,24 @@ class PythonScriptGenerator
 
     private function toPythonHeaderList(array $headerWithSizes): string
     {
-        $items = array_map(fn($h) => '    (' . $this->pyString($h['text']) . ", {$h['size']})", $headerWithSizes);
+        $items = array_map(fn ($h) => '    (' . $this->pyString($h['text']) . ", {$h['size']})", $headerWithSizes);
         return "[\n" . implode(",\n", $items) . "\n]";
     }
 
     private function toPythonMappingList(array $mappings): string
     {
-        $items = array_map(fn($m) => '    (' . $this->pyString($m['label']) . ', ' . $this->pyString($m['column']) . ')', $mappings);
+        $items = array_map(fn ($m) => '    (' . $this->pyString($m['label']) . ', ' . $this->pyString($m['column']) . ')', $mappings);
         return "[\n" . implode(",\n", $items) . "\n]";
     }
 
     private function pyString(string $value): string
     {
-        $escaped = str_replace(['\\', "'"], ['\\\\', "\\'"], $value);
+        $escaped = str_replace(
+            ['\\', "'", "\r\n", "\r", "\n", "\0"],
+            ['\\\\', "\\'", '\\n', '\\n', '\\n', ''],
+            $value
+        );
+
         return "'{$escaped}'";
     }
 
@@ -108,10 +113,10 @@ class PythonScriptGenerator
 
         def deteksi_excel():
             kandidat = [
-                f for f in glob.glob('*.xlsx')
+                f for f in (glob.glob('*.xlsx') + glob.glob('*.xls'))
                 if not os.path.basename(f).startswith('~\$')
             ]
-            return pilih_interaktif(kandidat, "file Excel")
+            return pilih_interaktif(sorted(set(kandidat)), "file Excel")
 
         def deteksi_folder_foto():
             kandidat = [

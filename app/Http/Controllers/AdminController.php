@@ -2,47 +2,65 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-// use Illuminate\Http\Request;
-use Illuminate\View\View;
 use App\Models\MahasiswaProfile;
-use App\Models\User;
 use App\Models\Skill;
-use App\Models\PeriodeMagang;
+use App\Models\User;
+use Illuminate\Http\Request;
 
 class AdminController extends Controller
 {
-    //
-
-    // function statistik user
-    private function getStatistikUsers()
+    /**
+     * Menghitung jumlah statistik user menggunakan query agregasi COUNT(*)
+     * tanpa memuat seluruh koleksi model ke memori.
+     */
+    private function getStatistikUsers(): array
     {
+        $mahasiswaCounts = MahasiswaProfile::query()
+            ->whereHas('user', fn ($q) => $q->where('role', 'mahasiswa'))
+            ->selectRaw('status, COUNT(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        $asnCounts = User::query()
+            ->where('role', 'asn')
+            ->selectRaw('is_active, COUNT(*) as total')
+            ->groupBy('is_active')
+            ->pluck('total', 'is_active');
+
         return [
-            'aktif' => User::mahasiswa()->profileAktif()->with('mahasiswaProfile')->get(),
-            'selesai' => User::mahasiswa()->profileSelesai()->with('mahasiswaProfile')->get(),
-            'batal' => User::mahasiswa()->profileBatal()->with('mahasiswaProfile')->get(),
-            'pending' => User::mahasiswa()->profilePending()->with('mahasiswaProfile')->get(),
-            'asnAktif' => User::asn()->asnAktif()->with('asnProfile')->get(),
-            'asnNonAktif' => User::asn()->asnNonAktif()->with('asnProfile')->get(),
+            'aktif' => (int) ($mahasiswaCounts['aktif'] ?? 0),
+            'nonAktif' => (int) ($mahasiswaCounts['nonaktif'] ?? 0),
+            'selesai' => (int) ($mahasiswaCounts['selesai'] ?? 0),
+            'batal' => (int) ($mahasiswaCounts['dibatalkan'] ?? 0),
+            'pending' => (int) ($mahasiswaCounts['pending'] ?? 0),
+            'asnAktif' => (int) ($asnCounts[1] ?? 0),
+            'asnNonAktif' => (int) ($asnCounts[0] ?? 0),
         ];
     }
 
-    public function adminIndex()
+    public function adminIndex(Request $request)
     {
         $statistik = $this->getStatistikUsers();
+
         $daftarMahasiswaProfilWarning = User::query()
             ->where('role', 'mahasiswa')
+            ->with('mahasiswaProfile')
             ->where(function ($query) {
                 $query->whereDoesntHave('mahasiswaProfile')->orWhereHas('mahasiswaProfile', function ($subQuery) {
-                    $subQuery->whereNull('nim')->orWhereNull('instansi_asal')->orWhereNull('jurusan');
+                    $subQuery->whereNull('nim')
+                        ->orWhereNull('instansi_asal')
+                        ->orWhereNull('jurusan');
                 });
             })
-            ->orderBy('created_at', 'desc')
-            ->get();
+            ->search($request->query('search'))
+            ->orderByDesc('created_at')
+            ->paginate(10)
+            ->withQueryString();
 
         return view('pages.admin.index', [
             'daftarMahasiswaProfilWarning' => $daftarMahasiswaProfilWarning,
             'jumlahMahasiswaAktif' => $statistik['aktif'],
+            'jumlahMahasiswaNonAktif' => $statistik['nonAktif'],
             'jumlahMahasiswaSelesai' => $statistik['selesai'],
             'jumlahMahasiswaBatal' => $statistik['batal'],
             'jumlahMahasiswaPending' => $statistik['pending'],
@@ -51,88 +69,138 @@ class AdminController extends Controller
         ]);
     }
 
-
-
-
-
-    public function asnAktif()
+    public function statistikUser()
     {
-        $statistik = $this->getStatistikUsers();
-
-        return view('pages.admin.statistik-asn.aktif', ['asnAktif' => $statistik['asnAktif']]);
+        return redirect()->route('admin-index');
     }
-    //
-    //
-    //
-    //
-    //
-    //
 
-    public function magangAktif()
+    public function asnAktif(Request $request)
     {
-        $statistik = $this->getStatistikUsers();
+        $asnAktif = User::asn()
+            ->asnAktif()
+            ->with('asnProfile')
+            ->search($request->query('search'))
+            ->orderBy('name')
+            ->paginate(15)
+            ->withQueryString();
 
-        return view('pages.admin.statistik-mahasiswa.aktif', ['magangAktif' => $statistik['aktif']]);
+        return view('pages.admin.statistik-asn.aktif', compact('asnAktif'));
     }
-    public function magangNonaktif()
-    {
-        $statistik = $this->getStatistikUsers();
 
-        return view('pages.admin.statistik-mahasiswa.nonaktif', ['magangNonaktif' => $statistik['nonAktif']]);
+    public function asnNonAktif(Request $request)
+    {
+        $asnNonAktif = User::asn()
+            ->asnNonAktif()
+            ->with('asnProfile')
+            ->search($request->query('search'))
+            ->orderBy('name')
+            ->paginate(15)
+            ->withQueryString();
+
+        return view('pages.admin.statistik-asn.non-aktif', compact('asnNonAktif'));
     }
-    public function magangPending()
-    {
-        $statistik = $this->getStatistikUsers();
 
-        return view('pages.admin.statistik-mahasiswa.pending', ['magangPending' => $statistik['pending']]);
+    public function magangAktif(Request $request)
+    {
+        $magangAktif = User::mahasiswa()
+            ->profileAktif()
+            ->with('mahasiswaProfile')
+            ->search($request->query('search'))
+            ->orderBy('name')
+            ->paginate(15)
+            ->withQueryString();
+
+        return view('pages.admin.statistik-mahasiswa.aktif', compact('magangAktif'));
     }
-    public function magangSelesai()
-    {
-        $statistik = $this->getStatistikUsers();
 
-        return view('pages.admin.statistik-mahasiswa.selesai', ['magangSelesai' => $statistik['selesai']]);
+    public function magangNonaktif(Request $request)
+    {
+        $magangNonaktif = User::mahasiswa()
+            ->profileNonAktif()
+            ->with('mahasiswaProfile')
+            ->search($request->query('search'))
+            ->orderBy('name')
+            ->paginate(15)
+            ->withQueryString();
+
+        return view('pages.admin.statistik-mahasiswa.nonaktif', compact('magangNonaktif'));
     }
-    public function magangBatal()
-    {
-        $statistik = $this->getStatistikUsers();
 
-        return view('pages.admin.statistik-mahasiswa.batal', ['magangBatal' => $statistik['batal']]);
+    public function magangPending(Request $request)
+    {
+        $magangPending = User::mahasiswa()
+            ->profilePending()
+            ->with('mahasiswaProfile')
+            ->search($request->query('search'))
+            ->orderBy('name')
+            ->paginate(15)
+            ->withQueryString();
+
+        return view('pages.admin.statistik-mahasiswa.pending', compact('magangPending'));
     }
-    //
-    //
-    //
-    //
-    //
-    //
 
-    public function asnNonAktif()
+    public function magangSelesai(Request $request)
     {
-        $statistik = $this->getStatistikUsers();
+        $magangSelesai = User::mahasiswa()
+            ->profileSelesai()
+            ->with('mahasiswaProfile')
+            ->search($request->query('search'))
+            ->orderBy('name')
+            ->paginate(15)
+            ->withQueryString();
 
-        return view('pages.admin.statistik-asn.non-aktif', ['asnNonAktif' => $statistik['asnNonAktif']]);
+        return view('pages.admin.statistik-mahasiswa.selesai', compact('magangSelesai'));
     }
-    // mengambil semua data ASN
-    public function adminAsn()
+
+    public function magangBatal(Request $request)
     {
-        $dataAsn = User::query()->where('role', 'asn')->with('AsnProfile')->get();
+        $magangBatal = User::mahasiswa()
+            ->profileBatal()
+            ->with('mahasiswaProfile')
+            ->search($request->query('search'))
+            ->orderBy('name')
+            ->paginate(15)
+            ->withQueryString();
+
+        return view('pages.admin.statistik-mahasiswa.batal', compact('magangBatal'));
+    }
+
+    public function adminAsn(Request $request)
+    {
+        $dataAsn = User::query()
+            ->where('role', 'asn')
+            ->with('asnProfile')
+            ->search($request->query('search'))
+            ->orderBy('name')
+            ->paginate(15)
+            ->withQueryString();
+
         return view('pages.admin.asn.index', compact('dataAsn'));
     }
 
-    // mengambil semua data mahasiswa
-    public function adminMahasiswa()
+    public function adminMahasiswa(Request $request)
     {
-        // Tambahkan query() setelah model User
-        $dataMahasiswa = User::query()->where('role', 'mahasiswa')->with('mahasiswaProfile')->get();
+        $dataMahasiswa = User::query()
+            ->where('role', 'mahasiswa')
+            ->with('mahasiswaProfile')
+            ->search($request->query('search'))
+            ->orderBy('name')
+            ->paginate(15)
+            ->withQueryString();
 
         return view('pages.admin.mahasiswa.index', compact('dataMahasiswa'));
     }
 
-    public function adminSkill()
+    public function adminSkill(Request $request)
     {
-        $dataSkill = Skill::all();
+        $search = trim((string) $request->query('search'));
+
+        $dataSkill = Skill::query()
+            ->when($search !== '', fn ($q) => $q->where('nama_skill', 'like', "%{$search}%"))
+            ->orderBy('nama_skill')
+            ->paginate(15)
+            ->withQueryString();
 
         return view('pages.admin.skill.index', compact('dataSkill'));
     }
-
-
 }

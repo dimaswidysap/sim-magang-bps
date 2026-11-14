@@ -12,6 +12,7 @@ use DomainException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class TugasanggotacontrollerInvite extends Controller
 {
@@ -27,8 +28,12 @@ class TugasanggotacontrollerInvite extends Controller
             abort(403, 'Anda bukan bagian dari tugas ini, tidak bisa mengundang orang lain.');
         }
 
-        if (!$tugas->status->canModifyAssignment()) {
+        if ($tugas->status === StatusTugas::Selesai) {
             return redirect()->route('tugas-saya')->with('error', 'Tugas sudah selesai, tidak dapat mengundang anggota baru.');
+        }
+
+        if (!$tugas->status->canModifyAssignment()) {
+            return redirect()->route('tugas-saya')->with('error', 'Tugas sedang dalam proses review ASN, tidak dapat mengundang anggota baru.');
         }
 
         if ($tugas->isExpired()) {
@@ -116,8 +121,12 @@ class TugasanggotacontrollerInvite extends Controller
                     throw new DomainException('Anda tidak memiliki akses untuk mengundang anggota pada tugas ini.');
                 }
 
-                if (!$tugas->status->canModifyAssignment()) {
+                if ($tugas->status === StatusTugas::Selesai) {
                     throw new DomainException('Tugas sudah selesai, tidak dapat menambah anggota.');
+                }
+
+                if (!$tugas->status->canModifyAssignment()) {
+                    throw new DomainException('Tugas sedang dalam proses review ASN, tidak dapat menambah anggota.');
                 }
 
                 if ($tugas->isExpired()) {
@@ -127,7 +136,7 @@ class TugasanggotacontrollerInvite extends Controller
                 // 4. Simpan undangan untuk setiap mahasiswa terpilih
                 foreach ($targetMahasiswaIds as $targetId) {
                     $targetProfile = $profiles->get($targetId);
-                    $namaTarget = $targetProfile?->nama ?? ($targetProfile?->user?->name ?? "ID #{$targetId}");
+                    $namaTarget = $targetProfile?->user?->name ?? "ID #{$targetId}";
 
                     if ($targetId === (int) $tugas->mahasiswa_profile_id) {
                         throw new DomainException("Mahasiswa ({$namaTarget}) sudah menjadi ketua pada tugas ini.");
@@ -162,7 +171,7 @@ class TugasanggotacontrollerInvite extends Controller
             return back()->with('error', 'Tugas tidak ditemukan atau sudah dihapus.');
         } catch (DomainException $e) {
             return back()->withInput()->with('error', $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             report($e);
             return back()->withInput()->with('error', 'Terjadi kesalahan saat mengirim undangan. Silakan coba lagi.');
         }

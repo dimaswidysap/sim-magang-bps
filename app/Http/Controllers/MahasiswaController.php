@@ -2,28 +2,28 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule;
-use App\Models\User;
+use App\Models\Logbook;
+use App\Models\MagangLogbook;
 use App\Models\MahasiswaProfile;
 use App\Models\Skill;
 use App\Models\Tugas;
-use App\Models\Logbook;
-use App\Models\MagangLogbook;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class MahasiswaController extends Controller
 {
-    //
     public function mahasiswaIndex()
     {
         $user = Auth::user();
         $profil = $user->mahasiswaProfile;
         $mahasiswaProfileId = $profil?->id;
 
-        $jumlahSelesai = Tugas::getJumlahTugasSelesai($mahasiswaProfileId);
-        $jumlahBelumSelesai = Tugas::getJumlahTugasBelumSelesai($mahasiswaProfileId);
+        $jumlahSelesai = $mahasiswaProfileId ? Tugas::getJumlahTugasSelesai($mahasiswaProfileId) : 0;
+        $jumlahBelumSelesai = $mahasiswaProfileId ? Tugas::getJumlahTugasBelumSelesai($mahasiswaProfileId) : 0;
 
         $bulanList = collect();
         $tanggalAktif = collect();
@@ -42,13 +42,18 @@ class MahasiswaController extends Controller
                 $kursor->addMonth();
             }
 
-            // Sumber 1: tugas dari ASN (acuan tanggal = created_at)
-            $tanggalDariTugas = Logbook::where('mahasiswa_profile_id', $profil->id)->get()->map(fn($item) => $item->created_at->toDateString());
+            // Ambil tanggal unik langsung dari database tanpa memuat seluruh objek Logbook
+            $tanggalDariTugas = Logbook::where('mahasiswa_profile_id', $profil->id)
+                ->whereNotNull('created_at')
+                ->selectRaw('DISTINCT DATE(created_at) as tanggal')
+                ->pluck('tanggal');
 
-            // Sumber 2: kegiatan mandiri (acuan tanggal = tanggal_kegiatan, BUKAN created_at)
-            $tanggalDariMandiri = MagangLogbook::where('mahasiswa_profile_id', $profil->id)->get()->map(fn($item) => $item->tanggal_kegiatan->toDateString());
+            $tanggalDariMandiri = MagangLogbook::where('mahasiswa_profile_id', $profil->id)
+                ->whereNotNull('tanggal_kegiatan')
+                ->selectRaw('DISTINCT DATE(tanggal_kegiatan) as tanggal')
+                ->pluck('tanggal');
 
-            $tanggalAktif = collect($tanggalDariTugas)->merge($tanggalDariMandiri)->unique();
+            $tanggalAktif = $tanggalDariTugas->merge($tanggalDariMandiri)->unique()->values();
         }
 
         return view('pages.mahasiswa.index', compact('jumlahSelesai', 'jumlahBelumSelesai', 'bulanList', 'tanggalAktif', 'profil'));
@@ -67,9 +72,10 @@ class MahasiswaController extends Controller
             ->with(['tugas.asn', 'tugas.skills'])
             ->get();
 
-        $logbookMandiri = MagangLogbook::where('mahasiswa_profile_id', $profil->id)->whereDate('tanggal_kegiatan', $tanggal)->get();
+        $logbookMandiri = MagangLogbook::where('mahasiswa_profile_id', $profil->id)
+            ->whereDate('tanggal_kegiatan', $tanggal)
+            ->get();
 
-        // 404 cuma kalau BENAR-BENAR tidak ada kegiatan dari kedua sumber
         if ($logbookTugas->isEmpty() && $logbookMandiri->isEmpty()) {
             abort(404, 'Tidak ada kegiatan pada tanggal ini.');
         }
@@ -83,43 +89,51 @@ class MahasiswaController extends Controller
 
     public function tugas(Request $request)
     {
-        // Tambahkan 'tersedia' sebagai parameter kedua (nilai default)
         $status = $request->query('status', 'tersedia');
+        $search = trim((string) $request->query('search'));
 
-        $dataTugas = Tugas::with(['asn', 'attachments'])
-            // Karena $status sekarang memiliki default, filter ini akan otomatis
-            // menjalankan where('status', 'tersedia') jika tidak ada parameter di URL
-            ->when($status, function ($query, $status) {
-                return $query->where('status', $status);
+        $dataTugas = Tugas::with(['asn', 'skills', 'attachments'])
+            ->when($status, fn ($query, $status) => $query->where('status', $status))
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('judul', 'like', "%{$search}%")
+                        ->orWhere('deskripsi', 'like', "%{$search}%")
+                        ->orWhereHas('asn', fn ($aq) => $aq->where('name', 'like', "%{$search}%"));
+                });
             })
-            ->orderBy('created_at', 'desc')
-            ->get(); // Jika data semakin banyak, pertimbangkan mengganti get() dengan paginate(10)
+            ->orderByDesc('created_at')
+            ->paginate(10)
+            ->withQueryString();
 
-        // Kirim dataTugas ke view
         return view('pages.mahasiswa.tugas.index', compact('dataTugas'));
     }
+
     public function tugasSaya(Request $request)
     {
         $profil = Auth::user()->mahasiswaProfile;
-
-        // Tambahkan 'diambil' sebagai parameter kedua (nilai default)
         $statusTugas = $request->query('status', 'diambil');
+        $search = trim((string) $request->query('search'));
 
-        // Mahasiswa yang belum melengkapi profil belum bisa "punya" tugas apa pun.
         if (!$profil) {
-            return view('pages.mahasiswa.tugas-saya.index', ['dataTugas' => collect()])->with('error', 'Lengkapi profil Anda dulu untuk bisa mengambil tugas.');
+            $emptyPaginator = new LengthAwarePaginator([], 0, 10);
+
+            return view('pages.mahasiswa.tugas-saya.index', ['dataTugas' => $emptyPaginator])
+                ->with('error', 'Lengkapi profil Anda dulu untuk bisa mengambil tugas.');
         }
 
-        // LIFO: tugas yang terakhir masuk akan tampil terlebih dahulu.
         $dataTugas = Tugas::milikMahasiswa($profil->id)
-            // Fungsi when() akan otomatis menjalankan filter where('status', 'diambil')
-            // jika tidak ada parameter status di URL
-            ->when($statusTugas, function ($query, $statusTugas) {
-                return $query->where('status', $statusTugas);
+            ->when($statusTugas, fn ($query, $statusTugas) => $query->where('status', $statusTugas))
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('judul', 'like', "%{$search}%")
+                        ->orWhere('deskripsi', 'like', "%{$search}%")
+                        ->orWhereHas('asn', fn ($aq) => $aq->where('name', 'like', "%{$search}%"));
+                });
             })
             ->with(['asn', 'skills', 'anggota.mahasiswaProfile.user'])
-            ->orderBy('created_at', 'desc')
-            ->get();
+            ->orderByDesc('created_at')
+            ->paginate(10)
+            ->withQueryString();
 
         return view('pages.mahasiswa.tugas-saya.index', compact('dataTugas'));
     }
@@ -133,7 +147,7 @@ class MahasiswaController extends Controller
         }
 
         $detailTugas = Tugas::milikMahasiswa($profil->id)
-            ->with(['anggota', 'asn', 'attachments', 'submissions' => fn($query) => $query->latest()])
+            ->with(['anggota', 'asn', 'attachments', 'submissions' => fn ($query) => $query->latest()])
             ->findOrFail($id);
 
         return view('pages.mahasiswa.tugas-saya.view', compact('detailTugas'));
@@ -163,11 +177,17 @@ class MahasiswaController extends Controller
 
         $validated = $request->validate(
             [
-                'foto_profil' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048', // <-- VALIDASI FOTO PROFIL
+                'foto_profil' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
                 'name' => 'required|string|max:255',
                 'phone' => 'nullable|string|max:13',
                 'instansi_asal' => 'required|string|max:255',
-                'nim' => ['required', 'string', Rule::unique('mahasiswa_profiles', 'nim')->where(fn($query) => $query->where('instansi_asal', $request->instansi_asal))->ignore(optional($user->mahasiswaProfile)->id)],
+                'nim' => [
+                    'required',
+                    'string',
+                    Rule::unique('mahasiswa_profiles', 'nim')
+                        ->where(fn ($query) => $query->where('instansi_asal', $request->instansi_asal))
+                        ->ignore(optional($user->mahasiswaProfile)->id),
+                ],
                 'jenjang' => 'nullable|in:SMA/SMK,D3,D4,S1,S2',
                 'jurusan' => 'nullable|string|max:255',
                 'tanggal_lahir' => 'nullable|date',
@@ -178,64 +198,40 @@ class MahasiswaController extends Controller
                 'skills.*' => 'exists:skills,id',
             ],
             [
-                // Pesan error untuk field foto_profil
                 'foto_profil.image' => 'File foto profil harus berupa gambar.',
                 'foto_profil.mimes' => 'Format foto profil yang diperbolehkan hanya: jpeg, png, jpg, atau webp.',
                 'foto_profil.max' => 'Ukuran foto profil maksimal 2 MB.',
-
-                // Pesan error untuk field name
                 'name.required' => 'Nama lengkap wajib diisi.',
                 'name.string' => 'Nama lengkap harus berupa teks.',
                 'name.max' => 'Nama lengkap maksimal 255 karakter.',
-
-                // Pesan error untuk field phone
                 'phone.string' => 'Nomor telepon harus berupa teks angka.',
                 'phone.max' => 'Nomor telepon maksimal 13 karakter.',
-
-                // Pesan error untuk field instansi_asal
                 'instansi_asal.required' => 'Instansi asal wajib diisi.',
                 'instansi_asal.string' => 'Instansi asal harus berupa teks.',
                 'instansi_asal.max' => 'Instansi asal maksimal 255 karakter.',
-
-                // Pesan error untuk field nim
                 'nim.required' => 'NIM wajib diisi.',
                 'nim.string' => 'NIM harus berupa teks.',
                 'nim.unique' => 'NIM dengan instansi asal yang sama sudah terdaftar. Silakan gunakan NIM lain.',
-
-                // Pesan error untuk field jenjang
                 'jenjang.in' => 'Jenjang harus salah satu dari: SMA/SMK, D3, D4, S1, S2.',
-
-                // Pesan error untuk field jurusan
                 'jurusan.string' => 'Jurusan harus berupa teks.',
                 'jurusan.max' => 'Jurusan maksimal 255 karakter.',
-
-                // Pesan error untuk field tanggal_mulai
                 'tanggal_mulai.date' => 'Format tanggal mulai tidak valid.',
-
-                // Pesan error untuk field tanggal_selesai
                 'tanggal_selesai.date' => 'Format tanggal selesai tidak valid.',
                 'tanggal_selesai.after_or_equal' => 'Tanggal selesai harus sama dengan atau setelah tanggal mulai.',
-
-                // Pesan error untuk field periode_magang_id
                 'periode_magang_id.exists' => 'Periode magang yang dipilih tidak terdaftar dalam sistem.',
-
-                // Pesan error untuk field skills
                 'skills.array' => 'Format skills tidak valid.',
                 'skills.*.exists' => 'Skill yang dipilih tidak terdaftar dalam sistem.',
             ],
         );
 
-        // LOGIKA UPLOAD FOTO PROFIL
         $profile = $user->mahasiswaProfile;
         $fotoProfilPath = $profile?->foto_profil_path;
 
         if ($request->hasFile('foto_profil')) {
-            // Hapus foto lama dari storage jika ada
             if ($fotoProfilPath && Storage::disk('public')->exists($fotoProfilPath)) {
                 Storage::disk('public')->delete($fotoProfilPath);
             }
 
-            // Upload foto baru
             $fotoProfilPath = $request->file('foto_profil')->store('foto_profil', 'public');
         }
 
@@ -256,7 +252,7 @@ class MahasiswaController extends Controller
                 'tanggal_lahir' => $validated['tanggal_lahir'] ?? null,
                 'tanggal_mulai' => $validated['tanggal_mulai'] ?? null,
                 'tanggal_selesai' => $validated['tanggal_selesai'] ?? null,
-                'alamat' => $request->input('alamat'), // Tambahkan field alamat jika perlu di-update
+                'alamat' => $request->input('alamat'),
             ],
         );
 

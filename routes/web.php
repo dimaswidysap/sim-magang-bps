@@ -24,7 +24,7 @@ use App\Http\Controllers\Mahasiswa\TugasMahasiswaControllerAmbil;
 use App\Http\Controllers\BeritaController;
 use App\Http\Controllers\Mahasiswa\MagangLogbookController;
 //controller reset password
-use App\http\Controllers\PasswordResetController;
+use App\Http\Controllers\PasswordResetController;
 //
 
 
@@ -39,9 +39,11 @@ Route::get('/reset-password/{token}', [PasswordResetController::class, 'showRese
 Route::post('/reset-password', [PasswordResetController::class, 'reset'])
     ->middleware('throttle:6,1')->name('password.update');
 
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login-form');
+    Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+});
 
-Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login-form');
-Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])
     ->middleware('auth')
     ->name('logout');
@@ -90,7 +92,7 @@ Route::prefix('admin')
         // Management ASN
         Route::get('/asn', [AdminController::class, 'adminAsn'])->name('admin-asn');
         Route::get('/asn/detail/{id}', [AdminAsn::class, 'detailAsn'])->name('admin-asn-detail');
-        Route::get('/asn/update/{id}', [AdminAsn::class, 'formUpdateAsn'])->name('form-asn-edit'); //ini yang di edit sebelumnta
+        Route::get('/asn/update/{id}', [AdminAsn::class, 'formUpdateAsn'])->name('form-asn-edit');
         Route::put('/asnUpdate/{id}', [AdminAsn::class, 'updateAsn'])->name('admin-asn-update');
         Route::get('/asn/create', [AdminAsn::class, 'showForm'])->name('asn.mahasiswa.create');
         Route::post('/asnCreate', [AdminAsn::class, 'storeAsn'])->name('admin-asn-store');
@@ -104,16 +106,15 @@ Route::prefix('admin')
         Route::post('/skill/{id}', [AdminSkill::class, 'updateSkill'])->name('admin-skill-update');
         Route::delete('/skill/destroy/{id}', [AdminSkill::class, 'destroySkill'])->name('admin-skill-destroy');
 
-
         // statistik user
         Route::get('/statistik-magang', [AdminController::class, 'statistikUser'])->name('statistik-user');
-        route::get('/statistik-asn/aktif',[AdminController::class,'asnAktif'])->name('asn-aktif');
-        route::get('/statistik-asn/nonaktif',[AdminController::class,'asnNonAktif'])->name('asn-nonaktif');
-        route::get('/statistik-magang/aktif',[AdminController::class,'magangAktif'])->name('magang-aktif');
-        route::get('/statistik-magang/nonaktif',[AdminController::class,'magangNonaktif'])->name('magang-nonaktif');
-        route::get('/statistik-magang/pending',[AdminController::class,'magangPending'])->name('magang-pending');
-        route::get('/statistik-magang/batal',[AdminController::class,'magangbatal'])->name('magang-batal');
-        route::get('/statistik-magang/selesai',[AdminController::class,'magangSelesai'])->name('magang-selesai');
+        route::get('/statistik-asn/aktif', [AdminController::class, 'asnAktif'])->name('asn-aktif');
+        route::get('/statistik-asn/nonaktif', [AdminController::class, 'asnNonAktif'])->name('asn-nonaktif');
+        route::get('/statistik-magang/aktif', [AdminController::class, 'magangAktif'])->name('magang-aktif');
+        route::get('/statistik-magang/nonaktif', [AdminController::class, 'magangNonaktif'])->name('magang-nonaktif');
+        route::get('/statistik-magang/pending', [AdminController::class, 'magangPending'])->name('magang-pending');
+        route::get('/statistik-magang/batal', [AdminController::class, 'magangbatal'])->name('magang-batal');
+        route::get('/statistik-magang/selesai', [AdminController::class, 'magangSelesai'])->name('magang-selesai');
     });
 
 // ASN
@@ -145,8 +146,8 @@ Route::prefix('asn')
         Route::get('/logbook-mahasiswa/{mahasiswaProfileId}/{tanggal}', [AsnController::class, 'logbookMahasiswaTanggal'])
             ->where('tanggal', '[0-9]{4}-[0-9]{2}-[0-9]{2}')
             ->name('asn-logbook-mahasiswa-tanggal');
-            //
-            Route::get('/logbook/{id}/lampiran', [AsnController::class, 'detailLampiran'])
+        //
+        Route::get('/logbook/{id}/lampiran', [AsnController::class, 'detailLampiran'])
             ->name('magang.logbook.lampiran');
     });
 

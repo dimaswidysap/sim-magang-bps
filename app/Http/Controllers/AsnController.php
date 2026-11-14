@@ -76,7 +76,7 @@ class AsnController extends Controller
         return view('pages.asn.logbook-detail', compact('mahasiswa', 'logbookTugas', 'logbookMandiri', 'tanggal'));
     }
 
-    public function detailLampiran($id)
+    public function AsnDetailLampiran($id)
     {
         $user = auth()->user();
         $query = MagangLogbook::where('id', $id);

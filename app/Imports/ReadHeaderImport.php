@@ -16,7 +16,11 @@ class ReadHeaderImport implements ToCollection, WithLimit
             return;
         }
 
-        $this->headers = $rows->first()->toArray();
+        $this->headers = $rows->first()
+            ->map(fn ($value) => is_scalar($value) ? trim((string) $value) : '')
+            ->filter(fn ($value) => $value !== '')
+            ->values()
+            ->toArray();
     }
 
     public function limit(): int

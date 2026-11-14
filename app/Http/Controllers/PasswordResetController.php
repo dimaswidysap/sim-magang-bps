@@ -27,7 +27,6 @@ class PasswordResetController extends Controller
         try {
             $status = Password::sendResetLink(['email' => $user->email]);
         } catch (Throwable $e) {
-            // Biasanya: kredensial Mailtrap salah / SMTP tidak terjangkau.
             Log::error('Gagal mengirim email reset password: ' . $e->getMessage());
 
             return back()->with('error', 'Email gagal dikirim. Periksa pengaturan MAIL di file .env, lalu coba lagi.');
@@ -47,15 +46,13 @@ class PasswordResetController extends Controller
 
     /**
      * Langkah 2 - halaman yang dibuka dari tautan di email.
-     * Sengaja TANPA middleware 'guest': user biasanya masih login di browser
-     * yang sama saat membuka tautan, dan 'guest' akan melemparnya ke dashboard.
      */
     public function showResetForm(Request $request, string $token): View|RedirectResponse
     {
         $email = (string) $request->query('email', '');
         $user = User::where('email', $email)->first();
 
-        if (!$user || !Password::tokenExists($user, $token)) {
+        if (!$user || $user->email !== $email || !Password::tokenExists($user, $token)) {
             return redirect()
                 ->route('login-form')
                 ->with('error', 'Tautan reset tidak valid atau sudah kedaluwarsa. Silakan minta tautan baru dari halaman profil.');
@@ -85,10 +82,18 @@ class PasswordResetController extends Controller
             ],
         );
 
+        $email = (string) $request->input('email', '');
+        $targetUser = User::where('email', $email)->first();
+
+        if (!$targetUser || $targetUser->email !== $email) {
+            return back()
+                ->withInput($request->only('email'))
+                ->withErrors(['email' => 'Akun dengan email tersebut tidak ditemukan.']);
+        }
+
         $status = Password::reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function (User $user, string $password) {
-                // Cast 'hashed' di model User otomatis meng-hash password.
                 $user->forceFill([
                     'password' => $password,
                     'remember_token' => Str::random(60),
@@ -109,8 +114,6 @@ class PasswordResetController extends Controller
             return back()->withInput($request->only('email'))->withErrors(['email' => $pesan]);
         }
 
-        // Password sudah berubah -> akhiri sesi yang sedang berjalan (jika ada),
-        // supaya user login ulang dengan password baru.
         if (Auth::check()) {
             Auth::logout();
             $request->session()->invalidate();

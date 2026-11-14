@@ -23,7 +23,7 @@
 
                 <!-- Data Aktif -->
                 <div>
-                    <h2 class="text-2xl md:text-3xl font-bold text-text leading-none">{{ $jumlahMahasiswaAktif->count() }}</h2>
+                    <h2 class="text-2xl md:text-3xl font-bold text-text leading-none">{{ $jumlahMahasiswaAktif }}</h2>
                     <p class="text-[10px] md:text-[11px] text-success-dark font-bold flex items-center gap-1.5 mt-1.5 uppercase tracking-wide">
                         <span class="w-1.5 h-1.5 rounded-full bg-success animate-pulse"></span> Aktif
                     </p>
@@ -34,7 +34,7 @@
 
                 <!-- Data Pending -->
                 <div>
-                    <h2 class="text-2xl md:text-3xl font-bold text-text leading-none">{{ $jumlahMahasiswaPending->count() }}</h2>
+                    <h2 class="text-2xl md:text-3xl font-bold text-text leading-none">{{ $jumlahMahasiswaPending }}</h2>
                     <p class="text-[10px] md:text-[11px] text-accent font-bold flex items-center gap-1.5 mt-1.5 uppercase tracking-wide">
                         <span class="w-1.5 h-1.5 rounded-full bg-accent"></span> Pending
                     </p>
@@ -45,7 +45,7 @@
 
                 <!-- Data Selesai -->
                 <div>
-                    <h2 class="text-2xl md:text-3xl font-bold text-text leading-none">{{ $jumlahMahasiswaSelesai->count() }}</h2>
+                    <h2 class="text-2xl md:text-3xl font-bold text-text leading-none">{{ $jumlahMahasiswaSelesai }}</h2>
                     <p class="text-[10px] md:text-[11px] text-primary-dark font-bold flex items-center gap-1.5 mt-1.5 uppercase tracking-wide">
                         <span class="w-1.5 h-1.5 rounded-full bg-primary"></span> Selesai
                     </p>
@@ -56,7 +56,7 @@
 
                 <!-- Data Batal -->
                 <div>
-                    <h2 class="text-2xl md:text-3xl font-bold text-text leading-none">{{ $jumlahMahasiswaBatal->count() }}</h2>
+                    <h2 class="text-2xl md:text-3xl font-bold text-text leading-none">{{ $jumlahMahasiswaBatal }}</h2>
                     <p class="text-[10px] md:text-[11px] text-danger-dark font-bold flex items-center gap-1.5 mt-1.5 uppercase tracking-wide">
                         <span class="w-1.5 h-1.5 rounded-full bg-danger"></span> Batal
                     </p>
@@ -89,7 +89,7 @@
 
                 <!-- Data Aktif -->
                 <div>
-                    <h2 class="text-2xl md:text-3xl font-bold text-text leading-none">{{ $jumlahAsnAktif->count() }}</h2>
+                    <h2 class="text-2xl md:text-3xl font-bold text-text leading-none">{{ $jumlahAsnAktif }}</h2>
                     <p class="text-[10px] md:text-[11px] text-success-dark font-bold flex items-center gap-1.5 mt-1.5 uppercase tracking-wide">
                         <span class="w-1.5 h-1.5 rounded-full bg-success animate-pulse"></span> Aktif
                     </p>
@@ -100,7 +100,7 @@
 
                 <!-- Data Nonaktif -->
                 <div>
-                    <h2 class="text-2xl md:text-3xl font-bold text-text leading-none">{{ $jumlahAsnNonAktif->count() }}</h2>
+                    <h2 class="text-2xl md:text-3xl font-bold text-text leading-none">{{ $jumlahAsnNonAktif }}</h2>
                     <p class="text-[10px] md:text-[11px] text-danger-dark font-bold flex items-center gap-1.5 mt-1.5 uppercase tracking-wide">
                         <span class="w-1.5 h-1.5 rounded-full bg-danger"></span> Nonaktif
                     </p>
