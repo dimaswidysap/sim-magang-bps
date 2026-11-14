@@ -64,7 +64,7 @@
 
                         <!-- Status Badge -->
                         <div class="shrink-0">
-                            @if (strtolower($detailTugas->status) === 'tersedia')
+                           @if ($detailTugas->status === \App\Enums\StatusTugas::Tersedia)
                                 <span
                                     class="inline-flex px-3 py-1 bg-success/10 text-success text-xs font-bold rounded-full uppercase tracking-wider border border-success/20">
                                     {{ $detailTugas->status }}

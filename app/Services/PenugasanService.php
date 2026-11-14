@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\StatusTugas;
 use App\Models\MahasiswaProfile;
 use App\Models\Tugas;
 use App\Models\TugasAnggota;
@@ -29,7 +30,7 @@ class PenugasanService
         // Urutkan ID untuk mencegah deadlock saat mengunci banyak baris sekaligus
         sort($ids);
 
-        $profiles = MahasiswaProfile::whereIn('id', $ids)->lockForUpdate()->get()->keyBy('id');
+        $profiles = MahasiswaProfile::with('user')->whereIn('id', $ids)->lockForUpdate()->get()->keyBy('id');
 
         foreach ($ids as $id) {
             $profile = $profiles->get($id);
@@ -59,7 +60,7 @@ class PenugasanService
 
         // Cek apakah sedang menjadi ketua pada tugas aktif yang BUKAN penugasan langsung ASN
         $punyaTugasKetuaAktif = Tugas::where('mahasiswa_profile_id', $mahasiswaProfileId)
-            ->where('status', '!=', 'selesai')
+            ->where('status', '!=', StatusTugas::Selesai)
             ->where(function ($q) {
                 $q->whereNull('sumber')->orWhere('sumber', '!=', 'ditugaskan_asn');
             })
@@ -71,7 +72,7 @@ class PenugasanService
             ->where(function ($q) {
                 $q->whereNull('sumber')->orWhere('sumber', '!=', 'ditugaskan_asn');
             })
-            ->whereHas('tugas', fn($q) => $q->where('status', '!=', 'selesai'))
+            ->whereHas('tugas', fn($q) => $q->where('status', '!=', StatusTugas::Selesai))
             ->exists();
 
         if ($punyaTugasKetuaAktif || $punyaTugasAnggotaAktif) {
@@ -79,5 +80,18 @@ class PenugasanService
         }
 
         return $profile;
+    }
+
+    /**
+     * Memastikan tugas masih valid untuk diambil/diklaim (belum melewati deadline & statusnya Tersedia).
+     * Panggil setelah baris Tugas dikunci dengan lockForUpdate().
+     */
+    public function validasiTugasBisaDiambil(Tugas $tugas): void
+    {
+        if ($tugas->isExpired()) {
+            throw new DomainException('Tugas ini sudah melewati batas waktu (deadline) dan tidak dapat diambil.');
+        }
+
+        $tugas->assertCanTransitionTo(StatusTugas::Diambil, 'Tugas ini sudah diambil orang lain atau tidak lagi tersedia.');
     }
 }

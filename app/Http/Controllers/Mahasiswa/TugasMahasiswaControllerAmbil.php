@@ -1,25 +1,22 @@
 <?php
 
 namespace App\Http\Controllers\Mahasiswa;
-use DomainException;
+
+use App\Enums\StatusTugas;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Http\Request;
-use App\Models\Tugas;
-use App\Models\TugasAnggota;
 use App\Models\Logbook;
-use App\Models\User;
-use App\Models\MahasiswaProfile;
+use App\Models\Tugas;
 use App\Services\PenugasanService;
+use DomainException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class TugasMahasiswaControllerAmbil extends Controller
 {
+    public function __construct(protected PenugasanService $penugasanService) {}
 
-    // service
-    public function __construct(
-        protected PenugasanService $penugasanService
-    ) {}
-    //
     public function daftarTugasTersedia()
     {
         $tugasTersedia = Tugas::tersedia()
@@ -46,13 +43,19 @@ class TugasMahasiswaControllerAmbil extends Controller
                 // 2. Lock baris tugas agar tidak diambil 2 mahasiswa secara bersamaan
                 $tugas = Tugas::where('id', $tugasId)->lockForUpdate()->firstOrFail();
 
-                if ($tugas->status !== 'tersedia') {
-                    throw new DomainException('Tugas ini sudah diambil orang lain.');
+                // 3. Validasi deadline tugas
+                if ($tugas->isExpired()) {
+                    throw new DomainException('Tugas ini sudah melewati batas waktu (deadline) dan tidak dapat diambil.');
+                }
+
+                // 4. Validasi transisi status via state machine
+                if (!$tugas->status->canTransitionTo(StatusTugas::Diambil)) {
+                    throw new DomainException('Tugas ini sudah diambil orang lain atau tidak lagi tersedia.');
                 }
 
                 $tugas->update([
                     'mahasiswa_profile_id' => $mahasiswaProfileId,
-                    'status' => 'diambil',
+                    'status' => StatusTugas::Diambil,
                     'sumber' => 'mandiri',
                     'diambil_at' => now(),
                 ]);
@@ -62,8 +65,18 @@ class TugasMahasiswaControllerAmbil extends Controller
                     'mahasiswa_profile_id' => $mahasiswaProfileId,
                 ]);
             });
+        } catch (ModelNotFoundException) {
+            return back()->with('error', 'Tugas tidak ditemukan atau sudah dihapus.');
         } catch (DomainException $e) {
             return back()->with('error', $e->getMessage());
+        } catch (Throwable $e) {
+            Log::error('Gagal mengambil tugas', [
+                'tugas_id' => $tugasId,
+                'mahasiswa_profile_id' => $mahasiswaProfileId,
+                'exception' => $e,
+            ]);
+
+            return back()->with('error', 'Terjadi kesalahan sistem saat mengambil tugas. Silakan coba beberapa saat lagi.');
         }
 
         return redirect()->route('detail-tugas', $tugasId)->with('success', 'Tugas berhasil diambil. Selamat mengerjakan.');

@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Enums\StatusTugas;
+use DomainException;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,16 +19,7 @@ class Tugas extends Model
 
     protected $table = 'tugas';
 
-    protected $fillable = [
-        'asn_id',
-        'mahasiswa_profile_id',
-        'judul',
-        'deskripsi',
-        'deadline',
-        'status',
-        'diambil_at',
-        'selesai_at',
-    ];
+    protected $fillable = ['asn_id', 'mahasiswa_profile_id', 'judul', 'deskripsi', 'deadline', 'status', 'sumber', 'diambil_at', 'selesai_at'];
 
     protected function casts(): array
     {
@@ -33,11 +27,12 @@ class Tugas extends Model
             'deadline' => 'datetime',
             'diambil_at' => 'datetime',
             'selesai_at' => 'datetime',
+            'status' => StatusTugas::class,
         ];
     }
 
     /* -------------------------------------------------------------------------- */
-    /*                                RELATIONS                                  */
+    /*                                 RELATIONS                                  */
     /* -------------------------------------------------------------------------- */
 
     public function asn(): BelongsTo
@@ -85,15 +80,42 @@ class Tugas extends Model
     }
 
     /* -------------------------------------------------------------------------- */
-    /*                              HELPER METHODS                               */
+    /*                          STATE MACHINE & GUARDS                            */
+    /* -------------------------------------------------------------------------- */
+
+    /**
+     * Memastikan transisi status sah sesuai aturan state machine.
+     */
+    public function assertCanTransitionTo(StatusTugas $next, ?string $customMessage = null): void
+    {
+        if (!$this->status->canTransitionTo($next)) {
+            throw new DomainException($customMessage ?? "Perubahan status dari '{$this->status->label()}' ke '{$next->label()}' tidak diizinkan.");
+        }
+    }
+
+    /**
+     * Mengecek apakah tugas sudah melewati batas waktu deadline.
+     */
+    public function isExpired(): bool
+    {
+        return $this->deadline !== null && now()->greaterThan($this->deadline);
+    }
+
+    /**
+     * Mengecek apakah tugas masih tersedia dan belum lewat deadline.
+     */
+    public function canBeClaimed(): bool
+    {
+        return $this->status === StatusTugas::Tersedia && !$this->isExpired();
+    }
+
+    /* -------------------------------------------------------------------------- */
+    /*                               HELPER METHODS                               */
     /* -------------------------------------------------------------------------- */
 
     public function timLengkap()
     {
-        $anggotaProfiles = $this->anggotaDiterima()
-            ->with('mahasiswaProfile.user')
-            ->get()
-            ->pluck('mahasiswaProfile');
+        $anggotaProfiles = $this->anggotaDiterima()->with('mahasiswaProfile.user')->get()->pluck('mahasiswaProfile');
 
         if ($this->mahasiswaProfile) {
             return $anggotaProfiles->prepend($this->mahasiswaProfile);
@@ -102,85 +124,70 @@ class Tugas extends Model
         return $anggotaProfiles;
     }
 
-    public static function getJumlahTugasSelesai($mahasiswaProfileId)
+    public static function getJumlahTugasSelesai($mahasiswaProfileId): int
     {
         return self::query()
-            ->where('status', 'selesai')
+            ->where('status', StatusTugas::Selesai)
             ->where(function ($query) use ($mahasiswaProfileId) {
-                $query
-                    ->where('mahasiswa_profile_id', $mahasiswaProfileId)
-                    ->orWhereExists(function ($subquery) use ($mahasiswaProfileId) {
-                        $subquery
-                            ->select(DB::raw(1))
-                            ->from('tugas_anggota')
-                            ->whereColumn('tugas_anggota.tugas_id', 'tugas.id')
-                            ->where('tugas_anggota.mahasiswa_profile_id', $mahasiswaProfileId)
-                            ->where('tugas_anggota.status', 'diterima');
-                    });
+                $query->where('mahasiswa_profile_id', $mahasiswaProfileId)->orWhereExists(function ($subquery) use ($mahasiswaProfileId) {
+                    $subquery->select(DB::raw(1))->from('tugas_anggota')->whereColumn('tugas_anggota.tugas_id', 'tugas.id')->where('tugas_anggota.mahasiswa_profile_id', $mahasiswaProfileId)->where('tugas_anggota.status', 'diterima');
+                });
             })
             ->count();
     }
 
-    public static function getJumlahTugasBelumSelesai($mahasiswaProfileId)
+    public static function getJumlahTugasBelumSelesai($mahasiswaProfileId): int
     {
         return self::query()
-            ->where('status', 'diambil')
+            ->whereIn('status', [StatusTugas::Diambil, StatusTugas::MenungguReview, StatusTugas::Revisi])
             ->where(function ($query) use ($mahasiswaProfileId) {
-                $query
-                    ->where('mahasiswa_profile_id', $mahasiswaProfileId)
-                    ->orWhereExists(function ($subquery) use ($mahasiswaProfileId) {
-                        $subquery
-                            ->select(DB::raw(1))
-                            ->from('tugas_anggota')
-                            ->whereColumn('tugas_anggota.tugas_id', 'tugas.id')
-                            ->where('tugas_anggota.mahasiswa_profile_id', $mahasiswaProfileId)
-                            ->where('tugas_anggota.status', 'diterima');
-                    });
+                $query->where('mahasiswa_profile_id', $mahasiswaProfileId)->orWhereExists(function ($subquery) use ($mahasiswaProfileId) {
+                    $subquery->select(DB::raw(1))->from('tugas_anggota')->whereColumn('tugas_anggota.tugas_id', 'tugas.id')->where('tugas_anggota.mahasiswa_profile_id', $mahasiswaProfileId)->where('tugas_anggota.status', 'diterima');
+                });
             })
             ->count();
     }
 
     /* -------------------------------------------------------------------------- */
-    /*                                   SCOPES                                  */
+    /*                                   SCOPES                                   */
     /* -------------------------------------------------------------------------- */
 
-    public function scopeAsnGetTugasSelesai($query)
+    public function scopeAsnGetTugasSelesai(Builder $query): Builder
     {
-        return $query->where('status', 'selesai')->where('asn_id', auth()->id());
+        return $query->where('status', StatusTugas::Selesai)->where('asn_id', auth()->id());
     }
 
-    public function scopeAsnGetTugasBelumSelesai($query)
+    public function scopeAsnGetTugasBelumSelesai(Builder $query): Builder
     {
-        return $query->whereIn('status', ['diambil', 'menunggu_review'])->where('asn_id', auth()->id());
+        return $query->whereIn('status', [StatusTugas::Diambil, StatusTugas::MenungguReview, StatusTugas::Revisi])->where('asn_id', auth()->id());
     }
 
-    public function scopeSelesaiByAsn($query, $asnId)
+    public function scopeSelesaiByAsn(Builder $query, int $asnId): Builder
     {
-        return $query->where('status', 'selesai')->where('asn_id', $asnId);
+        return $query->where('status', StatusTugas::Selesai)->where('asn_id', $asnId);
     }
 
-    public function scopeTersedia($query)
+    public function scopeTersedia(Builder $query): Builder
     {
-        return $query->where('status', 'tersedia');
+        return $query->where('status', StatusTugas::Tersedia)->where('deadline', '>', now());
     }
 
-    public function scopeBelumSelesai($query)
+    public function scopeBelumSelesai(Builder $query): Builder
     {
-        return $query->where('status', '!=', 'selesai');
+        return $query->where('status', '!=', StatusTugas::Selesai);
     }
 
-    public function scopeMilikAsn($query, $asnId)
+    public function scopeMilikAsn(Builder $query, int $asnId): Builder
     {
         return $query->where('asn_id', $asnId);
     }
 
-    public function scopeMilikMahasiswa($query, $mahasiswaProfileId)
+    public function scopeMilikMahasiswa(Builder $query, int $mahasiswaProfileId): Builder
     {
         return $query->where(function ($q) use ($mahasiswaProfileId) {
-            $q->where('mahasiswa_profile_id', $mahasiswaProfileId)
-              ->orWhereHas('anggota', function ($aq) use ($mahasiswaProfileId) {
-                  $aq->where('mahasiswa_profile_id', $mahasiswaProfileId)->where('status', 'diterima');
-              });
+            $q->where('mahasiswa_profile_id', $mahasiswaProfileId)->orWhereHas('anggota', function ($aq) use ($mahasiswaProfileId) {
+                $aq->where('mahasiswa_profile_id', $mahasiswaProfileId)->where('status', 'diterima');
+            });
         });
     }
 }
