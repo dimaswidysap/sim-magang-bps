@@ -28,10 +28,10 @@
 
                         <!-- Status Badge -->
                         <div class="shrink-0 mt-1 md:mt-0">
-                              @if ($detailTugas->status === \App\Enums\StatusTugas::Tersedia)
+                            @if ($detailTugas->status === \App\Enums\StatusTugas::Tersedia)
                                 <span
                                     class="inline-flex px-3 py-1 bg-success/10 text-success text-xs font-bold rounded-full uppercase tracking-wider border border-success/20">
-                                    {{ $detailTugas->status }}
+                                    {{ $detailTugas->status->label() }}
                                 </span>
                             @elseif ($detailTugas->status === \App\Enums\StatusTugas::Revisi)
                                 <span
@@ -46,7 +46,7 @@
                             @else
                                 <span
                                     class="inline-flex px-3 py-1 bg-warning/10 text-warning text-xs font-bold rounded-full uppercase tracking-wider border border-warning/20">
-                                    {{ $detailTugas->status ?? 'Status Tidak Diketahui' }}
+                                    {{ $detailTugas->status?->label() ?? 'Status Tidak Diketahui' }}
                                 </span>
                             @endif
                         </div>
@@ -147,7 +147,7 @@
 
 
                     <!-- ================================================================= -->
-                    <!-- NAMA ANGGOTA TIM -->
+                    <!-- NAMA ANGGOTA TIM (HANYA KETUA & ANGGOTA YANG SUDAH MENERIMA)      -->
                     <!-- ================================================================= -->
                     @if ($detailTugas->mahasiswaProfile)
                         <div>
@@ -175,34 +175,28 @@
                                     </div>
                                 </div>
 
-                                <!-- ANGGOTA (Dari Relasi TugasAnggota) -->
-                                @if ($detailTugas->anggota && $detailTugas->anggota->isNotEmpty())
-                                    @foreach ($detailTugas->anggota as $anggota)
-                                        {{-- FILTER: Hanya tampilkan anggota jika statusnya BUKAN 'pending' dan BUKAN 'ditolak' --}}
-                                        @if (
-                                            $anggota->mahasiswaProfile &&
-                                                $anggota->mahasiswaProfile->user &&
-                                                !in_array(strtolower($anggota->status), ['pending', 'ditolak']))
+                                <!-- ANGGOTA (Hanya dari relasi anggotaDiterima / status 'diterima') -->
+                                @foreach ($detailTugas->anggotaDiterima as $anggota)
+                                    @if ($anggota->mahasiswaProfile && $anggota->mahasiswaProfile->user)
+                                        <div
+                                            class="flex items-center gap-3 bg-surface border border-border p-4 rounded-xl shadow-sm">
+                                            <!-- Avatar / Inisial -->
                                             <div
-                                                class="flex items-center gap-3 bg-surface border border-border p-4 rounded-xl shadow-sm">
-                                                <!-- Avatar / Inisial -->
-                                                <div
-                                                    class="w-10 h-10 rounded-full bg-primary/10 text-primary-dark flex items-center justify-center font-bold text-sm shrink-0 border border-primary/20">
-                                                    {{ strtoupper(substr($anggota->mahasiswaProfile->user->name ?? 'A', 0, 1)) }}
-                                                </div>
-                                                <!-- Detail Nama & Role -->
-                                                <div>
-                                                    <p class="text-sm font-bold text-text">
-                                                        {{ $anggota->mahasiswaProfile->user->name ?? 'Nama Tidak Diketahui' }}
-                                                    </p>
-                                                    <p class="text-xs font-semibold text-text-light">
-                                                        Anggota
-                                                    </p>
-                                                </div>
+                                                class="w-10 h-10 rounded-full bg-primary/10 text-primary-dark flex items-center justify-center font-bold text-sm shrink-0 border border-primary/20">
+                                                {{ strtoupper(substr($anggota->mahasiswaProfile->user->name ?? 'A', 0, 1)) }}
                                             </div>
-                                        @endif
-                                    @endforeach
-                                @endif
+                                            <!-- Detail Nama & Role -->
+                                            <div>
+                                                <p class="text-sm font-bold text-text">
+                                                    {{ $anggota->mahasiswaProfile->user->name ?? 'Nama Tidak Diketahui' }}
+                                                </p>
+                                                <p class="text-xs font-semibold text-text-light">
+                                                    Anggota
+                                                </p>
+                                            </div>
+                                        </div>
+                                    @endif
+                                @endforeach
 
                             </div>
                         </div>
@@ -211,7 +205,8 @@
 
 
                     <!-- PESAN REVISI TERBARU DARI ASN (Teks Saja) -->
-                    @if ($detailTugas->status === \App\Enums\StatusTugas::Revisi &&
+                    @if (
+                        $detailTugas->status === \App\Enums\StatusTugas::Revisi &&
                             isset($detailTugas->latestSubmission) &&
                             $detailTugas->latestSubmission->catatan_asn)
                         <div class="p-5 bg-danger/10 border border-danger/30 rounded-xl space-y-2">
@@ -282,7 +277,7 @@
                                                     Pengumpulan #{{ $groupNumber }}
                                                 </span>
 
-                                                @if (strtolower($detailTugas == \App\Enums\StatusTugas::Revisi) && $loop->first)
+                                                @if ($detailTugas->status === \App\Enums\StatusTugas::Selesai && $loop->first)
                                                     <span
                                                         class="px-2.5 py-0.5 bg-success/10 text-success text-xs font-bold rounded-full border border-success/20">
                                                         Diterima (Selesai)
@@ -393,7 +388,7 @@
                     <div class="flex gap-4">
                         {{-- AJAK TEMAN --}}
                         @if (
-                            $detailTugas->status !== 'selesai' &&
+                            $detailTugas->status !== \App\Enums\StatusTugas::Selesai &&
                                 auth()->check() &&
                                 auth()->user()->mahasiswaProfile &&
                                 auth()->user()->mahasiswaProfile->id == $detailTugas->mahasiswa_profile_id)
@@ -409,7 +404,7 @@
                         @endif
 
                         {{-- KIRIM TUGAS --}}
-                        @if ($detailTugas->status !== 'selesai')
+                        @if ($detailTugas->status !== \App\Enums\StatusTugas::Selesai)
                             <x-buttonv2 href="{{ route('mahasiswa-tugas-submit-form', $detailTugas->id) }}"
                                 color="accent-dark" class="w-full sm:w-auto">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"

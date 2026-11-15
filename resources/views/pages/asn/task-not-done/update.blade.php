@@ -181,7 +181,7 @@
                                 $defaultAssignedIds = array_filter(
                                     array_merge(
                                         [$tugas->mahasiswa_profile_id],
-                                        $tugas->anggota->pluck('mahasiswa_profile_id')->toArray(),
+                                        $tugas->anggotaDiterima->pluck('mahasiswa_profile_id')->toArray(),
                                     ),
                                 );
 
