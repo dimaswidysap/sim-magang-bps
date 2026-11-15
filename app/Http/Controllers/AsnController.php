@@ -2,21 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AsnProfile;
+use App\Models\Logbook;
+use App\Models\MagangLogbook;
+use App\Models\MahasiswaProfile;
+use App\Models\Skill;
+use App\Models\Tugas;
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\View\View;
-use App\Models\Skill;
-use App\Models\User;
-use App\Models\AsnProfile;
-use App\Models\Tugas;
-use App\Models\MahasiswaProfile;
-use App\Models\Logbook;
-use App\Models\MagangLogbook;
 
 class AsnController extends Controller
 {
-    //
     public function asnIndex()
     {
         $totalSelesai = Tugas::asnGetTugasSelesai()->count();
@@ -48,9 +47,9 @@ class AsnController extends Controller
                 $kursor->addMonth();
             }
 
-            $tanggalDariTugas = Logbook::where('mahasiswa_profile_id', $mahasiswa->id)->get()->map(fn($item) => $item->created_at->toDateString());
+            $tanggalDariTugas = Logbook::where('mahasiswa_profile_id', $mahasiswa->id)->get()->map(fn ($item) => $item->created_at->toDateString());
 
-            $tanggalDariMandiri = MagangLogbook::where('mahasiswa_profile_id', $mahasiswa->id)->get()->map(fn($item) => $item->tanggal_kegiatan->toDateString());
+            $tanggalDariMandiri = MagangLogbook::where('mahasiswa_profile_id', $mahasiswa->id)->get()->map(fn ($item) => $item->tanggal_kegiatan->toDateString());
 
             $tanggalAktif = collect($tanggalDariTugas)->merge($tanggalDariMandiri)->unique();
         }
@@ -81,8 +80,6 @@ class AsnController extends Controller
         $user = auth()->user();
         $query = MagangLogbook::where('id', $id);
 
-        // Jika BUKAN role ASN (misal: Mahasiswa), batasi akses hanya ke logbook milik sendiri
-        // Catatan: Jika menggunakan Spatie Permission, ganti kondisi menjadi: !$user->hasRole('asn')
         if ($user->role !== 'asn') {
             $profilId = $user->mahasiswaProfile?->id ?? 0;
             $query->where('mahasiswa_profile_id', $profilId);
@@ -125,10 +122,11 @@ class AsnController extends Controller
     public function createTugasForm()
     {
         $skillList = Skill::orderBy('nama_skill', 'asc')->get();
-        $daftarMahasiswa = MahasiswaProfile::query()->where('status', 'aktif')->whereHas('user', fn($q) => $q->where('is_active', true))->with('user')->get();
+        $daftarMahasiswa = MahasiswaProfile::query()->where('status', 'aktif')->whereHas('user', fn ($q) => $q->where('is_active', true))->with('user')->get();
 
         return view('pages.asn.create-task.create', compact('skillList', 'daftarMahasiswa'));
     }
+
     public function taskNotDone()
     {
         $tugasBelumSelesai = Tugas::milikAsn(Auth::id())
@@ -139,21 +137,31 @@ class AsnController extends Controller
 
         return view('pages.asn.task-not-done.index', compact('tugasBelumSelesai'));
     }
-    public function taskDone()
+
+    public function taskDone(Request $request)
     {
-        // Mengambil ID dari user yang sedang login.
-        // Pastikan login menggunakan guard yang sesuai agar Auth::id() mengembalikan asn_id
         $asnId = Auth::id();
 
-        // Jika asn_id bukan ID utama dari user yang login (misal merelasikan tabel),
-        // gunakan: $asnId = Auth::user()->asn_id;
+        $bulan = $this->parseValidMonth($request->query('bulan'));
+        $hari = $this->parseValidDate($request->query('hari'));
 
-        // Mengambil data menggunakan Local Scope dari model
-        $tugasSelesai = Tugas::selesaiByAsn($asnId)->get();
+        // Sinkronisasi filter hari dan bulan:
+        // - Jika hari diisi tanpa bulan, otomatis isi bulan sesuai tanggal hari tersebut
+        // - Jika bulan diganti dan tidak cocok dengan tanggal hari lama, reset filter hari agar menampilkan seluruh bulan baru
+        if ($hari && !$bulan) {
+            $bulan = substr($hari, 0, 7);
+        } elseif ($bulan && $hari && substr($hari, 0, 7) !== $bulan) {
+            $hari = null;
+        }
 
-        // Me-return data ke view (silakan sesuaikan nama view Anda)
+        $tugasSelesai = Tugas::selesaiByAsn($asnId)
+            ->filterSelesaiByPeriode($bulan, $hari)
+            ->orderByDesc('selesai_at')
+            ->orderByDesc('id')
+            ->paginate(15)
+            ->withQueryString();
 
-        return view('pages.asn.task-done.index', compact('tugasSelesai'));
+        return view('pages.asn.task-done.index', compact('tugasSelesai', 'bulan', 'hari'));
     }
 
     public function tugasSelesaiDetail($id)
@@ -164,7 +172,6 @@ class AsnController extends Controller
                 'mahasiswaProfile.user',
                 'asn',
                 'anggota.mahasiswaProfile.user',
-                // Mengambil seluruh riwayat/file submission yang diunggah
                 'submissions' => function ($q) {
                     $q->latest();
                 },
@@ -201,60 +208,43 @@ class AsnController extends Controller
                 'unit_kerja' => 'nullable|string|max:255',
                 'tanggal_lahir' => 'nullable|date',
                 'alamat' => 'nullable|string',
-                'avatar' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048', // Validasi foto profil
+                'avatar' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             ],
             [
-                // Pesan error untuk field name
                 'name.required' => 'Nama lengkap wajib diisi.',
                 'name.string' => 'Nama lengkap harus berupa teks.',
                 'name.max' => 'Nama lengkap maksimal 255 karakter.',
-
-                // Pesan error untuk field phone
                 'phone.string' => 'Nomor telepon harus berupa teks.',
                 'phone.max' => 'Nomor telepon maksimal 20 karakter.',
-
-                // Pesan error untuk field nip
                 'nip.required' => 'NIP wajib diisi.',
                 'nip.string' => 'NIP harus berupa teks.',
                 'nip.unique' => 'NIP sudah digunakan oleh ASN lain. Silakan gunakan NIP lain.',
-
-                // Pesan error untuk field jabatan
                 'jabatan.string' => 'Jabatan harus berupa teks.',
                 'jabatan.max' => 'Jabatan maksimal 255 karakter.',
-
-                // Pesan error untuk field unit_kerja
                 'unit_kerja.string' => 'Unit kerja harus berupa teks.',
                 'unit_kerja.max' => 'Unit kerja maksimal 255 karakter.',
-
-                // Pesan error untuk field avatar
                 'avatar.image' => 'File foto profil harus berupa gambar.',
                 'avatar.mimes' => 'Format foto profil yang diperbolehkan adalah jpeg, png, jpg, atau webp.',
                 'avatar.max' => 'Ukuran foto profil tidak boleh lebih dari 2MB.',
             ],
         );
 
-        // Update data user utama
         $user->update([
             'name' => $validated['name'],
             'phone' => $validated['phone'] ?? null,
         ]);
 
-        // Ambil data profil ASN yang ada saat ini
         $asnProfile = $user->asnProfile;
         $avatarPath = $asnProfile ? $asnProfile->avatar : null;
 
-        // Proses upload avatar baru jika ada file yang diunggah
         if ($request->hasFile('avatar')) {
-            // Hapus foto profil lama dari storage jika ada
             if ($avatarPath && Storage::disk('public')->exists($avatarPath)) {
                 Storage::disk('public')->delete($avatarPath);
             }
 
-            // Simpan foto profil baru ke folder avatars/asn di disk public
             $avatarPath = $request->file('avatar')->store('avatars/asn', 'public');
         }
 
-        // Simpan / perbarui profil ASN
         AsnProfile::updateOrCreate(
             ['user_id' => $user->id],
             [
@@ -268,5 +258,33 @@ class AsnController extends Controller
         );
 
         return redirect()->route('asn-detail-profil')->with('success', 'Profil berhasil diperbarui.');
+    }
+
+    private function parseValidMonth(mixed $value): ?string
+    {
+        if (!is_string($value) || !preg_match('/^\d{4}-\d{2}$/', $value)) {
+            return null;
+        }
+
+        try {
+            $date = Carbon::createFromFormat('Y-m', $value);
+            return $date && $date->format('Y-m') === $value ? $value : null;
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    private function parseValidDate(mixed $value): ?string
+    {
+        if (!is_string($value) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+            return null;
+        }
+
+        try {
+            $date = Carbon::createFromFormat('Y-m-d', $value);
+            return $date && $date->format('Y-m-d') === $value ? $value : null;
+        } catch (\Throwable) {
+            return null;
+        }
     }
 }

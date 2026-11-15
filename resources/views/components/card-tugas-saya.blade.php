@@ -1,4 +1,9 @@
-<div class="w-full font-montserrat">
+@php
+    $isTabSelesai = request('status') === 'selesai';
+    $isFilteredPeriode = $isTabSelesai && (request()->filled('bulan') || request()->filled('hari'));
+@endphp
+
+<div class="w-full font-montserrat space-y-4">
 
     {{-- ========================================================= --}}
     {{-- 1. TAMPILAN DESKTOP & TABLET (Tabel Lengkap)             --}}
@@ -16,7 +21,8 @@
                     <th class="px-5 py-4 text-xs font-semibold text-text-light uppercase tracking-wider align-middle">
                         Status</th>
                     <th class="px-5 py-4 text-xs font-semibold text-text-light uppercase tracking-wider align-middle">
-                        Tenggat Waktu</th>
+                        {{ $isTabSelesai ? 'Diselesaikan Pada' : 'Tenggat Waktu' }}
+                    </th>
                     <th class="px-5 py-4 text-xs font-semibold text-text-light uppercase tracking-wider align-middle">
                         Dibuat Oleh</th>
                     <th
@@ -26,11 +32,20 @@
             </thead>
             <tbody class="divide-y divide-border">
                 @forelse ($dataTugas as $tugas)
+                    @php
+                        $statusLabel = $tugas->status instanceof \App\Enums\StatusTugas
+                            ? $tugas->status->label()
+                            : ($tugas->status instanceof \BackedEnum ? $tugas->status->value : ($tugas->status ?? 'Unknown'));
+                        $isSelesai = $tugas->status === \App\Enums\StatusTugas::Selesai;
+                        $nomorUrut = method_exists($dataTugas, 'firstItem') && $dataTugas->firstItem() !== null
+                            ? $dataTugas->firstItem() + $loop->index
+                            : $loop->iteration;
+                    @endphp
                     <tr class="hover:bg-black/[0.02] transition-colors duration-200 group">
 
                         <!-- Nomor -->
                         <td class="px-5 py-4 align-middle text-center text-xs font-semibold text-text-light">
-                            {{ $loop->iteration }}
+                            {{ $nomorUrut }}
                         </td>
 
                         <!-- Judul & Deskripsi -->
@@ -45,29 +60,40 @@
 
                         <!-- Status -->
                         <td class="px-5 py-4 align-middle">
-                              @if ($tugas->status === \App\Enums\StatusTugas::Tersedia)
+                            @if ($isSelesai || $tugas->status === \App\Enums\StatusTugas::Tersedia)
                                 <span
                                     class="inline-flex px-2.5 py-1 bg-success/10 text-success text-xs font-bold rounded-md uppercase tracking-wide border border-success/20">
-                                    {{ $tugas->status }}
+                                    {{ $statusLabel }}
                                 </span>
                             @else
                                 <span
                                     class="inline-flex px-2.5 py-1 bg-warning/10 text-warning text-xs font-bold rounded-md uppercase tracking-wide border border-warning/20">
-                                    {{ $tugas->status ?? 'Unknown' }}
+                                    {{ $statusLabel }}
                                 </span>
                             @endif
                         </td>
 
-                        <!-- Tenggat Waktu -->
-                        <td class="px-5 py-4 align-middle">
-                            <p class="text-xs font-semibold text-danger flex items-center gap-1.5">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                {{ $tugas->deadline ? \Carbon\Carbon::parse($tugas->deadline)->translatedFormat('d M Y, H:i') : '-' }}
-                            </p>
+                        <!-- Waktu Selesai / Tenggat Waktu -->
+                        <td class="px-5 py-4 align-middle whitespace-nowrap">
+                            @if ($isTabSelesai)
+                                <p class="text-xs font-semibold text-success flex items-center gap-1.5">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    {{ $tugas->selesai_at ? \Carbon\Carbon::parse($tugas->selesai_at)->translatedFormat('d M Y, H:i') : '-' }}
+                                </p>
+                            @else
+                                <p class="text-xs font-semibold text-danger flex items-center gap-1.5">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    {{ $tugas->deadline ? \Carbon\Carbon::parse($tugas->deadline)->translatedFormat('d M Y, H:i') : '-' }}
+                                </p>
+                            @endif
                         </td>
 
                         <!-- ASN Pembuat -->
@@ -99,8 +125,12 @@
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                             </svg>
-                            <h3 class="text-lg font-bold text-text">Belum Ada Tugas</h3>
-                            <p class="text-sm text-text-light mt-1">Saat ini tidak ada tugas magang yang tersedia.</p>
+                            <h3 class="text-lg font-bold text-text">
+                                {{ $isFilteredPeriode ? 'Tidak Ada Tugas Selesai pada Periode Ini' : 'Belum Ada Tugas' }}
+                            </h3>
+                            <p class="text-sm text-text-light mt-1">
+                                {{ $isFilteredPeriode ? 'Coba pilih hari atau bulan lain, atau klik Reset untuk melihat semua riwayat.' : 'Saat ini tidak ada tugas magang pada kategori ini.' }}
+                            </p>
                         </td>
                     </tr>
                 @endforelse
@@ -113,37 +143,57 @@
     {{-- ========================================================= --}}
     <div class="grid grid-cols-1 gap-4 md:hidden">
         @forelse ($dataTugas as $tugas)
+            @php
+                $statusLabel = $tugas->status instanceof \App\Enums\StatusTugas
+                    ? $tugas->status->label()
+                    : ($tugas->status instanceof \BackedEnum ? $tugas->status->value : ($tugas->status ?? 'Unknown'));
+                $isSelesai = $tugas->status === \App\Enums\StatusTugas::Selesai;
+                $nomorUrut = method_exists($dataTugas, 'firstItem') && $dataTugas->firstItem() !== null
+                    ? $dataTugas->firstItem() + $loop->index
+                    : $loop->iteration;
+            @endphp
             <div
                 class="bg-surface border border-border rounded-[10px] p-4 shadow-sm flex flex-col justify-center gap-3">
 
-                {{-- Baris Atas Mobile: No, Status, & Tenggat --}}
+                {{-- Baris Atas Mobile: No, Status, & Waktu --}}
                 <div class="flex items-center justify-between border-b border-border/60 pb-2.5">
                     <div class="flex items-center gap-2">
                         <span class="text-xs font-bold text-text-light bg-black/5 px-2 py-0.5 rounded">
-                            #{{ $loop->iteration }}
+                            #{{ $nomorUrut }}
                         </span>
-                          @if ($tugas->status === \App\Enums\StatusTugas::Tersedia)
+                        @if ($isSelesai || $tugas->status === \App\Enums\StatusTugas::Tersedia)
                             <span
                                 class="inline-flex px-2 py-0.5 bg-success/10 text-success text-[10px] font-bold rounded uppercase tracking-wide border border-success/20">
-                                {{ $tugas->status }}
+                                {{ $statusLabel }}
                             </span>
                         @else
                             <span
                                 class="inline-flex px-2 py-0.5 bg-warning/10 text-warning text-[10px] font-bold rounded uppercase tracking-wide border border-warning/20">
-                                {{ $tugas->status ?? 'Unknown' }}
+                                {{ $statusLabel }}
                             </span>
                         @endif
                     </div>
 
                     <div class="text-right flex items-center">
-                        <p class="text-[10px] font-semibold text-danger flex items-center gap-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            {{ $tugas->deadline ? \Carbon\Carbon::parse($tugas->deadline)->translatedFormat('d M Y, H:i') : '-' }}
-                        </p>
+                        @if ($isTabSelesai)
+                            <p class="text-[10px] font-semibold text-success flex items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                {{ $tugas->selesai_at ? \Carbon\Carbon::parse($tugas->selesai_at)->translatedFormat('d M Y, H:i') : '-' }}
+                            </p>
+                        @else
+                            <p class="text-[10px] font-semibold text-danger flex items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                {{ $tugas->deadline ? \Carbon\Carbon::parse($tugas->deadline)->translatedFormat('d M Y, H:i') : '-' }}
+                            </p>
+                        @endif
                     </div>
                 </div>
 
@@ -182,12 +232,23 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-border mb-3" fill="none"
                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                     <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                 </svg>
-                <h3 class="text-base font-bold text-text">Belum Ada Tugas</h3>
-                <p class="text-xs text-text-light mt-1">Saat ini tidak ada tugas magang yang tersedia.</p>
+                <h3 class="text-base font-bold text-text">
+                    {{ $isFilteredPeriode ? 'Tidak Ada Tugas Selesai pada Periode Ini' : 'Belum Ada Tugas' }}
+                </h3>
+                <p class="text-xs text-text-light mt-1">
+                    {{ $isFilteredPeriode ? 'Coba pilih hari atau bulan lain, atau klik Reset untuk melihat semua riwayat.' : 'Saat ini tidak ada tugas magang pada kategori ini.' }}
+                </p>
             </div>
         @endforelse
     </div>
+
+    {{-- Pagination --}}
+    @if (method_exists($dataTugas, 'links'))
+        <div class="pt-2">
+            {{ $dataTugas->links() }}
+        </div>
+    @endif
 
 </div>

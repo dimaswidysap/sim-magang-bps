@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\StatusTugas;
+use Carbon\Carbon;
 use DomainException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -115,7 +116,7 @@ class Tugas extends Model
 
     public function timLengkap()
     {
-        $anggotaProfiles = $this->anggotaDiterima()->with('mahasiswaProfile.user')->get()->pluck('mahasiswaProfile');
+        $anggotaProfiles =$this->anggotaDiterima()->with('mahasiswaProfile.user')->get()->pluck('mahasiswaProfile');
 
         if ($this->mahasiswaProfile) {
             return $anggotaProfiles->prepend($this->mahasiswaProfile);
@@ -129,8 +130,8 @@ class Tugas extends Model
         return self::query()
             ->where('status', StatusTugas::Selesai)
             ->where(function ($query) use ($mahasiswaProfileId) {
-                $query->where('mahasiswa_profile_id', $mahasiswaProfileId)->orWhereExists(function ($subquery) use ($mahasiswaProfileId) {
-                    $subquery->select(DB::raw(1))->from('tugas_anggota')->whereColumn('tugas_anggota.tugas_id', 'tugas.id')->where('tugas_anggota.mahasiswa_profile_id', $mahasiswaProfileId)->where('tugas_anggota.status', 'diterima');
+                $query->where('mahasiswa_profile_id',$mahasiswaProfileId)->orWhereExists(function ($subquery) use ($mahasiswaProfileId) {
+                    $subquery->select(DB::raw(1))->from('tugas_anggota')->whereColumn('tugas_anggota.tugas_id', 'tugas.id')->where('tugas_anggota.mahasiswa_profile_id',$mahasiswaProfileId)->where('tugas_anggota.status', 'diterima');
                 });
             })
             ->count();
@@ -141,8 +142,8 @@ class Tugas extends Model
         return self::query()
             ->whereIn('status', [StatusTugas::Diambil, StatusTugas::MenungguReview, StatusTugas::Revisi])
             ->where(function ($query) use ($mahasiswaProfileId) {
-                $query->where('mahasiswa_profile_id', $mahasiswaProfileId)->orWhereExists(function ($subquery) use ($mahasiswaProfileId) {
-                    $subquery->select(DB::raw(1))->from('tugas_anggota')->whereColumn('tugas_anggota.tugas_id', 'tugas.id')->where('tugas_anggota.mahasiswa_profile_id', $mahasiswaProfileId)->where('tugas_anggota.status', 'diterima');
+                $query->where('mahasiswa_profile_id',$mahasiswaProfileId)->orWhereExists(function ($subquery) use ($mahasiswaProfileId) {
+                    $subquery->select(DB::raw(1))->from('tugas_anggota')->whereColumn('tugas_anggota.tugas_id', 'tugas.id')->where('tugas_anggota.mahasiswa_profile_id',$mahasiswaProfileId)->where('tugas_anggota.status', 'diterima');
                 });
             })
             ->count();
@@ -162,9 +163,29 @@ class Tugas extends Model
         return $query->whereIn('status', [StatusTugas::Diambil, StatusTugas::MenungguReview, StatusTugas::Revisi])->where('asn_id', auth()->id());
     }
 
-    public function scopeSelesaiByAsn(Builder $query, int $asnId): Builder
+    public function scopeSelesaiByAsn(Builder $query, int$asnId): Builder
     {
-        return $query->where('status', StatusTugas::Selesai)->where('asn_id', $asnId);
+        return $query->where('status', StatusTugas::Selesai)->where('asn_id',$asnId);
+    }
+
+    /**
+     * Filter tugas selesai berdasarkan tanggal spesifik (Y-m-d) dan/atau bulan (Y-m).
+     */
+    public function scopeFilterSelesaiByPeriode(Builder $query, ?string $bulan = null, ?string $hari = null): Builder
+    {
+        if (!empty($hari)) {
+            return $query->whereDate('selesai_at',$hari);
+        }
+
+        if (!empty($bulan)) {
+            $parsedBulan = Carbon::createFromFormat('Y-m',$bulan);
+
+            return $query
+                ->whereYear('selesai_at', $parsedBulan->year)
+                ->whereMonth('selesai_at', $parsedBulan->month);
+        }
+
+        return $query;
     }
 
     public function scopeTersedia(Builder $query): Builder
@@ -177,16 +198,16 @@ class Tugas extends Model
         return $query->where('status', '!=', StatusTugas::Selesai);
     }
 
-    public function scopeMilikAsn(Builder $query, int $asnId): Builder
+    public function scopeMilikAsn(Builder $query, int$asnId): Builder
     {
-        return $query->where('asn_id', $asnId);
+        return $query->where('asn_id',$asnId);
     }
 
-    public function scopeMilikMahasiswa(Builder $query, int $mahasiswaProfileId): Builder
+    public function scopeMilikMahasiswa(Builder $query, int$mahasiswaProfileId): Builder
     {
         return $query->where(function ($q) use ($mahasiswaProfileId) {
-            $q->where('mahasiswa_profile_id', $mahasiswaProfileId)->orWhereHas('anggota', function ($aq) use ($mahasiswaProfileId) {
-                $aq->where('mahasiswa_profile_id', $mahasiswaProfileId)->where('status', 'diterima');
+            $q->where('mahasiswa_profile_id',$mahasiswaProfileId)->orWhereHas('anggota', function ($aq) use ($mahasiswaProfileId) {
+                $aq->where('mahasiswa_profile_id',$mahasiswaProfileId)->where('status', 'diterima');
             });
         });
     }

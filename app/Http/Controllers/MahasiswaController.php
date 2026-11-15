@@ -8,32 +8,32 @@ use App\Models\MahasiswaProfile;
 use App\Models\Skill;
 use App\Models\Tugas;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Throwable;
 
 class MahasiswaController extends Controller
 {
     public function mahasiswaIndex()
     {
         $user = Auth::user();
-        $profil = $user->mahasiswaProfile;
-        $mahasiswaProfileId = $profil?->id;
+        $profil =$user->mahasiswaProfile;
+        $mahasiswaProfileId =$profil?->id;
 
         $jumlahSelesai = $mahasiswaProfileId ? Tugas::getJumlahTugasSelesai($mahasiswaProfileId) : 0;
         $jumlahBelumSelesai = $mahasiswaProfileId ? Tugas::getJumlahTugasBelumSelesai($mahasiswaProfileId) : 0;
 
-        $bulanList = collect();
-        $tanggalAktif = collect();
+        $bulanList = collect();$tanggalAktif = collect();
 
-        if ($profil && $profil->tanggal_mulai && $profil->tanggal_selesai) {
-            $kursor = $profil->tanggal_mulai->copy()->startOfMonth();
-            $akhir = $profil->tanggal_selesai->copy()->startOfMonth();
+        if ($profil && $profil->tanggal_mulai &&$profil->tanggal_selesai) {
+            $kursor =$profil->tanggal_mulai->copy()->startOfMonth();
+            $akhir =$profil->tanggal_selesai->copy()->startOfMonth();
 
-            while ($kursor->lte($akhir)) {
-                $bulanList->push([
+            while ($kursor->lte($akhir)) {$bulanList->push([
                     'label' => $kursor->translatedFormat('F Y'),
                     'tahun' => $kursor->year,
                     'bulan' => $kursor->month,
@@ -43,12 +43,12 @@ class MahasiswaController extends Controller
             }
 
             // Ambil tanggal unik langsung dari database tanpa memuat seluruh objek Logbook
-            $tanggalDariTugas = Logbook::where('mahasiswa_profile_id', $profil->id)
+            $tanggalDariTugas = Logbook::where('mahasiswa_profile_id',$profil->id)
                 ->whereNotNull('created_at')
                 ->selectRaw('DISTINCT DATE(created_at) as tanggal')
                 ->pluck('tanggal');
 
-            $tanggalDariMandiri = MagangLogbook::where('mahasiswa_profile_id', $profil->id)
+            $tanggalDariMandiri = MagangLogbook::where('mahasiswa_profile_id',$profil->id)
                 ->whereNotNull('tanggal_kegiatan')
                 ->selectRaw('DISTINCT DATE(tanggal_kegiatan) as tanggal')
                 ->pluck('tanggal');
@@ -67,16 +67,16 @@ class MahasiswaController extends Controller
             abort(404);
         }
 
-        $logbookTugas = Logbook::where('mahasiswa_profile_id', $profil->id)
+        $logbookTugas = Logbook::where('mahasiswa_profile_id',$profil->id)
             ->whereDate('created_at', $tanggal)
             ->with(['tugas.asn', 'tugas.skills'])
             ->get();
 
-        $logbookMandiri = MagangLogbook::where('mahasiswa_profile_id', $profil->id)
+        $logbookMandiri = MagangLogbook::where('mahasiswa_profile_id',$profil->id)
             ->whereDate('tanggal_kegiatan', $tanggal)
             ->get();
 
-        if ($logbookTugas->isEmpty() && $logbookMandiri->isEmpty()) {
+        if ($logbookTugas->isEmpty() &&$logbookMandiri->isEmpty()) {
             abort(404, 'Tidak ada kegiatan pada tanggal ini.');
         }
 
@@ -89,16 +89,15 @@ class MahasiswaController extends Controller
 
     public function tugas(Request $request)
     {
-        $status = $request->query('status', 'tersedia');
-        $search = trim((string) $request->query('search'));
+        $status =$request->query('status', 'tersedia');
+        $search = trim((string)$request->query('search'));
 
         $dataTugas = Tugas::with(['asn', 'skills', 'attachments'])
-            ->when($status, fn ($query, $status) => $query->where('status', $status))
-            ->when($search !== '', function ($query) use ($search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('judul', 'like', "%{$search}%")
+            ->when($status, fn ($query,$status) => $query->where('status',$status))
+            ->when($search !== '', function ($query) use ($search) {$query->where(function ($q) use ($search) {
+                    $q->where('judul', 'like', "\%{$search}%")
                         ->orWhere('deskripsi', 'like', "%{$search}%")
-                        ->orWhereHas('asn', fn ($aq) => $aq->where('name', 'like', "%{$search}%"));
+                        ->orWhereHas('asn', fn ($aq) => $aq->where('name', 'like', "\%{$search}%"));
                 });
             })
             ->orderByDesc('created_at')
@@ -111,31 +110,54 @@ class MahasiswaController extends Controller
     public function tugasSaya(Request $request)
     {
         $profil = Auth::user()->mahasiswaProfile;
-        $statusTugas = $request->query('status', 'diambil');
-        $search = trim((string) $request->query('search'));
+        $statusTugas =$request->query('status', 'diambil');
+        $search = trim((string)$request->query('search'));
 
-        if (!$profil) {
-            $emptyPaginator = new LengthAwarePaginator([], 0, 10);
+        $bulan =$statusTugas === 'selesai' ? $this->parseValidMonth($request->query('bulan')) : null;
+        $hari =$statusTugas === 'selesai' ? $this->parseValidDate($request->query('hari')) : null;
 
-            return view('pages.mahasiswa.tugas-saya.index', ['dataTugas' => $emptyPaginator])
-                ->with('error', 'Lengkapi profil Anda dulu untuk bisa mengambil tugas.');
+        // Sinkronisasi filter hari dan bulan:
+        // - Jika hari diisi tanpa bulan, otomatis isi bulan sesuai tanggal hari tersebut
+        // - Jika bulan diganti dan tidak cocok dengan tanggal hari lama, reset filter hari
+        if ($hari && !$bulan) {$bulan = substr($hari, 0, 7); } elseif ($bulan && $hari && substr($hari, 0, 7) !== $bulan) {$hari = null;
+        }
+
+        if (!$profil) {$emptyPaginator = new LengthAwarePaginator([], 0, 10);
+
+            return view('pages.mahasiswa.tugas-saya.index', [
+                'dataTugas' => $emptyPaginator,
+                'bulan' => $bulan,
+                'hari' => $hari,
+            ])->with('error', 'Lengkapi profil Anda dulu untuk bisa mengambil tugas.');
         }
 
         $dataTugas = Tugas::milikMahasiswa($profil->id)
-            ->when($statusTugas, fn ($query, $statusTugas) => $query->where('status', $statusTugas))
-            ->when($search !== '', function ($query) use ($search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('judul', 'like', "%{$search}%")
+            ->when($statusTugas, fn ($query,$statusTugas) => $query->where('status',$statusTugas))
+            ->when($statusTugas === 'selesai', function ($query) use ($bulan,$hari) {
+                if ($hari) {
+                    $query->whereDate('selesai_at',$hari);
+                } elseif ($bulan) {
+                    $parsedBulan = Carbon::createFromFormat('Y-m',$bulan);
+                    $query->whereYear('selesai_at',$parsedBulan->year)
+                        ->whereMonth('selesai_at', $parsedBulan->month);
+                }
+            })
+            ->when($search !== '', function ($query) use ($search) {$query->where(function ($q) use ($search) {
+                    $q->where('judul', 'like', "\%{$search}%")
                         ->orWhere('deskripsi', 'like', "%{$search}%")
-                        ->orWhereHas('asn', fn ($aq) => $aq->where('name', 'like', "%{$search}%"));
+                        ->orWhereHas('asn', fn ($aq) => $aq->where('name', 'like', "\%{$search}%"));
                 });
             })
             ->with(['asn', 'skills', 'anggota.mahasiswaProfile.user'])
-            ->orderByDesc('created_at')
+            ->when(
+                $statusTugas === 'selesai',
+                fn ($query) =>$query->orderByDesc('selesai_at')->orderByDesc('id'),
+                fn ($query) =>$query->orderByDesc('created_at')
+            )
             ->paginate(10)
             ->withQueryString();
 
-        return view('pages.mahasiswa.tugas-saya.index', compact('dataTugas'));
+        return view('pages.mahasiswa.tugas-saya.index', compact('dataTugas', 'bulan', 'hari'));
     }
 
     public function detailTugasSaya($id)
@@ -147,7 +169,7 @@ class MahasiswaController extends Controller
         }
 
         $detailTugas = Tugas::milikMahasiswa($profil->id)
-            ->with(['anggota', 'asn', 'attachments', 'submissions' => fn ($query) => $query->latest()])
+            ->with(['anggota', 'asn', 'attachments', 'submissions' => fn ($query) =>$query->latest()])
             ->findOrFail($id);
 
         return view('pages.mahasiswa.tugas-saya.view', compact('detailTugas'));
@@ -175,7 +197,7 @@ class MahasiswaController extends Controller
     {
         $user = Auth::user();
 
-        $validated = $request->validate(
+        $validated =$request->validate(
             [
                 'foto_profil' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
                 'name' => 'required|string|max:255',
@@ -185,7 +207,7 @@ class MahasiswaController extends Controller
                     'required',
                     'string',
                     Rule::unique('mahasiswa_profiles', 'nim')
-                        ->where(fn ($query) => $query->where('instansi_asal', $request->instansi_asal))
+                        ->where(fn ($query) => $query->where('instansi_asal',$request->instansi_asal))
                         ->ignore(optional($user->mahasiswaProfile)->id),
                 ],
                 'jenjang' => 'nullable|in:SMA/SMK,D3,D4,S1,S2',
@@ -224,15 +246,15 @@ class MahasiswaController extends Controller
             ],
         );
 
-        $profile = $user->mahasiswaProfile;
-        $fotoProfilPath = $profile?->foto_profil_path;
+        $profile =$user->mahasiswaProfile;
+        $fotoProfilPath =$profile?->foto_profil_path;
 
         if ($request->hasFile('foto_profil')) {
             if ($fotoProfilPath && Storage::disk('public')->exists($fotoProfilPath)) {
                 Storage::disk('public')->delete($fotoProfilPath);
             }
 
-            $fotoProfilPath = $request->file('foto_profil')->store('foto_profil', 'public');
+            $fotoProfilPath =$request->file('foto_profil')->store('foto_profil', 'public');
         }
 
         $user->update([
@@ -259,5 +281,33 @@ class MahasiswaController extends Controller
         $profile->skills()->sync($validated['skills'] ?? []);
 
         return redirect()->route('profil-magang')->with('success', 'Profil berhasil diperbarui.');
+    }
+
+    private function parseValidMonth(mixed $value): ?string
+    {
+        if (!is_string($value) || !preg_match('/^\d{4}-\d{2}$/',$value)) {
+            return null;
+        }
+
+        try {
+            $date = Carbon::createFromFormat('Y-m',$value);
+            return $date &&$date->format('Y-m') === $value ? $value : null;
+        } catch (Throwable) {
+            return null;
+        }
+    }
+
+    private function parseValidDate(mixed $value): ?string
+    {
+        if (!is_string($value) || !preg_match('/^\d{4}-\d{2}-\d{2}$/',$value)) {
+            return null;
+        }
+
+        try {
+            $date = Carbon::createFromFormat('Y-m-d',$value);
+            return $date &&$date->format('Y-m-d') === $value ? $value : null;
+        } catch (Throwable) {
+            return null;
+        }
     }
 }
