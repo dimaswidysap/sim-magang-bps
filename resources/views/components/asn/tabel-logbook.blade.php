@@ -1,5 +1,15 @@
-{{-- {{ $daftarMahasiswa }} --}}
 <div class="bg-surface border border-border rounded-[10px] shadow-sm overflow-hidden font-montserrat">
+
+    <!-- Header Tabel Bimbingan -->
+    <div class="px-6 py-4 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-surface">
+        <div>
+            <h2 class="text-base font-bold text-text">Daftar Mahasiswa Bimbingan</h2>
+            <p class="text-xs text-text-light mt-0.5">Menampilkan peserta magang aktif yang berada di bawah bimbingan Anda.</p>
+        </div>
+        <span class="inline-flex items-center self-start sm:self-auto px-3 py-1 rounded-full text-xs font-bold bg-primary/10 text-primary-dark border border-primary/20">
+            Total: {{ $daftarMahasiswa->count() }} Peserta
+        </span>
+    </div>
 
     <!-- ========================================== -->
     <!-- TAMPILAN DEKSTOP (TABEL) -->
@@ -21,7 +31,6 @@
             <tbody class="divide-y divide-border">
                 @forelse ($daftarMahasiswa as $mhs)
                     @php
-                        // Cek lokasi foto profil (pada model $mhs atau relasi user)
                         $avatarPath = $mhs->foto_profil_path
                             ?? ($mhs->foto
                             ?? ($mhs->avatar
@@ -35,6 +44,8 @@
                                 ? $avatarPath
                                 : asset('storage/' . $avatarPath);
                         }
+
+                        $pendingLogbookCount = (int) ($mhs->logbook_mandiri_belum_validasi_count ?? 0);
                     @endphp
 
                     <tr class="data-row hover:bg-primary/5 transition-colors duration-200">
@@ -48,7 +59,16 @@
                                         {{ strtoupper(substr($mhs->user->name ?? 'M', 0, 1)) }}
                                     @endif
                                 </div>
-                                <span class="text-sm font-bold text-text">{{ $mhs->user->name }}</span>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-sm font-bold text-text">{{ $mhs->user->name }}</span>
+                                    @if ($pendingLogbookCount > 0)
+                                        <span title="{{ $pendingLogbookCount }} logbook menunggu validasi"
+                                            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-danger/10 text-danger border border-danger/25">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-danger animate-pulse"></span>
+                                            {{ $pendingLogbookCount }} perlu validasi
+                                        </span>
+                                    @endif
+                                </div>
                             </div>
                         </td>
 
@@ -88,13 +108,20 @@
                         <!-- Kolom Aksi -->
                         <td class="px-6 py-4 text-right">
                             <x-main-button href="{{ route('asn-logbook-mahasiswa-kalender', $mhs->id) }}"
-                                class="bg-surface hover:bg-primary hover:text-white hover:border-primary text-text border border-border text-[10px] px-3 py-1.5 rounded-lg transition-all shadow-sm inline-flex justify-center items-center gap-1.5 group">
-                                <svg xmlns="http://www.w3.org/2000/svg"
-                                    class="h-3.5 w-3.5 text-primary group-hover:text-white transition-colors"
-                                    fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                </svg>
+                                class="relative bg-surface hover:bg-primary hover:text-white hover:border-primary text-text border {{ $pendingLogbookCount > 0 ? 'border-danger/50' : 'border-border' }} text-[10px] px-3 py-1.5 rounded-lg transition-all shadow-sm inline-flex justify-center items-center gap-1.5 group">
+                                @if ($pendingLogbookCount > 0)
+                                    <span title="Ada logbook menunggu validasi"
+                                        class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-danger text-white text-[9px] font-bold shrink-0">
+                                        !
+                                    </span>
+                                @else
+                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                        class="h-3.5 w-3.5 text-primary group-hover:text-white transition-colors"
+                                        fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                @endif
                                 <span>Lihat Logbook</span>
                             </x-main-button>
                         </td>
@@ -108,8 +135,8 @@
                                     <path stroke-linecap="round" stroke-linejoin="round"
                                         d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                                 </svg>
-                                <p class="text-sm font-semibold text-text">Belum Ada Data Mahasiswa</p>
-                                <p class="text-xs text-text-light mt-1">Daftar mahasiswa magang akan muncul di sini.</p>
+                                <p class="text-sm font-semibold text-text">Belum Ada Mahasiswa Bimbingan</p>
+                                <p class="text-xs text-text-light mt-1">Daftar peserta magang aktif yang Anda bimbing akan muncul di sini.</p>
                             </div>
                         </td>
                     </tr>
@@ -119,7 +146,7 @@
     </div>
 
     <!-- ========================================== -->
-    <!-- TAMPILAN MOBILE (CARD SEPERTI GAMBAR) -->
+    <!-- TAMPILAN MOBILE (CARD) -->
     <!-- ========================================== -->
     <div class="block md:hidden bg-background p-4 space-y-4">
         @forelse ($daftarMahasiswa as $mhs)
@@ -137,6 +164,8 @@
                         ? $avatarPath
                         : asset('storage/' . $avatarPath);
                 }
+
+                $pendingLogbookCount = (int) ($mhs->logbook_mandiri_belum_validasi_count ?? 0);
             @endphp
 
             <div class="bg-surface border border-border rounded-xl p-4 shadow-sm data-row">
@@ -200,34 +229,39 @@
                 <!-- Action Button -->
                 <div class="pt-1">
                     <x-main-button href="{{ route('asn-logbook-mahasiswa-kalender', $mhs->id) }}"
-                        class="w-full bg-surface hover:bg-primary hover:text-white text-text border border-border text-sm font-semibold px-4 py-2.5 rounded-lg transition-all shadow-sm flex justify-center items-center gap-2 group">
-                        <svg xmlns="http://www.w3.org/2000/svg"
-                            class="h-4 w-4 text-text group-hover:text-white transition-colors" fill="none"
-                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
+                        class="w-full bg-surface hover:bg-primary hover:text-white text-text border {{ $pendingLogbookCount > 0 ? 'border-danger/50' : 'border-border' }} text-sm font-semibold px-4 py-2.5 rounded-lg transition-all shadow-sm flex justify-center items-center gap-2 group">
+                        @if ($pendingLogbookCount > 0)
+                            <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-danger text-white text-[11px] font-bold shrink-0">
+                                {{ $pendingLogbookCount }}
+                            </span>
+                        @else
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                class="h-4 w-4 text-text group-hover:text-white transition-colors" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                        @endif
                         <span>Lihat Logbook</span>
                     </x-main-button>
                 </div>
 
             </div>
         @empty
-            <!-- Tampilan Jika Data Kosong di Mobile -->
             <div class="bg-surface border border-border rounded-xl p-8 text-center shadow-sm">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-border mx-auto mb-3" fill="none"
                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                     <path stroke-linecap="round" stroke-linejoin="round"
                         d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                 </svg>
-                <p class="text-sm font-semibold text-text">Belum Ada Data Mahasiswa</p>
-                <p class="text-xs text-text-light mt-1">Daftar mahasiswa magang akan muncul di sini.</p>
+                <p class="text-sm font-semibold text-text">Belum Ada Mahasiswa Bimbingan</p>
+                <p class="text-xs text-text-light mt-1">Daftar peserta magang aktif yang Anda bimbing akan muncul di sini.</p>
             </div>
         @endforelse
     </div>
 
-    <!-- Pesan No Data via JS (jika digunakan) -->
+    <!-- Pesan No Data via JS -->
     <div id="noDataMessage" class="hidden text-center py-8 text-text-light italic border-t border-border">
         Data tidak ditemukan.
     </div>

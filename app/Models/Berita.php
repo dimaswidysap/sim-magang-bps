@@ -24,4 +24,13 @@ class Berita extends Model
     {
         return $this->hasMany(BeritaAttachment::class);
     }
+
+    public function canBeModifiedBy(?User $user): bool
+    {
+        if (! $user) {
+            return false;
+        }
+
+        return $user->role === 'admin' || (int) $this->user_id === (int) $user->id;
+    }
 }

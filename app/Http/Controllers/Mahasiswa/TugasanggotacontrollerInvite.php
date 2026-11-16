@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Mahasiswa;
 
 use App\Enums\StatusTugas;
 use App\Http\Controllers\Controller;
+use App\Models\AsnProfile;
 use App\Models\MahasiswaProfile;
 use App\Models\Tugas;
 use App\Models\TugasAnggota;
@@ -67,15 +68,20 @@ class TugasanggotacontrollerInvite extends Controller
 
         $idMahasiswaSibuk = $idKetuaSibuk->merge($idAnggotaSibuk)->unique()->toArray();
 
-        // Ambil daftar mahasiswa aktif yang belum terlibat di tugas ini
-        $daftarMahasiswa = MahasiswaProfile::whereNotIn('id', $idSudahTerlibat)
-            ->where('status', 'aktif')
-            ->whereHas('user', fn ($q) => $q->where('is_active', true))
-            ->with('user')
-            ->get()
-            ->each(function ($mhs) use ($idMahasiswaSibuk) {
-                $mhs->sedang_tugas_aktif = in_array($mhs->id, $idMahasiswaSibuk, true);
-            });
+        // Hanya tampilkan mahasiswa aktif di bawah pembimbing ASN penerbit tugas
+        $pembimbingAsnProfileId = AsnProfile::where('user_id', $tugas->asn_id)->value('id');
+
+        $daftarMahasiswa = $pembimbingAsnProfileId
+            ? MahasiswaProfile::whereNotIn('id', $idSudahTerlibat)
+                ->where('asn_profile_id', $pembimbingAsnProfileId)
+                ->where('status', 'aktif')
+                ->whereHas('user', fn ($q) => $q->where('is_active', true))
+                ->with('user')
+                ->get()
+                ->each(function ($mhs) use ($idMahasiswaSibuk) {
+                    $mhs->sedang_tugas_aktif = in_array($mhs->id, $idMahasiswaSibuk, true);
+                })
+            : collect();
 
         return view('pages.mahasiswa.tugas-saya.invite', compact('tugas', 'daftarMahasiswa'));
     }
@@ -133,10 +139,16 @@ class TugasanggotacontrollerInvite extends Controller
                     throw new DomainException('Tugas sudah melewati batas waktu (deadline), tidak dapat menambah anggota.');
                 }
 
+                $pembimbingAsnProfileId = AsnProfile::where('user_id', $tugas->asn_id)->value('id');
+
                 // 4. Simpan undangan untuk setiap mahasiswa terpilih
                 foreach ($targetMahasiswaIds as $targetId) {
                     $targetProfile = $profiles->get($targetId);
                     $namaTarget = $targetProfile?->user?->name ?? "ID #{$targetId}";
+
+                    if (!$pembimbingAsnProfileId || (int) $targetProfile?->asn_profile_id !== (int) $pembimbingAsnProfileId) {
+                        throw new DomainException("Mahasiswa ({$namaTarget}) bukan peserta bimbingan dari pembimbing tugas ini.");
+                    }
 
                     if ($targetId === (int) $tugas->mahasiswa_profile_id) {
                         throw new DomainException("Mahasiswa ({$namaTarget}) sudah menjadi ketua pada tugas ini.");

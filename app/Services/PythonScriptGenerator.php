@@ -81,7 +81,7 @@ class PythonScriptGenerator
         OUTPUT_PELANGGARAN = get_unique_filename('DAFTAR_PELANGGARAN.docx')
 
         # ============================================================
-        # HELPER NILAI AMAN
+        # HELPER NILAI AMAN & PEMBERSIH KODE WILAYAH
         # ============================================================
         def nilai_aman(value):
             try:
@@ -90,6 +90,18 @@ class PythonScriptGenerator
             except (TypeError, ValueError):
                 pass
             return str(value).strip()
+
+        def bersihkan_kode_wilayah(nilai):
+            teks = str(nilai).strip()
+            # Hapus angka kode wilayah di depan (misal: "03 DOLOPO", "03. DOLOPO", "03 - DOLOPO")
+            hasil = re.sub(r'^[\\[\\(]?\\d+[\\]\\)]?[\\s.\\-_:]*', '', teks).strip()
+            return hasil if hasil else teks
+
+        def format_nilai_field(label, kolom, nilai_mentah):
+            teks = nilai_aman(nilai_mentah)
+            if 'wilayah' in str(label).lower() or 'wilayah' in str(kolom).lower():
+                teks = bersihkan_kode_wilayah(teks)
+            return teks
 
         # ============================================================
         # DETEKSI FILE EXCEL & FOLDER FOTO
@@ -126,7 +138,7 @@ class PythonScriptGenerator
             return pilih_interaktif(kandidat, "folder foto")
 
         # ============================================================
-        # FUNGSI PENDUKUNG
+        # FUNGSI PENDUKUNG GAMBAR
         # ============================================================
         def is_foto_kamera(image_bytes):
             try:
@@ -140,6 +152,29 @@ class PythonScriptGenerator
             except Exception:
                 return False
 
+        def hitung_ukuran_gambar(img_bytes, max_width_in, max_height_in):
+            try:
+                img_bytes.seek(0)
+                with Image.open(img_bytes) as im:
+                    w_px, h_px = im.size
+                img_bytes.seek(0)
+
+                if w_px <= 0 or h_px <= 0:
+                    return Inches(max_width_in), None
+
+                aspect = h_px / float(w_px)
+                target_w = max_width_in
+                target_h = target_w * aspect
+
+                if target_h > max_height_in:
+                    target_h = max_height_in
+                    target_w = target_h / aspect
+
+                return Inches(target_w), Inches(target_h)
+            except Exception:
+                img_bytes.seek(0)
+                return Inches(max_width_in), None
+
         # ============================================================
         # PROGRAM UTAMA
         # ============================================================
@@ -150,13 +185,17 @@ class PythonScriptGenerator
         print(f"[OK] Memakai folder foto: {folder_ss}\\n")
 
         doc = Document()
+        PAGE_HEIGHT_IN = 11.69
+        PAGE_WIDTH_IN = 8.27
+        MARGIN_IN = 0.5
+
         for section in doc.sections:
-            section.page_height = Inches(11.69)
-            section.page_width = Inches(8.27)
-            section.top_margin = Inches(0.5)
-            section.bottom_margin = Inches(0.5)
-            section.left_margin = Inches(0.5)
-            section.right_margin = Inches(0.5)
+            section.page_height = Inches(PAGE_HEIGHT_IN)
+            section.page_width = Inches(PAGE_WIDTH_IN)
+            section.top_margin = Inches(MARGIN_IN)
+            section.bottom_margin = Inches(MARGIN_IN)
+            section.left_margin = Inches(MARGIN_IN)
+            section.right_margin = Inches(MARGIN_IN)
 
         style = doc.styles['Normal']
         style.font.name = 'Times New Roman'
@@ -173,7 +212,7 @@ class PythonScriptGenerator
         daftar_pelanggar = []
 
         # ============================================================
-        # HITUNG POSISI TAB BERDASARKAN LABEL TERPANJANG
+        # HITUNG POSISI TAB & BATAS UKURAN GAMBAR PER HALAMAN
         # ============================================================
         CHAR_WIDTH_INCH = 0.11
         TAB_BUFFER_INCH = 0.15
@@ -183,6 +222,53 @@ class PythonScriptGenerator
             TAB_POSISI_LABEL = Inches(panjang_label_maks * CHAR_WIDTH_INCH + TAB_BUFFER_INCH)
         else:
             TAB_POSISI_LABEL = Inches(1.4)
+
+        PRINTABLE_HEIGHT_IN = PAGE_HEIGHT_IN - (2 * MARGIN_IN)
+        EST_HEADER_HEIGHT_IN = (len(HEADER_LINES) * 0.24 + 0.20) if HEADER_LINES else 0.0
+        EST_KOP_HEIGHT_IN = (len(FIELD_MAPPINGS) * 0.22 + 0.15) if FIELD_MAPPINGS else 0.0
+        CELL_OVERHEAD_IN = 0.75
+        SAFETY_MARGIN_IN = 0.35
+
+        MAX_IMG_WIDTH_IN = 3.1
+        MAX_IMG_HEIGHT_IN = max(
+            3.5,
+            PRINTABLE_HEIGHT_IN - EST_HEADER_HEIGHT_IN - EST_KOP_HEIGHT_IN - CELL_OVERHEAD_IN - SAFETY_MARGIN_IN
+        )
+
+        def render_header_dan_kop(target_doc, data_row):
+            # ---- Render Header (Ukuran 12 Pt Bold Semua Baris) ----
+            for idx_h, (teks, _) in enumerate(HEADER_LINES):
+                p = target_doc.add_paragraph()
+                p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                p.paragraph_format.line_spacing = 1.0
+                p.paragraph_format.space_before = Pt(0)
+                p.paragraph_format.space_after = Pt(12) if idx_h == len(HEADER_LINES) - 1 else Pt(1)
+
+                run = p.add_run(str(teks).upper())
+                run.bold = True
+                run.font.size = Pt(12)
+
+            # ---- Render Kop Identitas Pemilik Gambar ----
+            if FIELD_MAPPINGS:
+                for label, kolom in FIELD_MAPPINGS:
+                    nilai = format_nilai_field(label, kolom, data_row.get(kolom, None))
+
+                    p = target_doc.add_paragraph()
+                    p.paragraph_format.space_before = Pt(1)
+                    p.paragraph_format.space_after = Pt(1)
+                    p.paragraph_format.line_spacing = 1.0
+                    p.paragraph_format.tab_stops.add_tab_stop(TAB_POSISI_LABEL)
+
+                    r_label = p.add_run(str(label).upper())
+                    r_label.bold = True
+
+                    p.add_run(f"\\t: {str(nilai).upper()}")
+
+                p_spacer = target_doc.add_paragraph()
+                p_spacer.paragraph_format.space_before = Pt(0)
+                p_spacer.paragraph_format.space_after = Pt(8)
+
+        is_first_page = True
 
         for index, row in df.iterrows():
             nilai_cocok = nilai_aman(row.get(MATCH_COLUMN, None))
@@ -209,7 +295,6 @@ class PythonScriptGenerator
                 files_gambar = sorted([f for f in os.listdir(path_folder) if f.lower().endswith(ekstensi)])
 
                 if not files_gambar:
-                    # PELANGGARAN: Folder ditemukan tapi kosong
                     pelanggaran_ini.append({
                         'nomor_file': '-',
                         'alasan': 'Folder foto kosong (tidak ada gambar valid)'
@@ -235,7 +320,6 @@ class PythonScriptGenerator
                         except Exception as e:
                             print(f"  -> [X] Gagal membaca gambar {file_name}: {e}")
             else:
-                # PELANGGARAN: Folder tidak ditemukan
                 print(f"  -> [!] Folder untuk {nilai_cocok} tidak ditemukan.")
                 pelanggaran_ini.append({
                     'nomor_file': '-',
@@ -245,49 +329,27 @@ class PythonScriptGenerator
             if pelanggaran_ini:
                 daftar_pelanggar.append({'data_row': row, 'bukti': pelanggaran_ini})
 
-            # ---- Render Header (Ukuran 12 Pt Bold Semua Baris) ----
-            for idx_h, (teks, _) in enumerate(HEADER_LINES):
-                p = doc.add_paragraph()
-                p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                p.paragraph_format.line_spacing = 1.0
-                p.paragraph_format.space_before = Pt(0)
-                p.paragraph_format.space_after = Pt(12) if idx_h == len(HEADER_LINES) - 1 else Pt(1)
-
-                run = p.add_run(str(teks).upper())
-                run.bold = True
-                run.font.size = Pt(12)
-
-            # ---- Render Field Mapping (Label Bold, Nilai Normal, Tab Biasa) ----
-            if FIELD_MAPPINGS:
-                for label, kolom in FIELD_MAPPINGS:
-                    nilai = nilai_aman(row.get(kolom, None))
-
-                    p = doc.add_paragraph()
-                    p.paragraph_format.space_before = Pt(1)
-                    p.paragraph_format.space_after = Pt(1)
-                    p.paragraph_format.line_spacing = 1.0
-                    p.paragraph_format.tab_stops.add_tab_stop(TAB_POSISI_LABEL)
-
-                    r_label = p.add_run(str(label).upper())
-                    r_label.bold = True
-
-                    p.add_run(f"\t: {str(nilai).upper()}")
-
-                p_spacer = doc.add_paragraph()
-                p_spacer.paragraph_format.space_before = Pt(0)
-                p_spacer.paragraph_format.space_after = Pt(8)
-
             if not valid_images:
+                if not is_first_page:
+                    doc.add_page_break()
+                is_first_page = False
+
+                render_header_dan_kop(doc, row)
                 doc.add_paragraph("[TIDAK ADA FOTO VALID]")
-                doc.add_page_break()
                 continue
 
-            # ---- Render Gambar Tabel (SS FASIH Normal / Tidak Bold) ----
-            chunk_size = 4
+            # ---- Render 1 Pasang Gambar (2 Kolom) per Lembar dengan Header & Kop Pemilik ----
+            chunk_size = 2
             for i in range(0, len(valid_images), chunk_size):
+                if not is_first_page:
+                    doc.add_page_break()
+                is_first_page = False
+
+                # Lampirkan Header & Kop sesuai pemilik gambar pada setiap lembar
+                render_header_dan_kop(doc, row)
+
                 chunk = valid_images[i:i + chunk_size]
-                num_rows = (len(chunk) + 1) // 2
-                table = doc.add_table(rows=num_rows, cols=2)
+                table = doc.add_table(rows=1, cols=2)
                 table.style = 'Table Grid'
 
                 for row_table in table.rows:
@@ -296,25 +358,26 @@ class PythonScriptGenerator
                     trPr.append(cantSplit)
 
                 for idx, img_bytes in enumerate(chunk):
-                    r = idx // 2
-                    c = idx % 2
-                    cell = table.cell(r, c)
+                    cell = table.cell(0, idx)
                     urutan = i + idx + 1
 
                     # Teks SS FASIH X (Normal / Tidak Bold)
                     p_label = cell.paragraphs[0]
                     p_label.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                    p_label.paragraph_format.space_before = Cm(0.5)
-                    p_label.paragraph_format.space_after = Cm(0.5)
+                    p_label.paragraph_format.space_before = Cm(0.4)
+                    p_label.paragraph_format.space_after = Cm(0.4)
                     p_label.add_run(f"SS FASIH {urutan}")
 
+                    pic_w, pic_h = hitung_ukuran_gambar(img_bytes, MAX_IMG_WIDTH_IN, MAX_IMG_HEIGHT_IN)
                     img_bytes.seek(0)
+
                     p_img = cell.add_paragraph()
                     p_img.alignment = WD_ALIGN_PARAGRAPH.CENTER
                     p_img.paragraph_format.space_after = Cm(0.3)
-                    p_img.add_run().add_picture(img_bytes, width=Inches(3.1))
-
-                doc.add_page_break()
+                    if pic_h is not None:
+                        p_img.add_run().add_picture(img_bytes, width=pic_w, height=pic_h)
+                    else:
+                        p_img.add_run().add_picture(img_bytes, width=pic_w)
 
         doc.save(OUTPUT_MAIN)
 
@@ -322,12 +385,12 @@ class PythonScriptGenerator
         if daftar_pelanggar:
             doc_p = Document()
             for section in doc_p.sections:
-                section.page_height = Inches(11.69)
-                section.page_width = Inches(8.27)
-                section.top_margin = Inches(0.5)
-                section.bottom_margin = Inches(0.5)
-                section.left_margin = Inches(0.5)
-                section.right_margin = Inches(0.5)
+                section.page_height = Inches(PAGE_HEIGHT_IN)
+                section.page_width = Inches(PAGE_WIDTH_IN)
+                section.top_margin = Inches(MARGIN_IN)
+                section.bottom_margin = Inches(MARGIN_IN)
+                section.left_margin = Inches(MARGIN_IN)
+                section.right_margin = Inches(MARGIN_IN)
 
             p_title = doc_p.add_paragraph()
             p_title.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -353,7 +416,7 @@ class PythonScriptGenerator
                     cells[0].text = str(no)
                     no += 1
                     for i, (label, kolom) in enumerate(FIELD_MAPPINGS, start=1):
-                        cells[i].text = nilai_aman(p['data_row'].get(kolom, None)).upper()
+                        cells[i].text = format_nilai_field(label, kolom, p['data_row'].get(kolom, None)).upper()
                     cells[-2].text = str(bukti['nomor_file'])
                     cells[-1].text = str(bukti['alasan']).upper()
 

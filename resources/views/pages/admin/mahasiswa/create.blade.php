@@ -7,8 +7,7 @@
             <!-- Header Halaman -->
             <div class="mb-8 pb-4 border-b border-border">
                 <h1 class="text-2xl font-bold text-text">Buat Akun Magang/PKL</h1>
-                <p class="text-sm text-text-light mt-1">Lengkapi informasi nama, email dan password!
-                </p>
+                <p class="text-sm text-text-light mt-1">Lengkapi informasi akun, pembimbing magang, serta jadwal masuk dan selesai magang peserta.</p>
             </div>
 
             <!-- Alert Error -->
@@ -63,24 +62,72 @@
                     </div>
                 </div>
 
+                <!-- SECTION 2: Pembimbing Magang (Popup Card) -->
+                <div>
+                    <h2 class="text-lg font-semibold text-primary mb-4 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        Pembimbing Magang (ASN)
+                    </h2>
+
+                    @include('components.admin.pembimbing-picker', [
+                        'pembimbingList' => $pembimbingList,
+                        'selectedId' => old('asn_profile_id'),
+                        'allowClear' => false,
+                    ])
+                </div>
+
+                <!-- SECTION 3: Periode Magang -->
+                <div>
+                    <h2 class="text-lg font-semibold text-primary mb-4 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        Periode Magang
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-background p-5 rounded-xl border border-border">
+                        <div>
+                            <label class="block text-sm font-medium text-text-light mb-1.5">
+                                Tanggal Masuk Magang
+                            </label>
+                            <input type="date" name="tanggal_mulai" value="{{ old('tanggal_mulai') }}"
+                                class="w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors cursor-pointer">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-text-light mb-1.5">
+                                Tanggal Selesai Magang
+                            </label>
+                            <input type="date" name="tanggal_selesai" value="{{ old('tanggal_selesai') }}"
+                                class="w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors cursor-pointer">
+                        </div>
+                        <div class="md:col-span-2 text-xs text-text-light bg-surface border border-border rounded-lg p-3.5 space-y-1">
+                            <p class="font-semibold text-text">Ketentuan Status Otomatis:</p>
+                            <ul class="list-disc list-inside space-y-0.5">
+                                <li>Jika tanggal masuk belum tiba atau belum diisi, status akun otomatis <strong>Pending</strong>.</li>
+                                <li>Saat memasuki tanggal masuk magang, status otomatis berubah menjadi <strong>Aktif</strong>.</li>
+                                <li>Setelah melewati tanggal selesai magang, status otomatis berubah menjadi <strong>Selesai</strong>.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
                 <hr class="border-border">
 
                 <!-- Footer Buttons -->
                 <div class="flex flex-col sm:flex-row justify-end items-center gap-4 pt-2">
-
-
-
                     <x-buttonv2 href="{{ route('admin-mahasiswa') }}" color="primary" class="w-full sm:w-auto">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
                             stroke-width="3" class="w-4 h-4">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7 7-7" />
                             <path stroke-linecap="round" stroke-linejoin="round" d="M3 12h18" />
                         </svg>
-                        kembali
+                        Kembali
                     </x-buttonv2>
-
-
-
 
                     <x-buttonv2 type="submit" color="accent-dark" class="w-full sm:w-auto">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"

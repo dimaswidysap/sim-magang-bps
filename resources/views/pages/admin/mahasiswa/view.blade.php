@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
 @section('content')
-    {{-- {{ $detailUser }} --}}
     <main class="w-full p-4 md:p-8 bg-background min-h-screen font-montserrat">
         <section class="container-dalam max-w-4xl mx-auto">
 
@@ -18,15 +17,12 @@
                     <div class="absolute -top-16 flex items-end">
                         <div class="w-32 h-32 rounded-full border-4 border-surface bg-background overflow-hidden shadow-sm">
                             @if ($detailUser->mahasiswaProfile?->foto_profil_path)
-                                {{-- Mengambil foto dari relasi mahasiswaProfile (foto_profil_path) --}}
                                 <img src="{{ asset('storage/' . $detailUser->mahasiswaProfile->foto_profil_path) }}"
                                     alt="Foto {{ $detailUser->name }}" class="w-full h-full object-cover">
                             @elseif (!empty($detailUser->avatar))
-                                {{-- Fallback jika ada foto langsung di tabel user --}}
                                 <img src="{{ asset('storage/' . $detailUser->avatar) }}" alt="Foto {{ $detailUser->name }}"
                                     class="w-full h-full object-cover">
                             @else
-                                <!-- Placeholder jika foto belum diunggah (Menampilkan Inisial Nama) -->
                                 <div
                                     class="w-full h-full bg-primary flex items-center justify-center text-surface text-4xl font-bold uppercase">
                                     {{ strtoupper(substr($detailUser->name ?? 'M', 0, 1)) }}
@@ -37,18 +33,14 @@
 
                     <!-- Status Badge -->
                     <div class="flex items-center justify-end gap-3 pt-4 font-montserrat">
-
-                        <!-- Label Status -->
                         <span class="text-[11px] md:text-xs font-bold text-text-light uppercase tracking-wider">
                             Status Magang:
                         </span>
 
-                        <!-- Badge Status -->
                         <span
                             class="inline-flex px-3 py-1.5 bg-primary/10 border border-primary/20 text-primary-dark text-xs font-bold rounded-full items-center shadow-sm capitalize">
                             {{ $detailUser->mahasiswaProfile->status ?? 'Belum ada status' }}
                         </span>
-
                     </div>
 
                     <!-- Nama dan NPM -->
@@ -64,7 +56,7 @@
                 <!-- Grid Informasi Detail -->
                 <div class="p-6 md:p-10 space-y-8">
 
-                    <!-- Informasi Akademik -->
+                    <!-- Informasi Akademik & Magang -->
                     <div>
                         <h2 class="text-xl font-semibold text-text mb-4 flex items-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none"
@@ -74,11 +66,30 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
                             </svg>
-                            Informasi Akademik
+                            Informasi Akademik & Magang
                         </h2>
 
                         <div
                             class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-background p-6 rounded-xl border border-border">
+                            <div class="md:col-span-2">
+                                <p class="text-sm text-text-light mb-1">Pembimbing Magang (ASN)</p>
+                                @if ($detailUser->mahasiswaProfile?->pembimbing?->user)
+                                    <p class="font-semibold text-text">
+                                        {{ $detailUser->mahasiswaProfile->pembimbing->user->name }}
+                                    </p>
+                                    <p class="text-xs text-text-light mt-0.5">
+                                        NIP: {{ $detailUser->mahasiswaProfile->pembimbing->nip ?? '-' }}
+                                        @if ($detailUser->mahasiswaProfile->pembimbing->jabatan)
+                                            • {{ $detailUser->mahasiswaProfile->pembimbing->jabatan }}
+                                        @endif
+                                        @if ($detailUser->mahasiswaProfile->pembimbing->unit_kerja)
+                                            ({{ $detailUser->mahasiswaProfile->pembimbing->unit_kerja }})
+                                        @endif
+                                    </p>
+                                @else
+                                    <p class="font-medium text-text-light italic">Belum ditentukan</p>
+                                @endif
+                            </div>
                             <div>
                                 <p class="text-sm text-text-light mb-1">Program Studi</p>
                                 <p class="font-medium text-text">{{ $detailUser->mahasiswaProfile->jurusan ?? '-' }}</p>
@@ -86,11 +97,11 @@
                             <div>
                                 <p class="text-sm text-text-light mb-1">Jenjang</p>
                                 <p class="font-medium text-text">
-                                    {{ $detailUser->mahasiswaProfile->jenjang }} -
-                                    {{ $detailUser->mahasiswaProfile->instansi_asal }}</p>
+                                    {{ $detailUser->mahasiswaProfile->jenjang ?? '-' }} -
+                                    {{ $detailUser->mahasiswaProfile->instansi_asal ?? '-' }}</p>
                             </div>
                             <div>
-                                <p class="text-sm text-text-light mb-1">Tanggal mulai</p>
+                                <p class="text-sm text-text-light mb-1">Tanggal Mulai</p>
                                 <p class="font-medium text-text">
                                     {{ $detailUser->mahasiswaProfile?->tanggal_mulai?->format('d-m-Y') ?? '-' }}
                                 </p>
@@ -100,19 +111,19 @@
                                 <p class="font-medium text-text">
                                     {{ $detailUser->mahasiswaProfile?->tanggal_selesai?->format('d-m-Y') ?? '-' }}</p>
                             </div>
-                            <div>
+                            <div class="md:col-span-2">
                                 <p class="text-sm text-text-light mb-1">Keahlian</p>
                                 <div class="font-medium text-text">
                                     @if ($detailUser->mahasiswaProfile && count($detailUser->mahasiswaProfile->skills) > 0)
                                         <div class="skills-container">
-                                            <ul>
+                                            <ul class="list-disc list-inside space-y-0.5">
                                                 @foreach ($detailUser->mahasiswaProfile->skills as $skill)
                                                     <li>{{ $skill->nama_skill }}</li>
                                                 @endforeach
                                             </ul>
                                         </div>
                                     @else
-                                        <p>Belum ada data skill yang ditambahkan.</p>
+                                        <p class="text-text-light italic">Belum ada data skill yang ditambahkan.</p>
                                     @endif
                                 </div>
                             </div>
@@ -161,7 +172,7 @@
                         </div>
                     </div>
 
-                    <!-- Informasi Lainya -->
+                    <!-- Informasi Lainnya -->
                     <div>
                         <h2 class="text-xl font-semibold text-text mb-4 flex items-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-secondary" fill="none"
@@ -182,7 +193,7 @@
                             <div>
                                 <p class="text-sm text-text-light mb-1">Surat Pengantar</p>
                                 <p class="font-medium text-text">
-                                    {{ $detailUser->surat_pengantar_path ? 'Ada' : 'Belum ada' }}</p>
+                                    {{ $detailUser->mahasiswaProfile?->surat_pengantar_path ? 'Ada' : 'Belum ada' }}</p>
                             </div>
                         </div>
                     </div>
@@ -193,10 +204,8 @@
                 <div
                     class="bg-footer border-t border-border px-6 md:px-10 py-5 flex flex-col sm:flex-row gap-3 sm:justify-between items-center font-montserrat">
 
-                    <!-- Aksi Hapus & Edit (Di Sisi Kanan) -->
+                    <!-- Aksi Hapus & Edit -->
                     <div class="flex flex-col-reverse sm:flex-row gap-3 w-full sm:w-auto items-center">
-
-                        <!-- Form Hapus Data -->
                         <form action="{{ route('admin-mahasiswa-destroy', $detailUser->id) }}" method="POST"
                             data-confirm="Yakin ingin menghapus data mahasiswa ini? Semua data terkait (absensi, tugas) ikut terhapus dan tidak bisa dikembalikan."
                             class="w-full sm:w-auto m-0">
@@ -213,7 +222,6 @@
                             </x-buttonv2>
                         </form>
 
-                        <!-- Tombol Edit Data -->
                         <x-buttonv2 href="{{ route('form-mahasiswa-edit', $detailUser->id) }}" color="accent-dark"
                             class="w-full sm:w-auto">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -223,10 +231,9 @@
                             </svg>
                             Edit Data
                         </x-buttonv2>
-
                     </div>
 
-                    <!-- Tombol Kembali (Di Sisi Kiri) -->
+                    <!-- Tombol Kembali -->
                     <x-buttonv2 href="{{ url()->previous() }}" color="accent-primary" class="w-full sm:w-auto">
                         <svg xmlns="http://www.w3.org/2000/svg" stroke-width="3" class="h-4 w-4" viewBox="0 0 20 20"
                             fill="currentColor">
@@ -236,9 +243,7 @@
                         </svg>
                         Kembali
                     </x-buttonv2>
-
                 </div>
-
             </div>
         </section>
     </main>

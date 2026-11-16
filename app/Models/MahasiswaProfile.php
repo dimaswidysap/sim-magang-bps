@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
@@ -12,6 +13,7 @@ class MahasiswaProfile extends Model
 
     protected $fillable = [
         'user_id',
+        'asn_profile_id',
         'foto_profil_path',
         'nim',
         'instansi_asal',
@@ -23,7 +25,7 @@ class MahasiswaProfile extends Model
         'tanggal_selesai',
         'status',
         'surat_pengantar_path',
-        'catatan'
+        'catatan',
     ];
 
     protected function casts(): array
@@ -37,18 +39,86 @@ class MahasiswaProfile extends Model
 
     /*
     |--------------------------------------------------------------------------
+    | OTOMATISASI STATUS MAGANG BERDASARKAN TANGGAL
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Menentukan status magang berdasarkan tanggal mulai & tanggal selesai.
+     * - dibatalkan: tetap dibatalkan
+     * - hari ini > tanggal_selesai: otomatis 'selesai'
+     * - tanggal_mulai <= hari ini <= tanggal_selesai: otomatis 'aktif'
+     * - hari ini < tanggal_mulai: tetap 'pending'
+     */
+    public static function tentukanStatusDariTanggal(
+        mixed $tanggalMulai,
+        mixed $tanggalSelesai,
+        string $statusSaatIni = 'pending'
+    ): string {
+        if ($statusSaatIni === 'dibatalkan') {
+            return 'dibatalkan';
+        }
+
+        $hariIni = Carbon::today();
+        $mulai = $tanggalMulai ? Carbon::parse($tanggalMulai)->startOfDay() : null;
+        $selesai = $tanggalSelesai ? Carbon::parse($tanggalSelesai)->startOfDay() : null;
+
+        if ($selesai && $hariIni->gt($selesai)) {
+            return 'selesai';
+        }
+
+        if ($mulai) {
+            return $hariIni->gte($mulai) ? 'aktif' : 'pending';
+        }
+
+        return $statusSaatIni;
+    }
+
+    /**
+     * Sinkronisasi massal status seluruh peserta magang berdasarkan tanggal hari ini.
+     *
+     * @return array{diaktifkan: int, diselesaikan: int}
+     */
+    public static function syncStatusOtomatis(): array
+    {
+        $hariIni = Carbon::today()->toDateString();
+
+        // 1. Ubah status 'pending' -> 'aktif' jika sudah masuk tanggal_mulai dan belum melewati tanggal_selesai
+        $diaktifkan = static::query()
+            ->where('status', 'pending')
+            ->whereNotNull('tanggal_mulai')
+            ->whereDate('tanggal_mulai', '<=', $hariIni)
+            ->where(function ($query) use ($hariIni) {
+                $query->whereNull('tanggal_selesai')
+                    ->orWhereDate('tanggal_selesai', '>=', $hariIni);
+            })
+            ->update(['status' => 'aktif']);
+
+        // 2. Ubah status 'pending' atau 'aktif' -> 'selesai' jika sudah melewati tanggal_selesai
+        $diselesaikan = static::query()
+            ->whereIn('status', ['pending', 'aktif'])
+            ->whereNotNull('tanggal_selesai')
+            ->whereDate('tanggal_selesai', '<', $hariIni)
+            ->update(['status' => 'selesai']);
+
+        return [
+            'diaktifkan' => $diaktifkan,
+            'diselesaikan' => $diselesaikan,
+        ];
+    }
+
+    /*
+    |--------------------------------------------------------------------------
     | ACCESSORS
     |--------------------------------------------------------------------------
     */
 
-    // Accessor untuk URL foto profil / avatar default
     public function getFotoProfilUrlAttribute(): string
     {
         if ($this->foto_profil_path && Storage::disk('public')->exists($this->foto_profil_path)) {
             return Storage::url($this->foto_profil_path);
         }
 
-        // Fallback jika belum upload foto
         return 'https://ui-avatars.com/api/?name=' . urlencode($this->user->name ?? 'User') . '&color=7F9CF5&background=EBF4FF';
     }
 
@@ -61,6 +131,22 @@ class MahasiswaProfile extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function pembimbing()
+    {
+        return $this->belongsTo(AsnProfile::class, 'asn_profile_id');
+    }
+
+    public function magangLogbooks()
+    {
+        return $this->hasMany(MagangLogbook::class, 'mahasiswa_profile_id');
+    }
+
+    public function logbookMandiriBelumValidasi()
+    {
+        return $this->hasMany(MagangLogbook::class, 'mahasiswa_profile_id')
+            ->where('is_validated', false);
     }
 
     public function scopeMahasiswaAktif($query)

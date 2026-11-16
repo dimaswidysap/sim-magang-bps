@@ -2,8 +2,6 @@
 @vite(['resources/js/validasi-number.js'])
 @section('content')
 
-    {{-- {{ $dataUser }} --}}
-
     <main class="w-full p-4 md:p-8 bg-background min-h-screen font-montserrat">
         <section class="container-dalam max-w-5xl mx-auto bg-surface rounded-2xl shadow-sm border border-border p-6 md:p-10">
 
@@ -11,10 +9,9 @@
             <div class="mb-8 pb-4 border-b border-border flex justify-between items-end">
                 <div>
                     <h1 class="text-2xl font-bold text-text">Edit Data Mahasiswa</h1>
-                    <p class="text-sm text-text-light mt-1">Perbarui informasi akun, data diri, atau status magang mahasiswa.
+                    <p class="text-sm text-text-light mt-1">Perbarui informasi akun, data diri, pembimbing, atau status magang mahasiswa.
                     </p>
                 </div>
-                <!-- Badge Status Saat Ini (Opsional untuk visualisasi cepat) -->
                 <div>
                     <span
                         class="px-4 py-1.5 bg-background border border-border text-text-light text-sm font-semibold rounded-full">
@@ -79,30 +76,22 @@
                         <div>
                             <label class="block text-sm font-medium text-text-light mb-2">Status Akun</label>
 
-                            <!-- Nilai default 0 (false/non-aktif) jika toggle tidak dicentang -->
                             <input type="hidden" name="is_active" value="0">
 
-                            <!-- Toggle Button -->
                             <label class="relative inline-flex items-center cursor-pointer">
-                                <!--
-                                Menggunakan old('is_active') untuk repopulate data jika validasi form gagal,
-                                dan fallback ke $dataUser->is_active jika baru pertama kali load halaman.
-                            -->
                                 <input type="checkbox" name="is_active" value="1" class="sr-only peer"
                                     {{ old('is_active', $dataUser->is_active) ? 'checked' : '' }}>
 
-                                <!-- Desain visual Toggle -->
                                 <div
                                     class="w-11 h-6 bg-gray-300 rounded-full peer
-                    peer-focus:ring-2 peer-focus:ring-primary/50
-                    peer-checked:after:translate-x-full peer-checked:after:border-white
-                    after:content-[''] after:absolute after:top-[2px] after:left-[2px]
-                    after:bg-white after:border-gray-300 after:border after:rounded-full
-                    after:h-5 after:w-5 after:transition-all
-                    peer-checked:bg-primary">
+                                    peer-focus:ring-2 peer-focus:ring-primary/50
+                                    peer-checked:after:translate-x-full peer-checked:after:border-white
+                                    after:content-[''] after:absolute after:top-[2px] after:left-[2px]
+                                    after:bg-white after:border-gray-300 after:border after:rounded-full
+                                    after:h-5 after:w-5 after:transition-all
+                                    peer-checked:bg-primary">
                                 </div>
 
-                                <!-- Label Dinamis (Aktif/Nonaktif) menyesuaikan isi dari database -->
                                 <span class="ml-3 text-sm font-medium text-text">
                                     {{ $dataUser->is_active ? 'Aktif' : 'Nonaktif' }}
                                 </span>
@@ -137,7 +126,7 @@
                         <div>
                             <label class="block text-sm font-medium text-text-light mb-1.5">Alamat</label>
                             <input type="text" name="alamat"
-                                value="{{ old('nim', $dataUser->mahasiswaProfile->alamat ?? '') }}"
+                                value="{{ old('alamat', $dataUser->mahasiswaProfile->alamat ?? '') }}"
                                 class="w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors">
                         </div>
                         <div>
@@ -180,7 +169,25 @@
                     </div>
                 </div>
 
-                <!-- SECTION 3: Periode, Waktu & Status Magang -->
+                <!-- SECTION 3: Pembimbing Magang (Popup Card) -->
+                <div>
+                    <h2 class="text-lg font-semibold text-primary mb-4 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        Pembimbing Magang (ASN)
+                    </h2>
+
+                    @include('components.admin.pembimbing-picker', [
+                        'pembimbingList' => $pembimbingList,
+                        'selectedId' => old('asn_profile_id', $dataUser->mahasiswaProfile->asn_profile_id ?? null),
+                        'allowClear' => true,
+                    ])
+                </div>
+
+                <!-- SECTION 4: Periode & Status Magang -->
                 <div>
                     <h2 class="text-lg font-semibold text-primary mb-4 flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
@@ -218,7 +225,7 @@
                     </div>
                 </div>
 
-                <!-- SECTION 4: Skill / Label -->
+                <!-- SECTION 5: Skill / Label -->
                 <div>
                     <h2 class="text-lg font-semibold text-primary mb-4 flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
@@ -247,10 +254,6 @@
 
                 <!-- Footer Buttons -->
                 <div class="flex flex-col sm:flex-row justify-end items-center gap-4 pt-4">
-
-
-
-
                     <x-buttonv2 href="{{ route('admin-mahasiswa') }}" color="accent" class="w-full sm:w-auto">
                         Batal
                     </x-buttonv2>
@@ -263,7 +266,6 @@
                         </svg>
                         Simpan Perubahan
                     </x-buttonv2>
-
                 </div>
 
             </form>

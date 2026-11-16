@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -17,6 +18,9 @@ class MagangLogbook extends Model
         'judul_kegiatan',
         'deskripsi_kegiatan',
         'file_lampiran',
+        'is_validated',
+        'validated_at',
+        'validated_by',
     ];
 
     /**
@@ -28,13 +32,30 @@ class MagangLogbook extends Model
     {
         return [
             'tanggal_kegiatan' => 'date',
-            'file_lampiran'    => 'array', // <--- Ditambahkan agar otomatis dikonversi ke Array/JSON
+            'file_lampiran'    => 'array',
+            'is_validated'     => 'boolean',
+            'validated_at'     => 'datetime',
         ];
     }
 
     public function mahasiswaProfile()
     {
         return $this->belongsTo(MahasiswaProfile::class);
+    }
+
+    public function validatedBy()
+    {
+        return $this->belongsTo(User::class, 'validated_by');
+    }
+
+    public function scopeTervalidasi(Builder $query): Builder
+    {
+        return $query->where('is_validated', true);
+    }
+
+    public function scopeBelumValidasi(Builder $query): Builder
+    {
+        return $query->where('is_validated', false);
     }
 
     /**

@@ -29,6 +29,15 @@ class MahasiswaController extends Controller
 
         $bulanList = collect();
         $tanggalAktif = collect();
+        $logbookMenungguValidasi = collect();
+
+        if ($profil) {
+            $logbookMenungguValidasi = MagangLogbook::where('mahasiswa_profile_id', $profil->id)
+                ->belumValidasi()
+                ->orderByDesc('tanggal_kegiatan')
+                ->orderByDesc('id')
+                ->get();
+        }
 
         if ($profil && $profil->tanggal_mulai && $profil->tanggal_selesai) {
             $kursor = $profil->tanggal_mulai->copy()->startOfMonth();
@@ -44,13 +53,14 @@ class MahasiswaController extends Controller
                 $kursor->addMonth();
             }
 
-            // Ambil tanggal unik langsung dari database tanpa memuat seluruh objek Logbook
             $tanggalDariTugas = Logbook::where('mahasiswa_profile_id', $profil->id)
                 ->whereNotNull('created_at')
                 ->selectRaw('DISTINCT DATE(created_at) as tanggal')
                 ->pluck('tanggal');
 
+            // Logbook mandiri masuk ke kalender logbook hanya setelah divalidasi pembimbing
             $tanggalDariMandiri = MagangLogbook::where('mahasiswa_profile_id', $profil->id)
+                ->tervalidasi()
                 ->whereNotNull('tanggal_kegiatan')
                 ->selectRaw('DISTINCT DATE(tanggal_kegiatan) as tanggal')
                 ->pluck('tanggal');
@@ -58,7 +68,14 @@ class MahasiswaController extends Controller
             $tanggalAktif = $tanggalDariTugas->merge($tanggalDariMandiri)->unique()->values();
         }
 
-        return view('pages.mahasiswa.index', compact('jumlahSelesai', 'jumlahBelumSelesai', 'bulanList', 'tanggalAktif', 'profil'));
+        return view('pages.mahasiswa.index', compact(
+            'jumlahSelesai',
+            'jumlahBelumSelesai',
+            'bulanList',
+            'tanggalAktif',
+            'profil',
+            'logbookMenungguValidasi'
+        ));
     }
 
     public function logbookDetailTanggal($tanggal)
@@ -75,6 +92,7 @@ class MahasiswaController extends Controller
             ->get();
 
         $logbookMandiri = MagangLogbook::where('mahasiswa_profile_id', $profil->id)
+            ->tervalidasi()
             ->whereDate('tanggal_kegiatan', $tanggal)
             ->get();
 
@@ -91,10 +109,12 @@ class MahasiswaController extends Controller
 
     public function tugas(Request $request)
     {
+        $profil = Auth::user()->mahasiswaProfile?->loadMissing('pembimbing');
         $status = $request->query('status', 'tersedia');
         $search = trim((string) $request->query('search'));
 
         $dataTugas = Tugas::with(['asn', 'skills', 'attachments'])
+            ->untukPembimbingMahasiswa($profil)
             ->when($status, fn ($query, $status) => $query->where('status', $status))
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($q) use ($search) {
@@ -119,9 +139,6 @@ class MahasiswaController extends Controller
         $bulan = $statusTugas === 'selesai' ? $this->parseValidMonth($request->query('bulan')) : null;
         $hari = $statusTugas === 'selesai' ? $this->parseValidDate($request->query('hari')) : null;
 
-        // Sinkronisasi filter hari dan bulan:
-        // - Jika hari diisi tanpa bulan, otomatis isi bulan sesuai tanggal hari tersebut
-        // - Jika bulan diganti dan tidak cocok dengan tanggal hari lama, reset filter hari
         if ($hari && !$bulan) {
             $bulan = substr($hari, 0, 7);
         } elseif ($bulan && $hari && substr($hari, 0, 7) !== $bulan) {

@@ -3,7 +3,7 @@
     $isFilteredPeriode = $isTabSelesai && (request()->filled('bulan') || request()->filled('hari'));
 @endphp
 
-<div class="w-full font-montserrat space-y-4">
+<div class="w-full font-montserrat">
 
     {{-- ========================================================= --}}
     {{-- 1. TAMPILAN DESKTOP & TABLET (Tabel Lengkap)             --}}
@@ -41,7 +41,7 @@
                             ? $dataTugas->firstItem() + $loop->index
                             : $loop->iteration;
                     @endphp
-                    <tr class="hover:bg-black/[0.02] transition-colors duration-200 group">
+                    <tr class="hover:bg-black/2 transition-colors duration-200 group">
 
                         <!-- Nomor -->
                         <td class="px-5 py-4 align-middle text-center text-xs font-semibold text-text-light">
@@ -246,7 +246,7 @@
 
     {{-- Pagination --}}
     @if (method_exists($dataTugas, 'links'))
-        <div class="pt-2">
+        <div class="pt-0">
             {{ $dataTugas->links() }}
         </div>
     @endif

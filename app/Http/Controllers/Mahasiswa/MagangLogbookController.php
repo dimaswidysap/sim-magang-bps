@@ -3,17 +3,26 @@
 namespace App\Http\Controllers\Mahasiswa;
 
 use App\Http\Controllers\Controller;
+use App\Models\MagangLogbook;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\MagangLogbook;
 use Illuminate\Support\Facades\Storage;
 
 class MagangLogbookController extends Controller
 {
-    //
     public function magangLogbookForm()
     {
-        return view('pages.mahasiswa.logbook.create');
+        $profil = auth()->user()->mahasiswaProfile;
+
+        $logbookMenungguValidasi = $profil
+            ? MagangLogbook::where('mahasiswa_profile_id', $profil->id)
+                ->belumValidasi()
+                ->orderByDesc('tanggal_kegiatan')
+                ->orderByDesc('id')
+                ->get()
+            : collect();
+
+        return view('pages.mahasiswa.logbook.create', compact('logbookMenungguValidasi'));
     }
 
     public function detailLampiran($id)
@@ -64,6 +73,12 @@ class MagangLogbookController extends Controller
             ->where('mahasiswa_profile_id', $profil?->id ?? 0)
             ->firstOrFail();
 
+        if ($logbook->is_validated) {
+            return redirect()
+                ->route('mahasiswa-index')
+                ->with('error', 'Logbook yang sudah divalidasi pembimbing tidak dapat diubah.');
+        }
+
         return view('pages.mahasiswa.logbook.update', compact('logbook'));
     }
 
@@ -108,9 +123,14 @@ class MagangLogbookController extends Controller
             'judul_kegiatan' => $validated['judul_kegiatan'],
             'deskripsi_kegiatan' => $validated['deskripsi_kegiatan'],
             'file_lampiran' => $filePaths,
+            'is_validated' => false,
+            'validated_at' => null,
+            'validated_by' => null,
         ]);
 
-        return redirect()->route('mahasiswa-index')->with('success', 'Logbook berhasil disimpan.');
+        return redirect()
+            ->route('mahasiswa-index')
+            ->with('success', 'Logbook berhasil disimpan dan menunggu validasi pembimbing magang.');
     }
 
     public function update(Request $request, $id)
@@ -120,6 +140,12 @@ class MagangLogbookController extends Controller
         $logbook = MagangLogbook::where('id', $id)
             ->where('mahasiswa_profile_id', $profil?->id ?? 0)
             ->firstOrFail();
+
+        if ($logbook->is_validated) {
+            return redirect()
+                ->route('mahasiswa-index')
+                ->with('error', 'Logbook yang sudah divalidasi pembimbing tidak dapat diubah.');
+        }
 
         $validated = $request->validate([
             'tanggal_kegiatan' => 'required|date',
@@ -131,32 +157,27 @@ class MagangLogbookController extends Controller
             'hapus_lampiran.*' => 'string',
         ]);
 
-        // 1. Ambil daftar file lampiran yang ada saat ini
         $existingFiles = $logbook->file_lampiran ?? [];
         if (is_string($existingFiles)) {
             $existingFiles = json_decode($existingFiles, true) ?? [];
         }
 
-        // 2. Hapus file tertentu jika ditandai untuk dihapus
         if ($request->has('hapus_lampiran') && is_array($request->hapus_lampiran)) {
             foreach ($request->hapus_lampiran as $fileToDelete) {
                 if (Storage::disk('public')->exists($fileToDelete)) {
                     Storage::disk('public')->delete($fileToDelete);
                 }
-                // Keluarkan path file dari array
                 $existingFiles = array_diff($existingFiles, [$fileToDelete]);
             }
-            $existingFiles = array_values($existingFiles); // Reset index array
+            $existingFiles = array_values($existingFiles);
         }
 
-        // 3. Tambahkan file baru jika ada yang diunggah
         if ($request->hasFile('file_lampiran')) {
             foreach ($request->file('file_lampiran') as $file) {
                 $existingFiles[] = $file->store('logbook-mandiri', 'public');
             }
         }
 
-        // 4. Simpan perubahan ke database
         $logbook->update([
             'tanggal_kegiatan' => $validated['tanggal_kegiatan'],
             'judul_kegiatan' => $validated['judul_kegiatan'],
@@ -167,8 +188,6 @@ class MagangLogbookController extends Controller
         return redirect()->route('mahasiswa-index')->with('success', 'Kegiatan berhasil diperbarui.');
     }
 
-    // function hapus logbook
-
     public function destroy($id)
     {
         $profil = auth()->user()->mahasiswaProfile;
@@ -177,23 +196,24 @@ class MagangLogbookController extends Controller
             ->where('mahasiswa_profile_id', $profil?->id ?? 0)
             ->firstOrFail();
 
+        if ($logbook->is_validated) {
+            return redirect()
+                ->route('mahasiswa-index')
+                ->with('error', 'Logbook yang sudah divalidasi pembimbing tidak dapat dihapus.');
+        }
+
         $files = $logbook->file_lampiran;
 
-        // Konversi JSON menjadi array PHP
         if (is_string($files)) {
             $decoded = json_decode($files, true);
-
             $files = is_array($decoded) ? $decoded : [$files];
         }
 
-        // Pastikan seluruh file dalam array dihapus
         if (is_array($files)) {
             foreach ($files as $file) {
                 if (is_string($file) && !empty($file)) {
-                    // Normalisasi separator path
                     $file = str_replace('\\', '/', $file);
 
-                    // Hapus file dari storage public
                     if (Storage::disk('public')->exists($file)) {
                         Storage::disk('public')->delete($file);
                     }
@@ -201,7 +221,6 @@ class MagangLogbookController extends Controller
             }
         }
 
-        // Hapus data logbook dari database
         $logbook->delete();
 
         return redirect()->route('mahasiswa-index')->with('success', 'Kegiatan berhasil dihapus.');

@@ -1,37 +1,38 @@
 <?php
 
 namespace App\Http\Controllers\Admin;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
+
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\User;
+use App\Models\AsnProfile;
 use App\Models\MahasiswaProfile;
 use App\Models\Skill;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 
 class AdminMahasiswa extends Controller
 {
-    //
     public function showForm()
     {
-
         $skillList = Skill::orderBy('nama_skill', 'asc')->get();
+        $pembimbingList = $this->getDaftarPembimbing();
 
-        return view('pages.admin.mahasiswa.create', compact('skillList'));
+        return view('pages.admin.mahasiswa.create', compact('skillList', 'pembimbingList'));
     }
 
     public function detailMahasiswa($id)
     {
-        // Mengambil data user berdasarkan ID. Gunakan findOrFail agar otomatis
-        // menampilkan error 404 jika ID tidak ditemukan di database.
         $detailUser = User::query()
             ->where('id', $id)
             ->where('role', 'mahasiswa')
-            ->with('mahasiswaProfile.skills') // sekalian ambil skill kalau perlu
+            ->with(['mahasiswaProfile.skills', 'mahasiswaProfile.pembimbing.user'])
             ->firstOrFail();
-        // Jangan lupa mengirimkan variabel $detailUser ke dalam view menggunakan compact()
+
         return view('pages.admin.mahasiswa.view', compact('detailUser'));
     }
 
@@ -42,6 +43,9 @@ class AdminMahasiswa extends Controller
                 'name' => 'required|string|max:255',
                 'email' => 'required|email|unique:users,email',
                 'password' => 'required|string|min:8',
+                'asn_profile_id' => 'required|exists:asn_profiles,id',
+                'tanggal_mulai' => 'nullable|date',
+                'tanggal_selesai' => 'nullable|date|after_or_equal:tanggal_mulai',
             ],
             [
                 'name.required' => 'Silakan isi nama lengkap Anda.',
@@ -51,12 +55,21 @@ class AdminMahasiswa extends Controller
                 'email.unique' => 'Email ini sudah digunakan. Silakan gunakan email yang berbeda.',
                 'password.required' => 'Silakan buat kata sandi.',
                 'password.min' => 'Kata sandi harus memiliki minimal 8 karakter untuk keamanan.',
+                'asn_profile_id.required' => 'Silakan pilih pembimbing magang.',
+                'asn_profile_id.exists' => 'Pembimbing magang yang dipilih tidak valid.',
+                'tanggal_mulai.date' => 'Format tanggal masuk magang tidak valid.',
+                'tanggal_selesai.date' => 'Format tanggal selesai magang tidak valid.',
+                'tanggal_selesai.after_or_equal' => 'Tanggal selesai magang harus sama dengan atau setelah tanggal masuk.',
             ],
         );
 
-        // Menggunakan DB transaction untuk memastikan kedua tabel berhasil diisi
-        DB::transaction(function () use ($validated) {
-            // 1. Buat User dan simpan ke variabel $user
+        $statusOtomatis = MahasiswaProfile::tentukanStatusDariTanggal(
+            $validated['tanggal_mulai'] ?? null,
+            $validated['tanggal_selesai'] ?? null,
+            'pending'
+        );
+
+        DB::transaction(function () use ($validated, $statusOtomatis) {
             $user = User::create([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
@@ -65,31 +78,38 @@ class AdminMahasiswa extends Controller
                 'is_active' => true,
             ]);
 
-            // 2. Buat otomatis Mahasiswa Profile berdasarkan user_id
             MahasiswaProfile::create([
                 'user_id' => $user->id,
-                'status' => 'pending', // Sesuai permintaan, set status ke pending
+                'asn_profile_id' => $validated['asn_profile_id'],
+                'tanggal_mulai' => $validated['tanggal_mulai'] ?? null,
+                'tanggal_selesai' => $validated['tanggal_selesai'] ?? null,
+                'status' => $statusOtomatis,
             ]);
         });
 
-        return redirect()->route('admin-mahasiswa')->with('success', 'Data mahasiswa berhasil ditambahkan. Mahasiswa perlu melengkapi profil (NIM, instansi, dll) setelah login.');
+        Cache::forget('magang_status_sync_lock');
+
+        return redirect()
+            ->route('admin-mahasiswa')
+            ->with('success', "Data mahasiswa berhasil ditambahkan dengan status '{$statusOtomatis}'. Mahasiswa perlu melengkapi profil (NIM, instansi, dll) setelah login.");
     }
 
     public function formMahasiswaEdit($id)
     {
-        // Tambahkan query() setelah User
-        $dataUser = User::query()->where('id', $id)->where('role', 'mahasiswa')->with('mahasiswaProfile.skills')->firstOrFail();
+        $dataUser = User::query()
+            ->where('id', $id)
+            ->where('role', 'mahasiswa')
+            ->with(['mahasiswaProfile.skills', 'mahasiswaProfile.pembimbing.user'])
+            ->firstOrFail();
 
-
-
-        // Tambahkan query() setelah Skill
         $skillList = Skill::query()->orderBy('nama_skill', 'asc')->get();
+        $pembimbingList = $this->getDaftarPembimbing();
 
-        // Ambil daftar id skill yang sudah dipilih mahasiswa ini, buat mempermudah
-        // cek "checked" di form. Kalau belum punya profile, otomatis array kosong.
-        $selectedSkillIds = $dataUser->mahasiswaProfile ? $dataUser->mahasiswaProfile->skills->pluck('id')->toArray() : [];
+        $selectedSkillIds = $dataUser->mahasiswaProfile
+            ? $dataUser->mahasiswaProfile->skills->pluck('id')->toArray()
+            : [];
 
-        return view('pages.admin.mahasiswa.update', compact('dataUser', 'skillList', 'selectedSkillIds'));
+        return view('pages.admin.mahasiswa.update', compact('dataUser', 'skillList', 'selectedSkillIds', 'pembimbingList'));
     }
 
     public function updateMahasiswa(Request $request, $id)
@@ -102,6 +122,7 @@ class AdminMahasiswa extends Controller
                 'email' => 'required|email|unique:users,email,' . $user->id,
                 'password' => 'nullable|string|min:8',
                 'is_active' => 'required',
+                'asn_profile_id' => 'nullable|exists:asn_profiles,id',
                 'instansi_asal' => 'nullable|string|max:255',
                 'nim' => [
                     'nullable',
@@ -115,128 +136,121 @@ class AdminMahasiswa extends Controller
                 'jenjang' => 'nullable|in:SMA/SMK,D3,D4,S1,S2',
                 'jurusan' => 'nullable|string|max:255',
                 'phone' => 'nullable|string|max:13',
-                'tanggal_lahir'=>'nullable|date',
+                'tanggal_lahir' => 'nullable|date',
                 'tanggal_mulai' => 'nullable|date',
                 'tanggal_selesai' => 'nullable|date|after_or_equal:tanggal_mulai',
                 'status' => 'required|in:pending,aktif,selesai,dibatalkan',
                 'periode_magang_id' => 'nullable|exists:periode_magang,id',
                 'skills' => 'nullable|array',
                 'skills.*' => 'exists:skills,id',
-                'alamat'=>'nullable|string'
+                'alamat' => 'nullable|string',
             ],
             [
-                // Pesan error untuk field name
                 'name.required' => 'Nama lengkap wajib diisi.',
                 'name.string' => 'Nama lengkap harus berupa teks.',
                 'name.max' => 'Nama lengkap maksimal 255 karakter.',
-
-                // Pesan error untuk field email
                 'email.required' => 'Alamat email wajib diisi.',
                 'email.email' => 'Format email tidak valid. Contoh: nama@domain.com',
                 'email.unique' => 'Alamat email sudah digunakan oleh pengguna lain. Silakan gunakan email lain.',
-
-                // Pesan error untuk field password
                 'password.string' => 'Kata sandi harus berupa teks.',
                 'password.min' => 'Kata sandi minimal 8 karakter.',
-
-                // Pesan error untuk field is_active
                 'is_active.required' => 'Status aktif wajib dipilih.',
-
-                // Pesan error untuk field instansi_asal
+                'asn_profile_id.exists' => 'Pembimbing magang yang dipilih tidak terdaftar dalam sistem.',
                 'instansi_asal.string' => 'Instansi asal harus berupa teks.',
                 'instansi_asal.max' => 'Instansi asal maksimal 255 karakter.',
-
-                // Pesan error untuk field nim
                 'nim.string' => 'NIM harus berupa teks.',
                 'nim.unique' => 'NIM dengan instansi asal yang sama sudah terdaftar. Silakan gunakan NIM lain.',
-
-                // Pesan error untuk field jenjang
                 'jenjang.in' => 'Jenjang harus salah satu dari: SMA/SMK, D3, D4, S1, S2.',
-
-                // Pesan error untuk field jurusan
                 'jurusan.string' => 'Jurusan harus berupa teks.',
                 'jurusan.max' => 'Jurusan maksimal 255 karakter.',
-
-                // Pesan error untuk field phone
                 'phone.string' => 'Nomor telepon harus berupa angka.',
                 'phone.max' => 'Nomor telepon maksimal 13 karakter.',
-
-                // Pesan error untuk field tanggal_mulai
                 'tanggal_mulai.date' => 'Format tanggal mulai tidak valid.',
-                //
-                'tanggal_lahir.date' => 'Format tanggal mulai tidak valid.',
-
-                // Pesan error untuk field tanggal_selesai
+                'tanggal_lahir.date' => 'Format tanggal lahir tidak valid.',
                 'tanggal_selesai.date' => 'Format tanggal selesai tidak valid.',
                 'tanggal_selesai.after_or_equal' => 'Tanggal selesai harus sama dengan atau setelah tanggal mulai.',
-
-                // Pesan error untuk field status
                 'status.required' => 'Status wajib dipilih.',
                 'status.in' => 'Status harus salah satu dari: pending, aktif, selesai, atau dibatalkan.',
-
-                // Pesan error untuk field periode_magang_id
                 'periode_magang_id.exists' => 'Periode magang yang dipilih tidak terdaftar dalam sistem.',
-
-                // Pesan error untuk field skills
                 'skills.array' => 'Format skills tidak valid.',
                 'skills.*.exists' => 'Skill yang dipilih tidak terdaftar dalam sistem.',
             ],
         );
 
-        DB::transaction(function () use ($validated, $user) {
+        $statusFinal = MahasiswaProfile::tentukanStatusDariTanggal(
+            $validated['tanggal_mulai'] ?? null,
+            $validated['tanggal_selesai'] ?? null,
+            $validated['status']
+        );
+
+        DB::transaction(function () use ($validated, $user, $statusFinal) {
             $user->update([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
-                'phone' => $validated['phone'],
+                'phone' => $validated['phone'] ?? null,
                 'password' => !empty($validated['password']) ? Hash::make($validated['password']) : $user->password,
                 'is_active' => $validated['is_active'] ?? false,
             ]);
 
-            // updateOrCreate: kalau profile belum ada (mahasiswa belum pernah
-            // isi sendiri), otomatis dibuatkan. Kalau sudah ada, di-update.
             $profile = MahasiswaProfile::updateOrCreate(
                 ['user_id' => $user->id],
                 [
+                    'asn_profile_id' => $validated['asn_profile_id'] ?? null,
                     'periode_magang_id' => $validated['periode_magang_id'] ?? null,
-                    'nim' => $validated['nim'],
-                    'instansi_asal' => $validated['instansi_asal'],
+                    'nim' => $validated['nim'] ?? null,
+                    'instansi_asal' => $validated['instansi_asal'] ?? null,
                     'jenjang' => $validated['jenjang'] ?? null,
                     'jurusan' => $validated['jurusan'] ?? null,
                     'tanggal_lahir' => $validated['tanggal_lahir'] ?? null,
                     'tanggal_mulai' => $validated['tanggal_mulai'] ?? null,
                     'tanggal_selesai' => $validated['tanggal_selesai'] ?? null,
-                    'status' => $validated['status'],
-                    'alamat' => $validated['alamat'],
+                    'status' => $statusFinal,
+                    'alamat' => $validated['alamat'] ?? null,
                 ],
             );
 
-            // sync() (bukan attach()): otomatis hapus skill yang di-uncheck dan
-            // tambah yang baru dicentang. Kalau skills[] tidak dikirim sama
-            // sekali (semua di-uncheck), ?? [] memastikan semua skill lama
-            // ikut terhapus dari pivot, bukan malah diabaikan.
             $profile->skills()->sync($validated['skills'] ?? []);
         });
+
+        Cache::forget('magang_status_sync_lock');
 
         return redirect()->route('admin-mahasiswa')->with('success', 'Data mahasiswa berhasil diperbarui.');
     }
 
-    // menghapus data mahasiswa (berserta user untuk login)
     public function destroyMahasiswa(Request $request, $id)
     {
         $user = User::query()
             ->where('id', $id)
-            ->where('role', 'mahasiswa') // pastikan cuma bisa hapus user ber-role mahasiswa lewat route ini
+            ->where('role', 'mahasiswa')
             ->firstOrFail();
 
-        // Mencegah admin menghapus akunnya sendiri secara tidak sengaja -
-        // tidak relevan untuk role mahasiswa, tapi pola ini penting kalau
-        // nanti Anda buat destroy() serupa untuk admin/ASN.
         if ($user->id === Auth::id()) {
             return back()->with('error', 'Anda tidak bisa menghapus akun sendiri.');
         }
 
-        $user->delete('id');
+        $user->delete();
 
         return redirect()->route('admin-mahasiswa')->with('success', 'Data mahasiswa berhasil dihapus.');
+    }
+
+    /**
+     * Mengambil daftar pembimbing (ASN aktif) beserta jumlah peserta yang sedang dibimbing,
+     * diurutkan dari beban bimbingan paling sedikit.
+     */
+    private function getDaftarPembimbing(): Collection
+    {
+        return AsnProfile::query()
+            ->whereHas('user', function ($query) {
+                $query->where('role', 'asn')
+                    ->where('is_active', true);
+            })
+            ->with('user')
+            ->withCount(['mahasiswaBimbinganAktif as jumlah_bimbingan'])
+            ->get()
+            ->sortBy(fn (AsnProfile $asn) => [
+                $asn->jumlah_bimbingan,
+                strtolower($asn->user->name ?? ''),
+            ])
+            ->values();
     }
 }

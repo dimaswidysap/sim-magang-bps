@@ -18,17 +18,30 @@ class AsnController extends Controller
 {
     public function asnIndex()
     {
+        $asnProfileId = Auth::user()->asnProfile?->id;
+
         $totalSelesai = Tugas::asnGetTugasSelesai()->count();
         $totalBelumSelesai = Tugas::asnGetTugasBelumSelesai()->count();
 
-        $daftarMahasiswa = MahasiswaProfile::with('user')->aktif()->denganStatistikTugas()->get();
+        $daftarMahasiswa = $asnProfileId
+            ? MahasiswaProfile::with('user')
+                ->where('asn_profile_id', $asnProfileId)
+                ->aktif()
+                ->denganStatistikTugas()
+                ->withCount('logbookMandiriBelumValidasi')
+                ->get()
+            : collect();
 
         return view('pages.asn.index', compact('totalSelesai', 'totalBelumSelesai', 'daftarMahasiswa'));
     }
 
     public function logbookMahasiswa($mahasiswaProfileId)
     {
-        $mahasiswa = MahasiswaProfile::with('user')->findOrFail($mahasiswaProfileId);
+        $asnProfileId = Auth::user()->asnProfile?->id;
+
+        $mahasiswa = MahasiswaProfile::with('user')
+            ->where('asn_profile_id', $asnProfileId ?? 0)
+            ->findOrFail($mahasiswaProfileId);
 
         $bulanList = collect();
         $tanggalAktif = collect();
@@ -47,32 +60,104 @@ class AsnController extends Controller
                 $kursor->addMonth();
             }
 
-            $tanggalDariTugas = Logbook::where('mahasiswa_profile_id', $mahasiswa->id)->get()->map(fn ($item) => $item->created_at->toDateString());
+            $tanggalDariTugas = Logbook::where('mahasiswa_profile_id', $mahasiswa->id)
+                ->get()
+                ->map(fn ($item) => $item->created_at->toDateString());
 
-            $tanggalDariMandiri = MagangLogbook::where('mahasiswa_profile_id', $mahasiswa->id)->get()->map(fn ($item) => $item->tanggal_kegiatan->toDateString());
+            // Hanya logbook mandiri yang sudah divalidasi pembimbing yang masuk kalender logbook
+            $tanggalDariMandiri = MagangLogbook::where('mahasiswa_profile_id', $mahasiswa->id)
+                ->tervalidasi()
+                ->get()
+                ->map(fn ($item) => $item->tanggal_kegiatan->toDateString());
 
             $tanggalAktif = collect($tanggalDariTugas)->merge($tanggalDariMandiri)->unique();
         }
 
-        return view('pages.asn.logbook-magang', compact('mahasiswa', 'bulanList', 'tanggalAktif'));
+        // Daftar logbook mandiri yang masih menunggu validasi pembimbing
+        $logbookMenungguValidasi = MagangLogbook::where('mahasiswa_profile_id', $mahasiswa->id)
+            ->belumValidasi()
+            ->orderBy('tanggal_kegiatan', 'asc')
+            ->orderBy('id', 'asc')
+            ->get();
+
+        return view('pages.asn.logbook-magang', compact(
+            'mahasiswa',
+            'bulanList',
+            'tanggalAktif',
+            'logbookMenungguValidasi'
+        ));
     }
 
     public function logbookMahasiswaTanggal($mahasiswaProfileId, $tanggal)
     {
-        $mahasiswa = MahasiswaProfile::with('user')->findOrFail($mahasiswaProfileId);
+        $asnProfileId = Auth::user()->asnProfile?->id;
+
+        $mahasiswa = MahasiswaProfile::with('user')
+            ->where('asn_profile_id', $asnProfileId ?? 0)
+            ->findOrFail($mahasiswaProfileId);
 
         $logbookTugas = Logbook::where('mahasiswa_profile_id', $mahasiswa->id)
             ->whereDate('created_at', $tanggal)
             ->with(['tugas.asn', 'tugas.skills'])
             ->get();
 
-        $logbookMandiri = MagangLogbook::where('mahasiswa_profile_id', $mahasiswa->id)->whereDate('tanggal_kegiatan', $tanggal)->get();
+        $logbookMandiri = MagangLogbook::where('mahasiswa_profile_id', $mahasiswa->id)
+            ->tervalidasi()
+            ->whereDate('tanggal_kegiatan', $tanggal)
+            ->get();
 
         if ($logbookTugas->isEmpty() && $logbookMandiri->isEmpty()) {
-            abort(404, 'Tidak ada kegiatan pada tanggal ini.');
+            abort(404, 'Tidak ada kegiatan tervalidasi pada tanggal ini.');
         }
 
         return view('pages.asn.logbook-detail', compact('mahasiswa', 'logbookTugas', 'logbookMandiri', 'tanggal'));
+    }
+
+    public function validasiLogbookMandiri($id)
+    {
+        $asnProfileId = Auth::user()->asnProfile?->id;
+        $logbook = MagangLogbook::with('mahasiswaProfile')->findOrFail($id);
+
+        if (!$asnProfileId || (int) $logbook->mahasiswaProfile?->asn_profile_id !== (int) $asnProfileId) {
+            abort(403, 'Anda tidak memiliki akses untuk memvalidasi logbook peserta ini.');
+        }
+
+        if (!$logbook->is_validated) {
+            $logbook->update([
+                'is_validated' => true,
+                'validated_at' => now(),
+                'validated_by' => Auth::id(),
+            ]);
+        }
+
+        return back()->with('success', "Logbook \"{$logbook->judul_kegiatan}\" berhasil divalidasi dan telah masuk ke logbook peserta.");
+    }
+
+    public function validasiSemuaLogbookMandiri($mahasiswaProfileId)
+    {
+        $asnProfileId = Auth::user()->asnProfile?->id;
+
+        $mahasiswa = MahasiswaProfile::where('asn_profile_id', $asnProfileId ?? 0)
+            ->findOrFail($mahasiswaProfileId);
+
+        $jumlah = MagangLogbook::where('mahasiswa_profile_id', $mahasiswa->id)
+            ->belumValidasi()
+            ->update([
+                'is_validated' => true,
+                'validated_at' => now(),
+                'validated_by' => Auth::id(),
+            ]);
+
+        if ($jumlah === 0) {
+            return back()->with('error', 'Tidak ada logbook yang perlu divalidasi.');
+        }
+
+        return back()->with('success', "{$jumlah} logbook mandiri berhasil divalidasi.");
+    }
+
+    public function detailLampiran($id)
+    {
+        return $this->AsnDetailLampiran($id);
     }
 
     public function AsnDetailLampiran($id)
@@ -121,8 +206,17 @@ class AsnController extends Controller
 
     public function createTugasForm()
     {
+        $asnProfileId = Auth::user()->asnProfile?->id;
         $skillList = Skill::orderBy('nama_skill', 'asc')->get();
-        $daftarMahasiswa = MahasiswaProfile::query()->where('status', 'aktif')->whereHas('user', fn ($q) => $q->where('is_active', true))->with('user')->get();
+
+        $daftarMahasiswa = $asnProfileId
+            ? MahasiswaProfile::query()
+                ->where('asn_profile_id', $asnProfileId)
+                ->where('status', 'aktif')
+                ->whereHas('user', fn ($q) => $q->where('is_active', true))
+                ->with('user')
+                ->get()
+            : collect();
 
         return view('pages.asn.create-task.create', compact('skillList', 'daftarMahasiswa'));
     }
@@ -145,9 +239,6 @@ class AsnController extends Controller
         $bulan = $this->parseValidMonth($request->query('bulan'));
         $hari = $this->parseValidDate($request->query('hari'));
 
-        // Sinkronisasi filter hari dan bulan:
-        // - Jika hari diisi tanpa bulan, otomatis isi bulan sesuai tanggal hari tersebut
-        // - Jika bulan diganti dan tidak cocok dengan tanggal hari lama, reset filter hari agar menampilkan seluruh bulan baru
         if ($hari && !$bulan) {
             $bulan = substr($hari, 0, 7);
         } elseif ($bulan && $hari && substr($hari, 0, 7) !== $bulan) {

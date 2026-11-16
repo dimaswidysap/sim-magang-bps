@@ -28,7 +28,7 @@
                     @include('components.asn.header-asn')
                 @break
 
-                @case('mahasiswa')
+                @case('admin')
                     @include('components.admin.header-admin')
                 @break
             @endswitch
@@ -52,7 +52,7 @@
                                     'admin' => 'admin-index',
                                     'asn' => 'asn-index',
                                     'mahasiswa' => 'mahasiswa-index',
-                                    default => 'landing-page', // jaga-jaga kalau role tidak dikenali
+                                    default => 'landing-page',
                                 };
                             @endphp
 
@@ -142,7 +142,7 @@
                                             </svg>
                                         </a>
 
-                                        @if ($berita->user_id === auth()->id())
+                                        @if ($berita->canBeModifiedBy(auth()->user()))
                                             <div class="flex items-center gap-2">
                                                 <!-- Tombol Edit -->
                                                 <a href="{{ route('berita-edit', $berita->id) }}" title="Edit Berita"

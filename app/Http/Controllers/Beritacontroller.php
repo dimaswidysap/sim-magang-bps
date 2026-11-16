@@ -61,34 +61,23 @@ class BeritaController extends Controller
         return redirect()->route('berita-index')->with('success', 'Berita berhasil dipublikasikan.');
     }
 
-    /**
-     * PENTING: otorisasi kepemilikan dicek DI SINI, bukan cuma di
-     * middleware role. Middleware cuma pastikan "admin atau ASN", tapi
-     * TIDAK tahu apakah user ini pembuat berita yang bersangkutan.
-     * Tanpa pengecekan user_id ini, ASN lain bisa edit berita ASN lain.
-     */
     public function edit($id)
     {
-        $berita = Berita::where('id', $id)
-            ->where('user_id', auth()->id())
-            ->firstOrFail();
+        $berita = $this->findEditableBerita($id);
 
         return view('pages.berita.update', compact('berita'));
     }
 
     public function update(Request $request, $id)
     {
-        $berita = Berita::with('attachments')
-            ->where('id', $id)
-            ->where('user_id', auth()->id())
-            ->firstOrFail();
+        $berita = $this->findEditableBerita($id, ['attachments']);
 
         $validated = $request->validate([
             'judul' => 'required|string|max:255',
             'konten' => 'required|string',
             'lampiran' => 'nullable|array',
             'lampiran.*' => 'file|max:10240|mimes:doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png,gif,svg,webp,bmp,pdf,zip',
-            'hapus_lampiran' => 'nullable|array', // id attachment lama yang mau dihapus
+            'hapus_lampiran' => 'nullable|array',
             'hapus_lampiran.*' => 'exists:berita_attachments,id',
         ]);
 
@@ -127,14 +116,8 @@ class BeritaController extends Controller
 
     public function destroy($id)
     {
-        $berita = Berita::with('attachments')
-            ->where('id', $id)
-            ->where('user_id', auth()->id())
-            ->firstOrFail();
+        $berita = $this->findEditableBerita($id, ['attachments']);
 
-        // Hapus file fisik lampiran dari storage sebelum baris database
-        // dihapus - cascadeOnDelete cuma hapus baris DB, TIDAK menghapus
-        // file fisiknya dari disk.
         foreach ($berita->attachments as $attachment) {
             \Storage::disk('public')->delete($attachment->file_path);
         }
@@ -142,5 +125,20 @@ class BeritaController extends Controller
         $berita->delete();
 
         return redirect()->route('berita-index')->with('success', 'Berita berhasil dihapus.');
+    }
+
+    /**
+     * Admin dapat mengelola semua berita (milik sendiri, admin lain, maupun ASN).
+     * Selain admin (ASN), hanya dapat mengelola berita yang dibuatnya sendiri.
+     */
+    private function findEditableBerita($id, array $with = []): Berita
+    {
+        $query = Berita::with($with)->where('id', $id);
+
+        if (auth()->user()?->role !== 'admin') {
+            $query->where('user_id', auth()->id());
+        }
+
+        return $query->firstOrFail();
     }
 }

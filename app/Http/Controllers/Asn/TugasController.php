@@ -27,8 +27,9 @@ class TugasController extends Controller
     public function checkTugasAktif(Request $request)
     {
         $mahasiswaIds = $request->input('mahasiswa_ids', []);
+        $asnProfileId = Auth::user()->asnProfile?->id;
 
-        if (empty($mahasiswaIds)) {
+        if (empty($mahasiswaIds) || !$asnProfileId) {
             return response()->json(['has_active_task' => false, 'nama_mahasiswa' => []]);
         }
 
@@ -38,10 +39,15 @@ class TugasController extends Controller
 
         $idMahasiswaAktif = $idKetuaAktif->merge($idAnggotaAktif)->unique();
 
-        $namaMahasiswa = MahasiswaProfile::whereIn('id', $idMahasiswaAktif)->with('user')->get()->pluck('user.name')->values();
+        $namaMahasiswa = MahasiswaProfile::where('asn_profile_id', $asnProfileId)
+            ->whereIn('id', $idMahasiswaAktif)
+            ->with('user')
+            ->get()
+            ->pluck('user.name')
+            ->values();
 
         return response()->json([
-            'has_active_task' => $idMahasiswaAktif->isNotEmpty(),
+            'has_active_task' => $namaMahasiswa->isNotEmpty(),
             'nama_mahasiswa' => $namaMahasiswa,
         ]);
     }
@@ -90,8 +96,15 @@ class TugasController extends Controller
         );
 
         $isPenugasanLangsung = $request->boolean('penugasan_langsung');
+        $mahasiswaIds = $isPenugasanLangsung ? array_values(array_unique(array_map('intval', $validated['mahasiswa_ids'] ?? []))) : [];
 
-        $mahasiswaIds = $isPenugasanLangsung ? array_values(array_unique($validated['mahasiswa_ids'] ?? [])) : [];
+        if ($isPenugasanLangsung) {
+            try {
+                $this->validasiMahasiswaBimbinganAsn($mahasiswaIds);
+            } catch (DomainException $e) {
+                return back()->withInput()->with('error', $e->getMessage());
+            }
+        }
 
         // Proses penyimpanan tugas
         $tugas = DB::transaction(function () use ($validated, $isPenugasanLangsung, $mahasiswaIds) {
@@ -170,8 +183,15 @@ class TugasController extends Controller
             return redirect()->route('task-not-done')->with('error', 'Tugas tidak ditemukan atau Anda tidak memiliki akses.');
         }
 
+        $asnProfileId = Auth::user()->asnProfile?->id;
         $skills = Skill::all();
-        $mahasiswaList = MahasiswaProfile::with('user')->where('status', 'aktif')->get();
+
+        $mahasiswaList = $asnProfileId
+            ? MahasiswaProfile::with('user')
+                ->where('asn_profile_id', $asnProfileId)
+                ->where('status', 'aktif')
+                ->get()
+            : collect();
 
         return view('pages.asn.task-not-done.update', compact('tugas', 'skills', 'mahasiswaList'));
     }
@@ -227,11 +247,12 @@ class TugasController extends Controller
 
         $filesToDeleteFromStorage = [];
         $isSyncMahasiswa = $request->boolean('sync_mahasiswa') || $request->has('mahasiswa_ids');
-        $mahasiswaIds = $isSyncMahasiswa ? array_values(array_unique(array_filter($validated['mahasiswa_ids'] ?? []))) : [];
+        $mahasiswaIds = $isSyncMahasiswa ? array_values(array_unique(array_map('intval', array_filter($validated['mahasiswa_ids'] ?? [])))) : [];
 
         try {
             $tugas = DB::transaction(function () use ($id, $validated, $isSyncMahasiswa, $mahasiswaIds, &$filesToDeleteFromStorage) {
                 if ($isSyncMahasiswa && !empty($mahasiswaIds)) {
+                    $this->validasiMahasiswaBimbinganAsn($mahasiswaIds);
                     $this->penugasanService->lockDanValidasiMahasiswaAktif($mahasiswaIds);
                 }
 
@@ -389,5 +410,25 @@ class TugasController extends Controller
         }
 
         return redirect()->route('task-not-done')->with('success', 'Tugas berhasil dihapus beserta seluruh file terkait.');
+    }
+
+    /**
+     * Memastikan seluruh ID mahasiswa yang dipilih berada di bawah bimbingan ASN yang sedang login.
+     */
+    private function validasiMahasiswaBimbinganAsn(array $mahasiswaIds): void
+    {
+        $asnProfileId = Auth::user()->asnProfile?->id;
+
+        if (!$asnProfileId) {
+            throw new DomainException('Profil ASN Anda belum lengkap sehingga tidak dapat menugaskan mahasiswa.');
+        }
+
+        $jumlahValid = MahasiswaProfile::where('asn_profile_id', $asnProfileId)
+            ->whereIn('id', $mahasiswaIds)
+            ->count();
+
+        if ($jumlahValid !== count($mahasiswaIds)) {
+            throw new DomainException('Terdapat mahasiswa yang bukan merupakan peserta bimbingan Anda.');
+        }
     }
 }

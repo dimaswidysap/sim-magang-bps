@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\MahasiswaProfile;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
@@ -30,4 +31,10 @@ Artisan::command('tools:cleanup-tmp', function () {
     $this->info("Pembersihan selesai: {$deleted} folder sementara dihapus.");
 })->purpose('Membersihkan folder sementara Tools FASIH di storage/app/tmp yang berusia lebih dari 2 jam');
 
+Artisan::command('magang:sync-status', function () {
+    $hasil = MahasiswaProfile::syncStatusOtomatis();
+    $this->info("Sinkronisasi status selesai: {$hasil['diaktifkan']} diaktifkan, {$hasil['diselesaikan']} diselesaikan.");
+})->purpose('Mengubah status peserta magang secara otomatis berdasarkan tanggal mulai dan tanggal selesai');
+
 Schedule::command('tools:cleanup-tmp')->hourly();
+Schedule::command('magang:sync-status')->dailyAt('00:01')->withoutOverlapping();
