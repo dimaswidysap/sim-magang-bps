@@ -16,24 +16,61 @@ use Throwable;
 class PasswordResetController extends Controller
 {
     /**
-     * Langkah 1 - dipanggil dari tombol "Ganti kata sandi akun" (setelah user
-     * menekan "Tetap Lanjutkan" di modal). Mengirim tautan reset ke email
-     * milik user yang sedang login.
+     * Menampilkan halaman input email untuk permintaan reset password dari halaman login.
+     */
+    public function showForgotForm(): View
+    {
+        return view('login.forgot-password');
+    }
+
+    /**
+     * Langkah 1 - Mengirim tautan reset password ke email pengguna (semua role).
+     * Mendukung permintaan dari halaman Lupa Password (guest) maupun dari halaman Profil (auth).
      */
     public function sendLink(Request $request): RedirectResponse
     {
-        $user = $request->user();
+        if (Auth::check()) {
+            $email = $request->user()->email;
+        } else {
+            $validated = $request->validate(
+                [
+                    'email' => 'required|email',
+                ],
+                [
+                    'email.required' => 'Alamat email wajib diisi.',
+                    'email.email' => 'Format alamat email tidak valid.',
+                ]
+            );
+
+            $email = $validated['email'];
+        }
+
+        $user = User::where('email', $email)->first();
+
+        if (! $user) {
+            return back()
+                ->withInput($request->only('email'))
+                ->withErrors(['email' => 'Akun dengan alamat email tersebut tidak ditemukan.']);
+        }
+
+        if (! $user->is_active) {
+            return back()
+                ->withInput($request->only('email'))
+                ->withErrors(['email' => 'Akun Anda berstatus nonaktif. Silakan hubungi Admin untuk mengaktifkan akun terlebih dahulu.']);
+        }
 
         try {
             $status = Password::sendResetLink(['email' => $user->email]);
         } catch (Throwable $e) {
             Log::error('Gagal mengirim email reset password: ' . $e->getMessage());
 
-            return back()->with('error', 'Email gagal dikirim. Periksa pengaturan MAIL di file .env, lalu coba lagi.');
+            return back()
+                ->withInput($request->only('email'))
+                ->with('error', 'Email gagal dikirim. Periksa pengaturan MAIL Mailtrap di file .env, lalu coba lagi.');
         }
 
         if ($status === Password::RESET_LINK_SENT) {
-            return back()->with('success', 'Tautan untuk membuat kata sandi baru telah dikirim ke ' . $user->email . '. Silakan cek email Anda.');
+            return back()->with('success', 'Tautan untuk membuat password baru telah dikirim ke ' . $user->email . '. Silakan cek inbox Mailtrap Anda.');
         }
 
         $pesan = match ($status) {
@@ -41,21 +78,23 @@ class PasswordResetController extends Controller
             default => 'Tautan reset tidak dapat dikirim. Silakan coba lagi.',
         };
 
-        return back()->with('error', $pesan);
+        return back()
+            ->withInput($request->only('email'))
+            ->with('error', $pesan);
     }
 
     /**
-     * Langkah 2 - halaman yang dibuka dari tautan di email.
+     * Langkah 2 - Halaman yang dibuka dari tautan di email.
      */
     public function showResetForm(Request $request, string $token): View|RedirectResponse
     {
         $email = (string) $request->query('email', '');
         $user = User::where('email', $email)->first();
 
-        if (!$user || $user->email !== $email || !Password::tokenExists($user, $token)) {
+        if (! $user || $user->email !== $email || ! Password::tokenExists($user, $token)) {
             return redirect()
                 ->route('login-form')
-                ->with('error', 'Tautan reset tidak valid atau sudah kedaluwarsa. Silakan minta tautan baru dari halaman profil.');
+                ->with('error', 'Tautan reset tidak valid atau sudah kedaluwarsa. Silakan minta tautan reset password baru.');
         }
 
         return view('login.reset-password', [
@@ -65,7 +104,7 @@ class PasswordResetController extends Controller
     }
 
     /**
-     * Langkah 3 - simpan password baru + konfirmasi.
+     * Langkah 3 - Simpan password baru + konfirmasi.
      */
     public function reset(Request $request): RedirectResponse
     {
@@ -85,7 +124,7 @@ class PasswordResetController extends Controller
         $email = (string) $request->input('email', '');
         $targetUser = User::where('email', $email)->first();
 
-        if (!$targetUser || $targetUser->email !== $email) {
+        if (! $targetUser || $targetUser->email !== $email) {
             return back()
                 ->withInput($request->only('email'))
                 ->withErrors(['email' => 'Akun dengan email tersebut tidak ditemukan.']);

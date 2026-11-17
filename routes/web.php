@@ -28,17 +28,25 @@ use App\Http\Controllers\Mahasiswa\MagangLogbookController;
 use App\Http\Controllers\PasswordResetController;
 //
 
-
 Route::get('/', function () {
     return view('home.index');
 })->name('landing-page');
 
-Route::post('/password/email', [PasswordResetController::class, 'sendLink'])
-    ->middleware(['auth', 'role:mahasiswa', 'throttle:5,1'])->name('password.email');
+// Reset Password (dapat diakses dari halaman Login oleh semua role maupun dari Profil)
+Route::get('/forgot-password', [PasswordResetController::class, 'showForgotForm'])
+    ->middleware('guest')
+    ->name('password.request');
 
-Route::get('/reset-password/{token}', [PasswordResetController::class, 'showResetForm'])->name('password.reset');
+Route::post('/password/email', [PasswordResetController::class, 'sendLink'])
+    ->middleware('throttle:5,1')
+    ->name('password.email');
+
+Route::get('/reset-password/{token}', [PasswordResetController::class, 'showResetForm'])
+    ->name('password.reset');
+
 Route::post('/reset-password', [PasswordResetController::class, 'reset'])
-    ->middleware('throttle:6,1')->name('password.update');
+    ->middleware('throttle:6,1')
+    ->name('password.update');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login-form');
@@ -61,6 +69,7 @@ Route::middleware(['auth', 'role:admin,asn,mahasiswa'])->group(function () {
     Route::get('/berita', [BeritaController::class, 'index'])->name('berita-index');
     Route::get('/berita/{id}', [BeritaController::class, 'show'])->name('berita-show');
 });
+
 Route::middleware(['auth', 'role:admin,asn,mahasiswa'])->group(function () {
     Route::get('/tools', [toolsController::class, 'toolsIndex'])->name('tools-index');
 
@@ -117,10 +126,10 @@ Route::prefix('admin')
         route::get('/statistik-magang/batal', [AdminController::class, 'magangbatal'])->name('magang-batal');
         route::get('/statistik-magang/selesai', [AdminController::class, 'magangSelesai'])->name('magang-selesai');
 
-        // laporan magang
-   Route::get('/admin/laporan', [LaporanController::class, 'index'])->name('admin-laporan');
-Route::get('/admin/laporan/{id}', [LaporanController::class, 'show'])->name('admin.laporan.show');
-Route::get('/admin/laporan/{id}/pdf', [LaporanController::class, 'downloadPdf'])->name('admin.laporan.pdf');
+        // laporan magang (URL: /admin/laporan, /admin/laporan/{id}, /admin/laporan/{id}/pdf)
+        Route::get('/laporan', [LaporanController::class, 'index'])->name('admin-laporan');
+        Route::get('/laporan/{id}', [LaporanController::class, 'show'])->name('admin.laporan.show');
+        Route::get('/laporan/{id}/pdf', [LaporanController::class, 'downloadPdf'])->name('admin.laporan.pdf');
     });
 
 // ASN

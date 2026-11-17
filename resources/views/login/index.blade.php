@@ -4,7 +4,6 @@
     <main class="font-montserrat w-full h-screen relative overflow-hidden bg-background md:bg-surface">
 
         {{-- Container Background Image --}}
-        {{-- Dibuat absolute inset-0 agar memenuhi seluruh layar di belakang form --}}
         <section class="absolute inset-0 w-full h-full">
             @include('components.BuldingBg')
         </section>
@@ -21,10 +20,23 @@
             <div class="w-full max-w-md mx-auto p-8 text-[80%] md:text-[100%]">
                 <!-- Header -->
                 <div class="text-center mb-8">
-                    <!-- Teks putih di mobile, mengikuti text normal di desktop -->
                     <h2 class="text-3xl font-bold text-white md:text-text">Selamat Datang</h2>
                     <p class="mt-2 text-white/80 md:text-text-light">Login ke Portal SIM Magang BPS</p>
                 </div>
+
+                {{-- Notifikasi Sukses (Misal setelah berhasil reset password) --}}
+                @if (session('success'))
+                    <div class="mb-5 rounded-xl border border-success/30 bg-success/15 px-4 py-3 text-xs sm:text-sm font-medium text-white md:text-success-dark">
+                        {{ session('success') }}
+                    </div>
+                @endif
+
+                {{-- Notifikasi Error (Misal tautan reset kedaluwarsa) --}}
+                @if (session('error'))
+                    <div class="mb-5 rounded-xl border border-danger/30 bg-danger/15 px-4 py-3 text-xs sm:text-sm font-medium text-white md:text-danger">
+                        {{ session('error') }}
+                    </div>
+                @endif
 
                 <!-- Form -->
                 <form class="space-y-6" method="POST" action="{{ route('login.post') }}">
@@ -32,7 +44,6 @@
 
                     <!-- Email -->
                     <div>
-                        <!-- Teks putih di mobile, mengikuti text normal di desktop -->
                         <label class="mb-2 block text-sm font-semibold text-white md:text-text">
                             Email
                         </label>
@@ -43,9 +54,15 @@
 
                     <!-- Password -->
                     <div>
-                        <label class="mb-2 block text-sm font-semibold text-white md:text-text">
-                            Password
-                        </label>
+                        <div class="mb-2 flex items-center justify-between">
+                            <label class="block text-sm font-semibold text-white md:text-text">
+                                Password
+                            </label>
+                            <a href="{{ route('password.request') }}"
+                                class="text-xs font-semibold text-white/90 md:text-primary hover:underline transition-colors">
+                                Lupa Password?
+                            </a>
+                        </div>
 
                         <input type="password" name="password" placeholder="Masukkan Password"
                             class="w-full rounded-xl border border-border bg-background px-4 py-3 text-text placeholder:text-text-light outline-none transition duration-300 focus:border-primary focus:ring-4 focus:ring-primary/20" />
