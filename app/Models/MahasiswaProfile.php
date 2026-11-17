@@ -5,6 +5,7 @@ namespace App\Models;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class MahasiswaProfile extends Model
@@ -105,6 +106,124 @@ class MahasiswaProfile extends Model
             'diaktifkan' => $diaktifkan,
             'diselesaikan' => $diselesaikan,
         ];
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | PEMBERSIHAN OTOMATIS AKUN TANPA TANGGAL MAGANG (> 1 BULAN)
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Menghapus akun peserta magang beserta profil & file lampirannya
+     * apabila tanggal_mulai dan tanggal_selesai tidak diisi lebih dari 1 bulan sejak akun dibuat.
+     */
+    public static function hapusAkunTanpaTanggalKadaluarsa(): int
+    {
+        $batasWaktu = Carbon::now()->subMonth();
+
+        $expiredUsers = User::query()
+            ->where('role', 'mahasiswa')
+            ->where('created_at', '<=', $batasWaktu)
+            ->where(function ($query) {
+                $query->whereDoesntHave('mahasiswaProfile')
+                    ->orWhereHas('mahasiswaProfile', function ($subQuery) {
+                        $subQuery->whereNull('tanggal_mulai')
+                            ->whereNull('tanggal_selesai');
+                    });
+            })
+            ->with('mahasiswaProfile')
+            ->get();
+
+        $jumlahDihapus = 0;
+
+        foreach ($expiredUsers as $user) {
+            DB::transaction(function () use ($user, &$jumlahDihapus) {
+                $profile = $user->mahasiswaProfile;
+
+                if ($profile) {
+                    if ($profile->foto_profil_path && Storage::disk('public')->exists($profile->foto_profil_path)) {
+                        Storage::disk('public')->delete($profile->foto_profil_path);
+                    }
+
+                    if ($profile->surat_pengantar_path && Storage::disk('public')->exists($profile->surat_pengantar_path)) {
+                        Storage::disk('public')->delete($profile->surat_pengantar_path);
+                    }
+
+                    $profile->delete();
+                }
+
+                $user->delete();
+                $jumlahDihapus++;
+            });
+        }
+
+        return $jumlahDihapus;
+    }
+
+    public function belumMengisiTanggalMagang(): bool
+    {
+        return is_null($this->tanggal_mulai) && is_null($this->tanggal_selesai);
+    }
+
+    public function batasWaktuPengisianTanggal(): ?Carbon
+    {
+        if (! $this->belumMengisiTanggalMagang()) {
+            return null;
+        }
+
+        $baseDate = $this->user?->created_at ?? $this->created_at;
+
+        return $baseDate ? $baseDate->copy()->addMonth() : null;
+    }
+
+    public function sisaHariPengisianTanggal(): ?int
+    {
+        $batas = $this->batasWaktuPengisianTanggal();
+
+        if (! $batas) {
+            return null;
+        }
+
+        return max(0, (int) Carbon::now()->startOfDay()->diffInDays($batas->copy()->startOfDay(), false));
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | REKAP KEHADIRAN / HARI MASUK BERDASARKAN LOGBOOK TERVALIDASI
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Mengambil daftar tanggal unik (Y-m-d) yang memiliki logbook tervalidasi.
+     * Setel $includeLogbookTugas = false jika ingin menghitung khusus dari logbook mandiri saja.
+     */
+    public function getTanggalAktifLogbook(bool $includeLogbookTugas = true)
+    {
+        $tanggalDariMandiri = MagangLogbook::where('mahasiswa_profile_id', $this->id)
+            ->tervalidasi()
+            ->whereNotNull('tanggal_kegiatan')
+            ->selectRaw('DISTINCT DATE(tanggal_kegiatan) as tanggal')
+            ->pluck('tanggal');
+
+        if (! $includeLogbookTugas) {
+            return $tanggalDariMandiri->unique()->values();
+        }
+
+        $tanggalDariTugas = Logbook::where('mahasiswa_profile_id', $this->id)
+            ->whereNotNull('created_at')
+            ->selectRaw('DISTINCT DATE(created_at) as tanggal')
+            ->pluck('tanggal');
+
+        return $tanggalDariTugas->merge($tanggalDariMandiri)->unique()->values();
+    }
+
+    /**
+     * Menghitung total hari masuk (1 hari dihitung jika ada minimal 1 logbook tervalidasi di tanggal tersebut).
+     */
+    public function getJumlahHariMasuk(bool $includeLogbookTugas = true): int
+    {
+        return $this->getTanggalAktifLogbook($includeLogbookTugas)->count();
     }
 
     /*

@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\AdminMahasiswa;
 use App\Http\Controllers\Admin\adminAsn;
 
 use App\Http\Controllers\Admin\AdminSkill;
+use App\Http\Controllers\Admin\LaporanController;
 //
 use App\Http\Controllers\Asn\TugasController;
 //
@@ -115,6 +116,11 @@ Route::prefix('admin')
         route::get('/statistik-magang/pending', [AdminController::class, 'magangPending'])->name('magang-pending');
         route::get('/statistik-magang/batal', [AdminController::class, 'magangbatal'])->name('magang-batal');
         route::get('/statistik-magang/selesai', [AdminController::class, 'magangSelesai'])->name('magang-selesai');
+
+        // laporan magang
+   Route::get('/admin/laporan', [LaporanController::class, 'index'])->name('admin-laporan');
+Route::get('/admin/laporan/{id}', [LaporanController::class, 'show'])->name('admin.laporan.show');
+Route::get('/admin/laporan/{id}/pdf', [LaporanController::class, 'downloadPdf'])->name('admin.laporan.pdf');
     });
 
 // ASN

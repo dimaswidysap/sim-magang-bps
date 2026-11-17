@@ -36,5 +36,11 @@ Artisan::command('magang:sync-status', function () {
     $this->info("Sinkronisasi status selesai: {$hasil['diaktifkan']} diaktifkan, {$hasil['diselesaikan']} diselesaikan.");
 })->purpose('Mengubah status peserta magang secara otomatis berdasarkan tanggal mulai dan tanggal selesai');
 
+Artisan::command('magang:hapus-tanpa-tanggal', function () {
+    $jumlah = MahasiswaProfile::hapusAkunTanpaTanggalKadaluarsa();
+    $this->info("Pembersihan akun selesai: {$jumlah} akun peserta tanpa tanggal magang (> 1 bulan) dihapus.");
+})->purpose('Menghapus otomatis akun peserta magang yang tidak mengisi tanggal mulai dan selesai setelah 1 bulan');
+
 Schedule::command('tools:cleanup-tmp')->hourly();
 Schedule::command('magang:sync-status')->dailyAt('00:01')->withoutOverlapping();
+Schedule::command('magang:hapus-tanpa-tanggal')->dailyAt('00:05')->withoutOverlapping();

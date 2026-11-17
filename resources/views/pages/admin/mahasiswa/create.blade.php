@@ -82,35 +82,47 @@
 
                 <!-- SECTION 3: Periode Magang -->
                 <div>
-                    <h2 class="text-lg font-semibold text-primary mb-4 flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        Periode Magang
-                    </h2>
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                        <h2 class="text-lg font-semibold text-primary flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            Periode Magang
+                            <span class="text-xs font-normal text-text-light">(Kosongkan jika tanggal belum ditentukan)</span>
+                        </h2>
+
+                        <button type="button" id="btn-clear-periode"
+                            class="self-start sm:self-auto text-xs font-semibold text-text-light hover:text-danger px-3 py-1.5 rounded-lg border border-border bg-surface hover:border-danger/40 transition-colors cursor-pointer">
+                            Kosongkan Tanggal
+                        </button>
+                    </div>
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-background p-5 rounded-xl border border-border">
                         <div>
                             <label class="block text-sm font-medium text-text-light mb-1.5">
-                                Tanggal Masuk Magang
+                                Tanggal Masuk Magang <span class="text-xs font-normal">(Opsional)</span>
                             </label>
-                            <input type="date" name="tanggal_mulai" value="{{ old('tanggal_mulai') }}"
+                            <input type="date" id="input-tanggal-mulai" name="tanggal_mulai" value="{{ old('tanggal_mulai') }}"
                                 class="w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors cursor-pointer">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-text-light mb-1.5">
-                                Tanggal Selesai Magang
+                                Tanggal Selesai Magang <span class="text-xs font-normal">(Opsional)</span>
                             </label>
-                            <input type="date" name="tanggal_selesai" value="{{ old('tanggal_selesai') }}"
+                            <input type="date" id="input-tanggal-selesai" name="tanggal_selesai" value="{{ old('tanggal_selesai') }}"
                                 class="w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors cursor-pointer">
                         </div>
-                        <div class="md:col-span-2 text-xs text-text-light bg-surface border border-border rounded-lg p-3.5 space-y-1">
-                            <p class="font-semibold text-text">Ketentuan Status Otomatis:</p>
-                            <ul class="list-disc list-inside space-y-0.5">
-                                <li>Jika tanggal masuk belum tiba atau belum diisi, status akun otomatis <strong>Pending</strong>.</li>
+                        <div class="md:col-span-2 text-xs text-text-light bg-surface border border-border rounded-lg p-3.5 space-y-1.5">
+                            <p class="font-semibold text-text">Ketentuan Status & Masa Berlaku Akun:</p>
+                            <ul class="list-disc list-inside space-y-1">
+                                <li>Jika tanggal masuk belum tiba atau dikosongkan, status akun otomatis <strong>Pending</strong>.</li>
                                 <li>Saat memasuki tanggal masuk magang, status otomatis berubah menjadi <strong>Aktif</strong>.</li>
                                 <li>Setelah melewati tanggal selesai magang, status otomatis berubah menjadi <strong>Selesai</strong>.</li>
+                                <li class="text-danger font-medium">
+                                    Apabila tanggal masuk dan tanggal selesai dikosongkan, calon peserta wajib mengisinya melalui halaman profil maksimal <strong>1 bulan</strong> sejak akun dibuat. Jika tidak diisi dalam 1 bulan, akun akan <strong>terhapus otomatis</strong>.
+                                </li>
                             </ul>
                         </div>
                     </div>
@@ -141,4 +153,19 @@
             </form>
         </section>
     </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const btnClear = document.getElementById('btn-clear-periode');
+            const inputMulai = document.getElementById('input-tanggal-mulai');
+            const inputSelesai = document.getElementById('input-tanggal-selesai');
+
+            if (btnClear && inputMulai && inputSelesai) {
+                btnClear.addEventListener('click', function () {
+                    inputMulai.value = '';
+                    inputSelesai.value = '';
+                });
+            }
+        });
+    </script>
 @endsection

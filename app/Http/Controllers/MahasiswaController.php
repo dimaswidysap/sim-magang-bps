@@ -28,7 +28,8 @@ class MahasiswaController extends Controller
         $jumlahBelumSelesai = $mahasiswaProfileId ? Tugas::getJumlahTugasBelumSelesai($mahasiswaProfileId) : 0;
 
         $bulanList = collect();
-        $tanggalAktif = collect();
+        $tanggalAktif = $profil ? $profil->getTanggalAktifLogbook() : collect();
+        $jumlahHariMasuk = $tanggalAktif->count();
         $logbookMenungguValidasi = collect();
 
         if ($profil) {
@@ -52,20 +53,6 @@ class MahasiswaController extends Controller
                 ]);
                 $kursor->addMonth();
             }
-
-            $tanggalDariTugas = Logbook::where('mahasiswa_profile_id', $profil->id)
-                ->whereNotNull('created_at')
-                ->selectRaw('DISTINCT DATE(created_at) as tanggal')
-                ->pluck('tanggal');
-
-            // Logbook mandiri masuk ke kalender logbook hanya setelah divalidasi pembimbing
-            $tanggalDariMandiri = MagangLogbook::where('mahasiswa_profile_id', $profil->id)
-                ->tervalidasi()
-                ->whereNotNull('tanggal_kegiatan')
-                ->selectRaw('DISTINCT DATE(tanggal_kegiatan) as tanggal')
-                ->pluck('tanggal');
-
-            $tanggalAktif = $tanggalDariTugas->merge($tanggalDariMandiri)->unique()->values();
         }
 
         return view('pages.mahasiswa.index', compact(
@@ -73,6 +60,7 @@ class MahasiswaController extends Controller
             'jumlahBelumSelesai',
             'bulanList',
             'tanggalAktif',
+            'jumlahHariMasuk',
             'profil',
             'logbookMenungguValidasi'
         ));

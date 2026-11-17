@@ -40,6 +40,8 @@ class AdminController extends Controller
 
     public function adminIndex(Request $request)
     {
+        MahasiswaProfile::hapusAkunTanpaTanggalKadaluarsa();
+
         $statistik = $this->getStatistikUsers();
 
         $daftarMahasiswaProfilWarning = User::query()
@@ -180,6 +182,8 @@ class AdminController extends Controller
 
     public function adminMahasiswa(Request $request)
     {
+        MahasiswaProfile::hapusAkunTanpaTanggalKadaluarsa();
+
         $dataMahasiswa = User::query()
             ->where('role', 'mahasiswa')
             ->with('mahasiswaProfile')

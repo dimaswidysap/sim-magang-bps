@@ -8,7 +8,7 @@
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
                 <div>
                     <h1 class="text-2xl font-bold text-text leading-snug">Detail Kegiatan Harian</h1>
-                    <div class="flex flex-wrap items-center gap-2 mt-1 text-sm text-text-light">
+                    <div class="flex flex-wrap items-center gap-2 mt-1.5 text-sm text-text-light">
                         <p class="flex items-center gap-1.5">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary" fill="none"
                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -26,6 +26,16 @@
                             </svg>
                             <span>{{ \Carbon\Carbon::parse($tanggal)->translatedFormat('d F Y') }}</span>
                         </p>
+                        <span class="hidden sm:inline">&bull;</span>
+                        <span
+                            class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-success/10 text-success border border-success/25">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Total Hari Masuk: {{ $jumlahHariMasuk ?? 0 }} Hari
+                        </span>
                     </div>
                 </div>
 

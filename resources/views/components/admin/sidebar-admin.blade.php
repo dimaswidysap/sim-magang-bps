@@ -16,8 +16,8 @@
                 <li>
                     <x-nav-link :href="route('admin-index')" :active="request()->routeIs('admin-index')">
                         <x-slot name="icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor" stroke-width="2" class="w-5 h-5">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                stroke-width="2" class="w-5 h-5">
                                 <rect x="3" y="3" width="7" height="7" rx="1" />
                                 <rect x="14" y="3" width="7" height="7" rx="1" />
                                 <rect x="3" y="14" width="7" height="7" rx="1" />
@@ -89,6 +89,21 @@
                             </svg>
                         </x-slot>
                         Skills (Keahlian)
+                    </x-nav-link>
+                </li>
+                <li class="text-bold font-black text-white/50 text-[10px] ml-[5%] translate-y-2.5 mb-1">Laporan</li>
+                <li>
+                    <x-nav-link :href="route('admin-laporan')" :active="request()->routeIs('admin-laporan')">
+                        <x-slot name="icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="2" class="w-5 h-5">
+                                <rect x="3" y="3" width="7" height="7" rx="1" />
+                                <rect x="14" y="3" width="7" height="7" rx="1" />
+                                <rect x="3" y="14" width="7" height="7" rx="1" />
+                                <rect x="14" y="14" width="7" height="7" rx="1" />
+                            </svg>
+                        </x-slot>
+                        Laporan Magang
                     </x-nav-link>
                 </li>
                 @include('components.button-logout')

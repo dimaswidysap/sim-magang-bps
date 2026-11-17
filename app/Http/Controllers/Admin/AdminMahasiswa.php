@@ -63,13 +63,16 @@ class AdminMahasiswa extends Controller
             ],
         );
 
+        $tanggalMulai = $validated['tanggal_mulai'] ?? null;
+        $tanggalSelesai = $validated['tanggal_selesai'] ?? null;
+
         $statusOtomatis = MahasiswaProfile::tentukanStatusDariTanggal(
-            $validated['tanggal_mulai'] ?? null,
-            $validated['tanggal_selesai'] ?? null,
+            $tanggalMulai,
+            $tanggalSelesai,
             'pending'
         );
 
-        DB::transaction(function () use ($validated, $statusOtomatis) {
+        DB::transaction(function () use ($validated, $tanggalMulai, $tanggalSelesai, $statusOtomatis) {
             $user = User::create([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
@@ -81,17 +84,22 @@ class AdminMahasiswa extends Controller
             MahasiswaProfile::create([
                 'user_id' => $user->id,
                 'asn_profile_id' => $validated['asn_profile_id'],
-                'tanggal_mulai' => $validated['tanggal_mulai'] ?? null,
-                'tanggal_selesai' => $validated['tanggal_selesai'] ?? null,
+                'tanggal_mulai' => $tanggalMulai,
+                'tanggal_selesai' => $tanggalSelesai,
                 'status' => $statusOtomatis,
             ]);
         });
 
         Cache::forget('magang_status_sync_lock');
 
+        $tanpaTanggal = empty($tanggalMulai) && empty($tanggalSelesai);
+        $pesanSukses = $tanpaTanggal
+            ? "Data mahasiswa berhasil ditambahkan dengan status '{$statusOtomatis}'. Karena tanggal masuk dan selesai dikosongkan, akun akan otomatis terhapus setelah 1 bulan apabila peserta tidak melengkapinya."
+            : "Data mahasiswa berhasil ditambahkan dengan status '{$statusOtomatis}'. Mahasiswa perlu melengkapi profil (NIM, instansi, dll) setelah login.";
+
         return redirect()
             ->route('admin-mahasiswa')
-            ->with('success', "Data mahasiswa berhasil ditambahkan dengan status '{$statusOtomatis}'. Mahasiswa perlu melengkapi profil (NIM, instansi, dll) setelah login.");
+            ->with('success', $pesanSukses);
     }
 
     public function formMahasiswaEdit($id)

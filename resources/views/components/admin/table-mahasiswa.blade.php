@@ -37,20 +37,20 @@
         <!-- Tabel Data Mahasiswa (Responsive Stacked) -->
         <div class="bg-surface rounded-xl shadow-sm border border-border overflow-hidden w-full">
             <div class="w-full">
-                <table class="w-full text-left border-collapse">
+                <table class="w-full  text-left border-collapse">
 
                     <!-- Header Tabel (Hidden on Mobile) -->
                     <thead
                         class="hidden md:table-header-group bg-background/50 border-b border-border text-text-light text-xs uppercase tracking-wider">
                         <tr>
-                            <th scope="col" class="px-6 py-4 font-bold">N0</th>
-                            <th scope="col" class="px-6 py-4 font-bold">Nama Mahasiswa</th>
-                            <th scope="col" class="px-6 py-4 font-bold">NIM</th>
-                            <th scope="col" class="px-6 py-4 font-bold">Instansi Asal</th>
-                            <th scope="col" class="px-6 py-4 font-bold">Jurusan (Jenjang)</th>
-                            <th scope="col" class="px-6 py-4 font-bold">Mulai - Selesai</th>
-                            <th scope="col" class="px-6 py-4 font-bold text-center">Status (Akun)</th>
-                            <th scope="col" class="px-6 py-4 font-bold text-center">Aksi</th>
+                            <th scope="col" class="px-3 py-4 font-bold">N0</th>
+                            <th scope="col" class="px-3 py-4 font-bold">Nama Mahasiswa</th>
+                            <th scope="col" class="px-3 py-4 font-bold">NIM</th>
+                            <th scope="col" class="px-3 py-4 font-bold">Instansi Asal</th>
+                            <th scope="col" class="px-3 py-4 font-bold">Jurusan (Jenjang)</th>
+
+                            <th scope="col" class="px-3 py-4 font-bold text-center">Status (Akun)</th>
+                            <th scope="col" class="px-3 py-4 font-bold text-center">Aksi</th>
                         </tr>
                     </thead>
 
@@ -137,7 +137,7 @@
                                 </td>
 
                                 <!-- Periode Magang -->
-                                <td class="block md:table-cell md:px-6 md:py-4 mb-4 md:mb-0">
+                                {{-- <td class="block md:table-cell md:px-6 md:py-4 mb-4 md:mb-0">
                                     <div class="flex justify-between items-center md:block">
                                         <span
                                             class="md:hidden text-[10px] font-bold text-text-light uppercase">Periode:</span>
@@ -149,7 +149,7 @@
                                                 class="font-medium text-text">{{ $mhs->mahasiswaProfile->tanggal_selesai ? \Carbon\Carbon::parse($mhs->mahasiswaProfile->tanggal_selesai)->translatedFormat('d M Y') : '-' }}</span>
                                         </div>
                                     </div>
-                                </td>
+                                </td> --}}
 
                                 <!-- Status Badge -->
                                 <td class="block md:table-cell md:px-6 md:py-4 md:text-center mt-2 md:mt-0">

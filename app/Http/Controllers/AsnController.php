@@ -44,7 +44,8 @@ class AsnController extends Controller
             ->findOrFail($mahasiswaProfileId);
 
         $bulanList = collect();
-        $tanggalAktif = collect();
+        $tanggalAktif = $mahasiswa->getTanggalAktifLogbook();
+        $jumlahHariMasuk = $tanggalAktif->count();
 
         if ($mahasiswa->tanggal_mulai && $mahasiswa->tanggal_selesai) {
             $kursor = $mahasiswa->tanggal_mulai->copy()->startOfMonth();
@@ -59,18 +60,6 @@ class AsnController extends Controller
                 ]);
                 $kursor->addMonth();
             }
-
-            $tanggalDariTugas = Logbook::where('mahasiswa_profile_id', $mahasiswa->id)
-                ->get()
-                ->map(fn ($item) => $item->created_at->toDateString());
-
-            // Hanya logbook mandiri yang sudah divalidasi pembimbing yang masuk kalender logbook
-            $tanggalDariMandiri = MagangLogbook::where('mahasiswa_profile_id', $mahasiswa->id)
-                ->tervalidasi()
-                ->get()
-                ->map(fn ($item) => $item->tanggal_kegiatan->toDateString());
-
-            $tanggalAktif = collect($tanggalDariTugas)->merge($tanggalDariMandiri)->unique();
         }
 
         // Daftar logbook mandiri yang masih menunggu validasi pembimbing
@@ -84,6 +73,7 @@ class AsnController extends Controller
             'mahasiswa',
             'bulanList',
             'tanggalAktif',
+            'jumlahHariMasuk',
             'logbookMenungguValidasi'
         ));
     }
@@ -110,7 +100,15 @@ class AsnController extends Controller
             abort(404, 'Tidak ada kegiatan tervalidasi pada tanggal ini.');
         }
 
-        return view('pages.asn.logbook-detail', compact('mahasiswa', 'logbookTugas', 'logbookMandiri', 'tanggal'));
+        $jumlahHariMasuk = $mahasiswa->getJumlahHariMasuk();
+
+        return view('pages.asn.logbook-detail', compact(
+            'mahasiswa',
+            'logbookTugas',
+            'logbookMandiri',
+            'tanggal',
+            'jumlahHariMasuk'
+        ));
     }
 
     public function validasiLogbookMandiri($id)
