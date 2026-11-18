@@ -99,6 +99,11 @@ Route::prefix('admin')
         Route::put('/mahasiswa/{id}', [AdminMahasiswa::class, 'updateMahasiswa'])->name('admin-mahasiswa-update');
         Route::delete('/destroyMahasiswa/{id}', [AdminMahasiswa::class, 'destroyMahasiswa'])->name('admin-mahasiswa-destroy');
 
+        // Permintaan / Pengajuan Pembimbing Magang (diteruskan ke kandidat ASN)
+        Route::get('/permintaan-magang', [AdminMahasiswa::class, 'daftarPermintaan'])->name('admin-permintaan-magang');
+        Route::post('/permintaan-magang/{id}/kirim-asn', [AdminMahasiswa::class, 'kirimPermintaanKeAsn'])->name('admin.permintaan.kirim-asn');
+        Route::post('/permintaan-magang/{id}/tolak', [AdminMahasiswa::class, 'tolakPermintaan'])->name('admin.permintaan.tolak');
+
         // Management ASN
         Route::get('/asn', [AdminController::class, 'adminAsn'])->name('admin-asn');
         Route::get('/asn/detail/{id}', [AdminAsn::class, 'detailAsn'])->name('admin-asn-detail');
@@ -126,7 +131,7 @@ Route::prefix('admin')
         route::get('/statistik-magang/batal', [AdminController::class, 'magangbatal'])->name('magang-batal');
         route::get('/statistik-magang/selesai', [AdminController::class, 'magangSelesai'])->name('magang-selesai');
 
-        // laporan magang (URL: /admin/laporan, /admin/laporan/{id}, /admin/laporan/{id}/pdf)
+        // laporan magang
         Route::get('/laporan', [LaporanController::class, 'index'])->name('admin-laporan');
         Route::get('/laporan/{id}', [LaporanController::class, 'show'])->name('admin.laporan.show');
         Route::get('/laporan/{id}/pdf', [LaporanController::class, 'downloadPdf'])->name('admin.laporan.pdf');
@@ -140,6 +145,12 @@ Route::prefix('asn')
         Route::get('/profil/edit', [AsnController::class, 'showFormProfil'])->name('asn-profil-form');
         Route::get('/profil/detail', [AsnController::class, 'profilAsnDetail'])->name('asn-detail-profil');
         Route::put('/profil', [AsnController::class, 'updateProfil'])->name('asn-profil-update');
+
+        // Permintaan Bimbingan Masuk dari Admin
+        Route::get('/permintaan-bimbingan', [AsnController::class, 'daftarPermintaanBimbingan'])->name('asn-permintaan-bimbingan');
+        Route::post('/permintaan-bimbingan/{id}/terima', [AsnController::class, 'terimaPermintaanBimbingan'])->name('asn.permintaan.terima');
+        Route::post('/permintaan-bimbingan/{id}/tolak', [AsnController::class, 'tolakPermintaanBimbingan'])->name('asn.permintaan.tolak');
+
         Route::get('/create-task', [AsnController::class, 'createTugasForm'])->name('asn-create-task-form');
         Route::get('/task-not-done', [AsnController::class, 'taskNotDone'])->name('task-not-done');
         Route::get('/task-done', [AsnController::class, 'taskDone'])->name('task-done');
@@ -178,6 +189,7 @@ Route::prefix('magang')
         Route::get('/profil/update', [MahasiswaController::class, 'showFormProfil'])->name('mahasiswa-profil-form');
         Route::put('/profilUpdate', [MahasiswaController::class, 'updateProfil'])->name('mahasiswa-profil-update');
         Route::get('/profil', [MahasiswaController::class, 'profil'])->name('profil-magang');
+        Route::post('/ajukan-pembimbing', [MahasiswaController::class, 'ajukanPembimbing'])->name('mahasiswa-ajukan-pembimbing');
 
         Route::get('/tugas', [MahasiswaController::class, 'tugas'])->name('tugas');
         Route::get('/tugas-saya', [MahasiswaController::class, 'tugasSaya'])->name('tugas-saya');

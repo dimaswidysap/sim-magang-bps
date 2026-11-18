@@ -12,6 +12,8 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class AsnController extends Controller
@@ -33,6 +35,169 @@ class AsnController extends Controller
             : collect();
 
         return view('pages.asn.index', compact('totalSelesai', 'totalBelumSelesai', 'daftarMahasiswa'));
+    }
+
+    /**
+     * Menampilkan daftar permintaan bimbingan peserta magang yang diteruskan Admin ke ASN ini.
+     */
+    public function daftarPermintaanBimbingan(Request $request)
+    {
+        $asnProfileId = Auth::user()->asnProfile?->id;
+
+        if (! $asnProfileId) {
+            abort(403, 'Profil ASN Anda belum terdaftar.');
+        }
+
+        $filterStatus = $request->query('status', 'menunggu_asn');
+        if (! in_array($filterStatus, ['menunggu_asn', 'diterima'], true)) {
+            $filterStatus = 'menunggu_asn';
+        }
+
+        $daftarPermintaan = MahasiswaProfile::query()
+            ->whereHas('user', fn ($q) => $q->where('role', 'mahasiswa'))
+            ->where(function ($q) {
+                $q->whereNull('kode_kelompok')->orWhere('is_ketua_kelompok', true);
+            })
+            ->when($filterStatus === 'menunggu_asn', function ($query) use ($asnProfileId) {
+                $query->where('calon_asn_profile_id', $asnProfileId)
+                    ->where('status_pengajuan', 'menunggu_asn');
+            })
+            ->when($filterStatus === 'diterima', function ($query) use ($asnProfileId) {
+                $query->where('asn_profile_id', $asnProfileId)
+                    ->where('status_pengajuan', 'diterima');
+            })
+            ->with(['user', 'skills'])
+            ->orderByDesc('dikirim_ke_asn_at')
+            ->orderByDesc('id')
+            ->get();
+
+        $kodeKelompokList = $daftarPermintaan->pluck('kode_kelompok')->filter()->unique()->values();
+        $anggotaPerKelompok = MahasiswaProfile::query()
+            ->whereIn('kode_kelompok', $kodeKelompokList)
+            ->with(['user', 'skills'])
+            ->orderByDesc('is_ketua_kelompok')
+            ->orderBy('id')
+            ->get()
+            ->groupBy('kode_kelompok');
+
+        $daftarPermintaan->each(function (MahasiswaProfile $profil) use ($anggotaPerKelompok) {
+            $profil->setRelation(
+                'daftar_anggota',
+                $profil->isKelompok()
+                    ? ($anggotaPerKelompok[$profil->kode_kelompok] ?? collect([$profil]))
+                    : collect([$profil])
+            );
+        });
+
+        $jumlahMasuk = MahasiswaProfile::query()
+            ->where('calon_asn_profile_id', $asnProfileId)
+            ->where('status_pengajuan', 'menunggu_asn')
+            ->where(fn ($q) => $q->whereNull('kode_kelompok')->orWhere('is_ketua_kelompok', true))
+            ->count();
+
+        $jumlahDiterima = MahasiswaProfile::query()
+            ->where('asn_profile_id', $asnProfileId)
+            ->where('status_pengajuan', 'diterima')
+            ->where(fn ($q) => $q->whereNull('kode_kelompok')->orWhere('is_ketua_kelompok', true))
+            ->count();
+
+        return view('pages.asn.permintaan-bimbingan', compact(
+            'daftarPermintaan',
+            'filterStatus',
+            'jumlahMasuk',
+            'jumlahDiterima'
+        ));
+    }
+
+    /**
+     * ASN menerima permintaan membimbing peserta (individu maupun seluruh anggota kelompok).
+     */
+    public function terimaPermintaanBimbingan($id)
+    {
+        $asnProfileId = Auth::user()->asnProfile?->id;
+        $profilUtama = MahasiswaProfile::with('user')->findOrFail($id);
+
+        if (! $asnProfileId || (int) $profilUtama->calon_asn_profile_id !== (int) $asnProfileId || $profilUtama->status_pengajuan !== 'menunggu_asn') {
+            return back()->with('error', 'Permintaan bimbingan ini tidak valid atau sudah direspons sebelumnya.');
+        }
+
+        $targetProfiles = $profilUtama->isKelompok()
+            ? MahasiswaProfile::where('kode_kelompok', $profilUtama->kode_kelompok)->get()
+            : collect([$profilUtama]);
+
+        DB::transaction(function () use ($targetProfiles, $profilUtama, $asnProfileId) {
+            foreach ($targetProfiles as $item) {
+                $mulai = $item->tanggal_mulai ?? $profilUtama->tanggal_mulai;
+                $selesai = $item->tanggal_selesai ?? $profilUtama->tanggal_selesai;
+
+                $statusBaru = MahasiswaProfile::tentukanStatusDariTanggal($mulai, $selesai, 'pending', true);
+
+                $item->update([
+                    'asn_profile_id' => $asnProfileId,
+                    'calon_asn_profile_id' => null,
+                    'tanggal_mulai' => $mulai,
+                    'tanggal_selesai' => $selesai,
+                    'status' => $statusBaru,
+                    'status_pengajuan' => 'diterima',
+                    'pesan_penolakan_asn' => null,
+                    'alasan_penolakan' => null,
+                    'direspon_asn_at' => now(),
+                ]);
+            }
+        });
+
+        Cache::forget('magang_status_sync_lock');
+
+        $namaPemohon = $profilUtama->user?->name ?? 'Peserta';
+        $infoKelompok = $profilUtama->isKelompok() ? " beserta seluruh anggota kelompok ({$targetProfiles->count()} peserta)" : '';
+
+        return redirect()
+            ->route('asn-permintaan-bimbingan')
+            ->with('success', "Anda telah menerima {$namaPemohon}{$infoKelompok} sebagai peserta bimbingan magang Anda.");
+    }
+
+    /**
+     * ASN menolak permintaan bimbingan dan mengirimkan pesan penolakan ke Admin.
+     */
+    public function tolakPermintaanBimbingan(Request $request, $id)
+    {
+        $validated = $request->validate(
+            [
+                'pesan_penolakan_asn' => 'required|string|min:5|max:1000',
+            ],
+            [
+                'pesan_penolakan_asn.required' => 'Pesan penolakan wajib diisi agar Admin mengetahui alasannya.',
+                'pesan_penolakan_asn.min' => 'Pesan penolakan minimal 5 karakter.',
+                'pesan_penolakan_asn.max' => 'Pesan penolakan maksimal 1000 karakter.',
+            ]
+        );
+
+        $asnProfileId = Auth::user()->asnProfile?->id;
+        $profilUtama = MahasiswaProfile::with('user')->findOrFail($id);
+
+        if (! $asnProfileId || (int) $profilUtama->calon_asn_profile_id !== (int) $asnProfileId || $profilUtama->status_pengajuan !== 'menunggu_asn') {
+            return back()->with('error', 'Permintaan bimbingan ini tidak valid atau sudah direspons sebelumnya.');
+        }
+
+        $targetProfiles = $profilUtama->isKelompok()
+            ? MahasiswaProfile::where('kode_kelompok', $profilUtama->kode_kelompok)->get()
+            : collect([$profilUtama]);
+
+        DB::transaction(function () use ($targetProfiles, $validated) {
+            foreach ($targetProfiles as $item) {
+                $item->update([
+                    'status_pengajuan' => 'ditolak_asn',
+                    'pesan_penolakan_asn' => $validated['pesan_penolakan_asn'],
+                    'direspon_asn_at' => now(),
+                ]);
+            }
+        });
+
+        $namaPemohon = $profilUtama->user?->name ?? 'Peserta';
+
+        return redirect()
+            ->route('asn-permintaan-bimbingan')
+            ->with('success', "Permintaan bimbingan untuk {$namaPemohon} telah ditolak dan pesan Anda telah dikirimkan ke Admin.");
     }
 
     public function logbookMahasiswa($mahasiswaProfileId)
@@ -62,7 +227,6 @@ class AsnController extends Controller
             }
         }
 
-        // Daftar logbook mandiri yang masih menunggu validasi pembimbing
         $logbookMenungguValidasi = MagangLogbook::where('mahasiswa_profile_id', $mahasiswa->id)
             ->belumValidasi()
             ->orderBy('tanggal_kegiatan', 'asc')
@@ -116,11 +280,11 @@ class AsnController extends Controller
         $asnProfileId = Auth::user()->asnProfile?->id;
         $logbook = MagangLogbook::with('mahasiswaProfile')->findOrFail($id);
 
-        if (!$asnProfileId || (int) $logbook->mahasiswaProfile?->asn_profile_id !== (int) $asnProfileId) {
+        if (! $asnProfileId || (int) $logbook->mahasiswaProfile?->asn_profile_id !== (int) $asnProfileId) {
             abort(403, 'Anda tidak memiliki akses untuk memvalidasi logbook peserta ini.');
         }
 
-        if (!$logbook->is_validated) {
+        if (! $logbook->is_validated) {
             $logbook->update([
                 'is_validated' => true,
                 'validated_at' => now(),
@@ -170,7 +334,7 @@ class AsnController extends Controller
 
         $logbook = $query->first();
 
-        if (!$logbook) {
+        if (! $logbook) {
             return response()->json(
                 [
                     'success' => false,
@@ -237,7 +401,7 @@ class AsnController extends Controller
         $bulan = $this->parseValidMonth($request->query('bulan'));
         $hari = $this->parseValidDate($request->query('hari'));
 
-        if ($hari && !$bulan) {
+        if ($hari && ! $bulan) {
             $bulan = substr($hari, 0, 7);
         } elseif ($bulan && $hari && substr($hari, 0, 7) !== $bulan) {
             $hari = null;
@@ -351,7 +515,7 @@ class AsnController extends Controller
 
     private function parseValidMonth(mixed $value): ?string
     {
-        if (!is_string($value) || !preg_match('/^\d{4}-\d{2}$/', $value)) {
+        if (! is_string($value) || ! preg_match('/^\d{4}-\d{2}$/', $value)) {
             return null;
         }
 
@@ -365,7 +529,7 @@ class AsnController extends Controller
 
     private function parseValidDate(mixed $value): ?string
     {
-        if (!is_string($value) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+        if (! is_string($value) || ! preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
             return null;
         }
 

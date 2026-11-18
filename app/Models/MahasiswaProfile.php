@@ -15,6 +15,9 @@ class MahasiswaProfile extends Model
     protected $fillable = [
         'user_id',
         'asn_profile_id',
+        'calon_asn_profile_id',
+        'kode_kelompok',
+        'is_ketua_kelompok',
         'foto_profil_path',
         'nim',
         'instansi_asal',
@@ -25,6 +28,14 @@ class MahasiswaProfile extends Model
         'tanggal_mulai',
         'tanggal_selesai',
         'status',
+        'status_pengajuan',
+        'alasan_penolakan',
+        'pesan_penolakan_asn',
+        'diajukan_at',
+        'dikirim_ke_asn_at',
+        'direspon_asn_at',
+        'diverifikasi_oleh',
+        'diverifikasi_at',
         'surat_pengantar_path',
         'catatan',
     ];
@@ -32,10 +43,88 @@ class MahasiswaProfile extends Model
     protected function casts(): array
     {
         return [
+            'is_ketua_kelompok' => 'boolean',
             'tanggal_lahir' => 'date',
             'tanggal_mulai' => 'date',
             'tanggal_selesai' => 'date',
+            'diajukan_at' => 'datetime',
+            'dikirim_ke_asn_at' => 'datetime',
+            'direspon_asn_at' => 'datetime',
+            'diverifikasi_at' => 'datetime',
         ];
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | LOGIKA KELOMPOK & PENGAJUAN PEMBIMBING
+    |--------------------------------------------------------------------------
+    */
+
+    public function isKelompok(): bool
+    {
+        return ! empty($this->kode_kelompok);
+    }
+
+    /**
+     * Mengambil seluruh anggota dalam kelompok yang sama (diurutkan dari peserta pertama masuk).
+     */
+    public function anggotaKelompok()
+    {
+        if (! $this->isKelompok()) {
+            return collect([$this]);
+        }
+
+        return static::query()
+            ->where('kode_kelompok', $this->kode_kelompok)
+            ->with('user')
+            ->orderByDesc('is_ketua_kelompok')
+            ->orderBy('id')
+            ->get();
+    }
+
+    /**
+     * Mengecek apakah profil ini berhak menekan tombol "Ajukan Pembimbing":
+     * - Untuk individu: akun tersebut sendiri.
+     * - Untuk kelompok: hanya data peserta pertama yang didaftarkan (is_ketua_kelompok = true).
+     */
+    public function adalahPengajuUtama(): bool
+    {
+        if (! $this->isKelompok()) {
+            return true;
+        }
+
+        return (bool) $this->is_ketua_kelompok;
+    }
+
+    /**
+     * Mengecek apakah tombol "Ajukan Pembimbing" dapat ditampilkan dan diklik.
+     */
+    public function bisaMengajukanPembimbing(): bool
+    {
+        if (! $this->user || ! $this->user->isProfileComplete()) {
+            return false;
+        }
+
+        if (! $this->adalahPengajuUtama()) {
+            return false;
+        }
+
+        // Jika sudah punya pembimbing dan status pengajuan diterima, tidak perlu mengajukan lagi
+        if ($this->status_pengajuan === 'diterima' && ! empty($this->asn_profile_id)) {
+            return false;
+        }
+
+        // Saat sedang diproses Admin maupun menunggu/ditolak internal ASN, tombol ajukan disembunyikan
+        if (in_array($this->status_pengajuan, ['menunggu_verifikasi', 'menunggu_asn', 'ditolak_asn'], true)) {
+            return false;
+        }
+
+        // Untuk data lama yang sudah langsung punya pembimbing tanpa alur pengajuan
+        if (is_null($this->status_pengajuan) && ! empty($this->asn_profile_id)) {
+            return false;
+        }
+
+        return in_array($this->status_pengajuan, ['belum_diajukan', 'ditolak', null], true);
     }
 
     /*
@@ -44,20 +133,18 @@ class MahasiswaProfile extends Model
     |--------------------------------------------------------------------------
     */
 
-    /**
-     * Menentukan status magang berdasarkan tanggal mulai & tanggal selesai.
-     * - dibatalkan: tetap dibatalkan
-     * - hari ini > tanggal_selesai: otomatis 'selesai'
-     * - tanggal_mulai <= hari ini <= tanggal_selesai: otomatis 'aktif'
-     * - hari ini < tanggal_mulai: tetap 'pending'
-     */
     public static function tentukanStatusDariTanggal(
         mixed $tanggalMulai,
         mixed $tanggalSelesai,
-        string $statusSaatIni = 'pending'
+        string $statusSaatIni = 'pending',
+        bool $sudahDisetujui = true
     ): string {
         if ($statusSaatIni === 'dibatalkan') {
             return 'dibatalkan';
+        }
+
+        if (! $sudahDisetujui) {
+            return 'pending';
         }
 
         $hariIni = Carbon::today();
@@ -84,9 +171,14 @@ class MahasiswaProfile extends Model
     {
         $hariIni = Carbon::today()->toDateString();
 
-        // 1. Ubah status 'pending' -> 'aktif' jika sudah masuk tanggal_mulai dan belum melewati tanggal_selesai
+        // 1. Ubah status 'pending' -> 'aktif' hanya jika pembimbing sudah disetujui ASN
         $diaktifkan = static::query()
             ->where('status', 'pending')
+            ->whereNotNull('asn_profile_id')
+            ->where(function ($q) {
+                $q->whereNull('status_pengajuan')
+                    ->orWhere('status_pengajuan', 'diterima');
+            })
             ->whereNotNull('tanggal_mulai')
             ->whereDate('tanggal_mulai', '<=', $hariIni)
             ->where(function ($query) use ($hariIni) {
@@ -114,10 +206,6 @@ class MahasiswaProfile extends Model
     |--------------------------------------------------------------------------
     */
 
-    /**
-     * Menghapus akun peserta magang beserta profil & file lampirannya
-     * apabila tanggal_mulai dan tanggal_selesai tidak diisi lebih dari 1 bulan sejak akun dibuat.
-     */
     public static function hapusAkunTanpaTanggalKadaluarsa(): int
     {
         $batasWaktu = Carbon::now()->subMonth();
@@ -194,10 +282,6 @@ class MahasiswaProfile extends Model
     |--------------------------------------------------------------------------
     */
 
-    /**
-     * Mengambil daftar tanggal unik (Y-m-d) yang memiliki logbook tervalidasi.
-     * Setel $includeLogbookTugas = false jika ingin menghitung khusus dari logbook mandiri saja.
-     */
     public function getTanggalAktifLogbook(bool $includeLogbookTugas = true)
     {
         $tanggalDariMandiri = MagangLogbook::where('mahasiswa_profile_id', $this->id)
@@ -218,9 +302,6 @@ class MahasiswaProfile extends Model
         return $tanggalDariTugas->merge($tanggalDariMandiri)->unique()->values();
     }
 
-    /**
-     * Menghitung total hari masuk (1 hari dihitung jika ada minimal 1 logbook tervalidasi di tanggal tersebut).
-     */
     public function getJumlahHariMasuk(bool $includeLogbookTugas = true): int
     {
         return $this->getTanggalAktifLogbook($includeLogbookTugas)->count();
@@ -255,6 +336,16 @@ class MahasiswaProfile extends Model
     public function pembimbing()
     {
         return $this->belongsTo(AsnProfile::class, 'asn_profile_id');
+    }
+
+    public function calonPembimbing()
+    {
+        return $this->belongsTo(AsnProfile::class, 'calon_asn_profile_id');
+    }
+
+    public function verifikator()
+    {
+        return $this->belongsTo(User::class, 'diverifikasi_oleh');
     }
 
     public function magangLogbooks()

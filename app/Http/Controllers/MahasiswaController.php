@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Throwable;
@@ -66,11 +67,55 @@ class MahasiswaController extends Controller
         ));
     }
 
+    /**
+     * Memproses tombol "Ajukan Pembimbing" setelah profil peserta lengkap.
+     * Untuk magang kelompok, hanya peserta pertama masuk (is_ketua_kelompok = true) yang dapat mengajukan.
+     */
+    public function ajukanPembimbing()
+    {
+        $user = Auth::user();
+        $profil = $user->mahasiswaProfile;
+
+        if (! $profil || ! $user->isProfileComplete()) {
+            return redirect()
+                ->route('mahasiswa-profil-form')
+                ->with('error', 'Silakan lengkapi seluruh data profil (NIM, instansi asal, jenjang, jurusan, tanggal mulai, dan tanggal selesai) sebelum mengajukan pembimbing.');
+        }
+
+        if (! $profil->adalahPengajuUtama()) {
+            return back()->with('error', 'Untuk magang kelompok, pengajuan pembimbing hanya dapat dikirimkan oleh peserta pertama (Ketua Kelompok).');
+        }
+
+        if (! $profil->bisaMengajukanPembimbing()) {
+            return back()->with('error', 'Pengajuan pembimbing Anda sedang diproses atau sudah disetujui.');
+        }
+
+        $targetProfiles = $profil->isKelompok()
+            ? MahasiswaProfile::where('kode_kelompok', $profil->kode_kelompok)->get()
+            : collect([$profil]);
+
+        DB::transaction(function () use ($targetProfiles) {
+            foreach ($targetProfiles as $item) {
+                $item->update([
+                    'status_pengajuan' => 'menunggu_verifikasi',
+                    'alasan_penolakan' => null,
+                    'diajukan_at' => now(),
+                ]);
+            }
+        });
+
+        $pesan = $profil->isKelompok()
+            ? "Pengajuan pembimbing untuk kelompok Anda ({$targetProfiles->count()} anggota) berhasil dikirim ke Admin. Silakan tunggu verifikasi."
+            : 'Pengajuan pembimbing berhasil dikirim ke Admin. Silakan tunggu verifikasi penentuan pembimbing ASN.';
+
+        return back()->with('success', $pesan);
+    }
+
     public function logbookDetailTanggal($tanggal)
     {
         $profil = auth()->user()->mahasiswaProfile;
 
-        if (!$profil) {
+        if (! $profil) {
             abort(404);
         }
 
@@ -127,13 +172,13 @@ class MahasiswaController extends Controller
         $bulan = $statusTugas === 'selesai' ? $this->parseValidMonth($request->query('bulan')) : null;
         $hari = $statusTugas === 'selesai' ? $this->parseValidDate($request->query('hari')) : null;
 
-        if ($hari && !$bulan) {
+        if ($hari && ! $bulan) {
             $bulan = substr($hari, 0, 7);
         } elseif ($bulan && $hari && substr($hari, 0, 7) !== $bulan) {
             $hari = null;
         }
 
-        if (!$profil) {
+        if (! $profil) {
             $emptyPaginator = new LengthAwarePaginator([], 0, 10);
 
             return view('pages.mahasiswa.tugas-saya.index', [
@@ -177,7 +222,7 @@ class MahasiswaController extends Controller
     {
         $profil = auth()->user()->mahasiswaProfile;
 
-        if (!$profil) {
+        if (! $profil) {
             abort(404);
         }
 
@@ -196,7 +241,7 @@ class MahasiswaController extends Controller
 
     public function profil()
     {
-        $profil = User::with('mahasiswaProfile.skills')->findOrFail(Auth::id());
+        $profil = User::with(['mahasiswaProfile.skills', 'mahasiswaProfile.pembimbing.user'])->findOrFail(Auth::id());
 
         return view('pages.mahasiswa.profil-view', compact('profil'));
     }
@@ -229,12 +274,11 @@ class MahasiswaController extends Controller
                         ->where(fn ($query) => $query->where('instansi_asal', $request->instansi_asal))
                         ->ignore(optional($user->mahasiswaProfile)->id),
                 ],
-                'jenjang' => 'nullable|in:SMA/SMK,D3,D4,S1,S2',
-                'jurusan' => 'nullable|string|max:255',
+                'jenjang' => 'required|in:SMA/SMK,D3,D4,S1,S2',
+                'jurusan' => 'required|string|max:255',
                 'tanggal_lahir' => 'nullable|date',
-                'tanggal_mulai' => 'nullable|date',
-                'tanggal_selesai' => 'nullable|date|after_or_equal:tanggal_mulai',
-                'periode_magang_id' => 'nullable|exists:periode_magang,id',
+                'tanggal_mulai' => 'required|date',
+                'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
                 'skills' => 'nullable|array',
                 'skills.*' => 'exists:skills,id',
             ],
@@ -253,13 +297,16 @@ class MahasiswaController extends Controller
                 'nim.required' => 'NIM wajib diisi.',
                 'nim.string' => 'NIM harus berupa teks.',
                 'nim.unique' => 'NIM dengan instansi asal yang sama sudah terdaftar. Silakan gunakan NIM lain.',
+                'jenjang.required' => 'Jenjang pendidikan wajib dipilih.',
                 'jenjang.in' => 'Jenjang harus salah satu dari: SMA/SMK, D3, D4, S1, S2.',
+                'jurusan.required' => 'Jurusan wajib diisi.',
                 'jurusan.string' => 'Jurusan harus berupa teks.',
                 'jurusan.max' => 'Jurusan maksimal 255 karakter.',
+                'tanggal_mulai.required' => 'Tanggal mulai magang wajib diisi.',
                 'tanggal_mulai.date' => 'Format tanggal mulai tidak valid.',
+                'tanggal_selesai.required' => 'Tanggal selesai magang wajib diisi.',
                 'tanggal_selesai.date' => 'Format tanggal selesai tidak valid.',
                 'tanggal_selesai.after_or_equal' => 'Tanggal selesai harus sama dengan atau setelah tanggal mulai.',
-                'periode_magang_id.exists' => 'Periode magang yang dipilih tidak terdaftar dalam sistem.',
                 'skills.array' => 'Format skills tidak valid.',
                 'skills.*.exists' => 'Skill yang dipilih tidak terdaftar dalam sistem.',
             ],
@@ -285,26 +332,27 @@ class MahasiswaController extends Controller
             ['user_id' => $user->id],
             [
                 'foto_profil_path' => $fotoProfilPath,
-                'periode_magang_id' => $validated['periode_magang_id'] ?? null,
                 'nim' => $validated['nim'],
                 'instansi_asal' => $validated['instansi_asal'],
-                'jenjang' => $validated['jenjang'] ?? null,
-                'jurusan' => $validated['jurusan'] ?? null,
+                'jenjang' => $validated['jenjang'],
+                'jurusan' => $validated['jurusan'],
                 'tanggal_lahir' => $validated['tanggal_lahir'] ?? null,
-                'tanggal_mulai' => $validated['tanggal_mulai'] ?? null,
-                'tanggal_selesai' => $validated['tanggal_selesai'] ?? null,
+                'tanggal_mulai' => $validated['tanggal_mulai'],
+                'tanggal_selesai' => $validated['tanggal_selesai'],
                 'alamat' => $request->input('alamat'),
             ],
         );
 
         $profile->skills()->sync($validated['skills'] ?? []);
 
-        return redirect()->route('profil-magang')->with('success', 'Profil berhasil diperbarui.');
+        return redirect()
+            ->route('profil-magang')
+            ->with('success', 'Profil berhasil dilengkapi. Silakan klik tombol Ajukan Pembimbing apabila Anda adalah peserta individu atau ketua kelompok.');
     }
 
     private function parseValidMonth(mixed $value): ?string
     {
-        if (!is_string($value) || !preg_match('/^\d{4}-\d{2}$/', $value)) {
+        if (! is_string($value) || ! preg_match('/^\d{4}-\d{2}$/', $value)) {
             return null;
         }
 
@@ -318,7 +366,7 @@ class MahasiswaController extends Controller
 
     private function parseValidDate(mixed $value): ?string
     {
-        if (!is_string($value) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+        if (! is_string($value) || ! preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
             return null;
         }
 

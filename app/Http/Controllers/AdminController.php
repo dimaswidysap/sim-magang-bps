@@ -182,17 +182,154 @@ class AdminController extends Controller
 
     public function adminMahasiswa(Request $request)
     {
-        MahasiswaProfile::hapusAkunTanpaTanggalKadaluarsa();
+        $kategori = (string) $request->query('kategori', 'semua');
+        $allowedKategori = ['semua', 'aktif', 'pending', 'selesai', 'dibatalkan'];
+        if (! in_array($kategori, $allowedKategori, true)) {
+            $kategori = 'semua';
+        }
 
-        $dataMahasiswa = User::query()
+        $tahun = trim((string) $request->query('tahun', ''));
+        if (! preg_match('/^\d{4}$/', $tahun)) {
+            $tahun = '';
+        }
+
+        $tanggal = trim((string) $request->query('tanggal', ''));
+        if (! preg_match('/^\d{4}-\d{2}-\d{2}$/', $tanggal)) {
+            $tanggal = '';
+        }
+
+        $search = trim((string) $request->query('search', ''));
+
+        // Base query: seluruh akun dengan role mahasiswa tanpa pengecualian status
+        $baseQuery = User::query()
             ->where('role', 'mahasiswa')
-            ->with('mahasiswaProfile')
-            ->search($request->query('search'))
+            ->when($search !== '', function ($q) use ($search) {
+                $q->where(function ($sub) use ($search) {
+                    $sub->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhereHas('mahasiswaProfile', function ($p) use ($search) {
+                            $p->where('nim', 'like', "%{$search}%")
+                                ->orWhere('instansi_asal', 'like', "%{$search}%")
+                                ->orWhere('jurusan', 'like', "%{$search}%")
+                                ->orWhere('jenjang', 'like', "%{$search}%");
+                        });
+                });
+            })
+            ->when($tahun !== '', function ($q) use ($tahun) {
+                $q->where(function ($sub) use ($tahun) {
+                    $sub->whereHas('mahasiswaProfile', function ($p) use ($tahun) {
+                        $p->whereYear('tanggal_mulai', $tahun)
+                            ->orWhereYear('tanggal_selesai', $tahun);
+                    })->orWhere(function ($fallback) use ($tahun) {
+                        $fallback->where(function ($noDate) {
+                            $noDate->whereDoesntHave('mahasiswaProfile')
+                                ->orWhereHas('mahasiswaProfile', fn ($p) => $p->whereNull('tanggal_mulai')->whereNull('tanggal_selesai'));
+                        })->whereYear('created_at', $tahun);
+                    });
+                });
+            })
+            ->when($tanggal !== '', function ($q) use ($tanggal) {
+                $q->where(function ($sub) use ($tanggal) {
+                    $sub->whereHas('mahasiswaProfile', function ($p) use ($tanggal) {
+                        $p->where(function ($range) use ($tanggal) {
+                            $range->whereNotNull('tanggal_mulai')
+                                ->whereDate('tanggal_mulai', '<=', $tanggal)
+                                ->where(function ($end) use ($tanggal) {
+                                    $end->whereNull('tanggal_selesai')
+                                        ->orWhereDate('tanggal_selesai', '>=', $tanggal);
+                                });
+                        })->orWhere(function ($onlyEnd) use ($tanggal) {
+                            $onlyEnd->whereNull('tanggal_mulai')
+                                ->whereNotNull('tanggal_selesai')
+                                ->whereDate('tanggal_selesai', '>=', $tanggal);
+                        });
+                    })->orWhere(function ($fallback) use ($tanggal) {
+                        $fallback->where(function ($noDate) {
+                            $noDate->whereDoesntHave('mahasiswaProfile')
+                                ->orWhereHas('mahasiswaProfile', fn ($p) => $p->whereNull('tanggal_mulai')->whereNull('tanggal_selesai'));
+                        })->whereDate('created_at', $tanggal);
+                    });
+                });
+            });
+
+        // Hitung jumlah per kategori tab
+        $jumlahSemua = (clone $baseQuery)->count();
+
+        $jumlahAktif = (clone $baseQuery)
+            ->whereHas('mahasiswaProfile', fn ($p) => $p->where('status', 'aktif'))
+            ->count();
+
+        $jumlahPending = (clone $baseQuery)
+            ->where(function ($sub) {
+                $sub->whereDoesntHave('mahasiswaProfile')
+                    ->orWhereHas('mahasiswaProfile', fn ($p) => $p->where('status', 'pending')->orWhereNull('status'));
+            })
+            ->count();
+
+        $jumlahSelesai = (clone $baseQuery)
+            ->whereHas('mahasiswaProfile', fn ($p) => $p->where('status', 'selesai'))
+            ->count();
+
+        $jumlahDibatalkan = (clone $baseQuery)
+            ->whereHas('mahasiswaProfile', fn ($p) => $p->where('status', 'dibatalkan'))
+            ->count();
+
+        // Terapkan filter tab kategori
+        $dataMahasiswa = (clone $baseQuery)
+            ->when($kategori === 'aktif', function ($q) {
+                $q->whereHas('mahasiswaProfile', fn ($p) => $p->where('status', 'aktif'));
+            })
+            ->when($kategori === 'pending', function ($q) {
+                $q->where(function ($sub) {
+                    $sub->whereDoesntHave('mahasiswaProfile')
+                        ->orWhereHas('mahasiswaProfile', fn ($p) => $p->where('status', 'pending')->orWhereNull('status'));
+                });
+            })
+            ->when($kategori === 'selesai', function ($q) {
+                $q->whereHas('mahasiswaProfile', fn ($p) => $p->where('status', 'selesai'));
+            })
+            ->when($kategori === 'dibatalkan', function ($q) {
+                $q->whereHas('mahasiswaProfile', fn ($p) => $p->where('status', 'dibatalkan'));
+            })
+            ->with(['mahasiswaProfile.pembimbing.user'])
+            ->orderByDesc('created_at')
             ->orderBy('name')
-            ->paginate(15)
+            ->paginate(20)
             ->withQueryString();
 
-        return view('pages.admin.mahasiswa.index', compact('dataMahasiswa'));
+        // Daftar tahun dinamis dari data magang & pendaftaran akun
+        $tahunMulai = MahasiswaProfile::whereNotNull('tanggal_mulai')
+            ->selectRaw('DISTINCT YEAR(tanggal_mulai) as tahun')
+            ->pluck('tahun');
+        $tahunSelesai = MahasiswaProfile::whereNotNull('tanggal_selesai')
+            ->selectRaw('DISTINCT YEAR(tanggal_selesai) as tahun')
+            ->pluck('tahun');
+        $tahunDaftar = User::where('role', 'mahasiswa')
+            ->selectRaw('DISTINCT YEAR(created_at) as tahun')
+            ->pluck('tahun');
+
+        $daftarTahun = $tahunMulai
+            ->merge($tahunSelesai)
+            ->merge($tahunDaftar)
+            ->push((int) date('Y'))
+            ->filter()
+            ->unique()
+            ->sortDesc()
+            ->values();
+
+        return view('pages.admin.mahasiswa.index', compact(
+            'dataMahasiswa',
+            'kategori',
+            'tahun',
+            'tanggal',
+            'search',
+            'daftarTahun',
+            'jumlahSemua',
+            'jumlahAktif',
+            'jumlahPending',
+            'jumlahSelesai',
+            'jumlahDibatalkan'
+        ));
     }
 
     public function adminSkill(Request $request)

@@ -13,16 +13,14 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class AdminMahasiswa extends Controller
 {
     public function showForm()
     {
-        $skillList = Skill::orderBy('nama_skill', 'asc')->get();
-        $pembimbingList = $this->getDaftarPembimbing();
-
-        return view('pages.admin.mahasiswa.create', compact('skillList', 'pembimbingList'));
+        return view('pages.admin.mahasiswa.create');
     }
 
     public function detailMahasiswa($id)
@@ -30,49 +28,101 @@ class AdminMahasiswa extends Controller
         $detailUser = User::query()
             ->where('id', $id)
             ->where('role', 'mahasiswa')
-            ->with(['mahasiswaProfile.skills', 'mahasiswaProfile.pembimbing.user'])
+            ->with(['mahasiswaProfile.skills', 'mahasiswaProfile.pembimbing.user', 'mahasiswaProfile.calonPembimbing.user'])
             ->firstOrFail();
 
-        return view('pages.admin.mahasiswa.view', compact('detailUser'));
+        $anggotaKelompok = $detailUser->mahasiswaProfile ? $detailUser->mahasiswaProfile->anggotaKelompok() : collect();
+
+        return view('pages.admin.mahasiswa.view', compact('detailUser', 'anggotaKelompok'));
     }
 
+    /**
+     * Menyimpan pendaftaran peserta magang baru (Mode Individu atau Kelompok)
+     * tanpa pemilihan pembimbing ASN maupun periode magang di awal.
+     */
     public function storeMahasiswa(Request $request)
     {
+        $tipePendaftaran = $request->input('tipe_pendaftaran', 'individu');
+
+        if ($tipePendaftaran === 'kelompok') {
+            $validated = $request->validate(
+                [
+                    'tipe_pendaftaran' => 'required|in:individu,kelompok',
+                    'anggota' => 'required|array|min:2',
+                    'anggota.*.name' => 'required|string|max:255',
+                    'anggota.*.email' => 'required|email|distinct|unique:users,email',
+                    'anggota.*.password' => 'required|string|min:8',
+                ],
+                [
+                    'anggota.required' => 'Data anggota kelompok wajib diisi.',
+                    'anggota.min' => 'Pendaftaran kelompok minimal terdiri dari 2 peserta.',
+                    'anggota.*.name.required' => 'Nama lengkap setiap anggota wajib diisi.',
+                    'anggota.*.name.max' => 'Nama lengkap maksimal 255 karakter.',
+                    'anggota.*.email.required' => 'Email setiap anggota wajib diisi.',
+                    'anggota.*.email.email' => 'Format email anggota tidak valid.',
+                    'anggota.*.email.distinct' => 'Email antar anggota dalam satu kelompok tidak boleh sama.',
+                    'anggota.*.email.unique' => 'Salah satu email anggota sudah terdaftar dalam sistem.',
+                    'anggota.*.password.required' => 'Password setiap anggota wajib diisi.',
+                    'anggota.*.password.min' => 'Password anggota minimal 8 karakter.',
+                ],
+            );
+
+            $kodeKelompok = 'KLP-' . now()->format('Ymd') . '-' . strtoupper(Str::random(5));
+
+            DB::transaction(function () use ($validated, $kodeKelompok) {
+                foreach (array_values($validated['anggota']) as $index => $item) {
+                    $user = User::create([
+                        'name' => $item['name'],
+                        'email' => $item['email'],
+                        'password' => Hash::make($item['password']),
+                        'role' => 'mahasiswa',
+                        'is_active' => true,
+                    ]);
+
+                    MahasiswaProfile::create([
+                        'user_id' => $user->id,
+                        'asn_profile_id' => null,
+                        'calon_asn_profile_id' => null,
+                        'kode_kelompok' => $kodeKelompok,
+                        'is_ketua_kelompok' => $index === 0,
+                        'tanggal_mulai' => null,
+                        'tanggal_selesai' => null,
+                        'status' => 'pending',
+                        'status_pengajuan' => 'belum_diajukan',
+                    ]);
+                }
+            });
+
+            Cache::forget('magang_status_sync_lock');
+
+            $jumlahAnggota = count($validated['anggota']);
+            $namaKetua = array_values($validated['anggota'])[0]['name'];
+
+            return redirect()
+                ->route('admin-mahasiswa')
+                ->with('success', "Berhasil mendaftarkan kelompok magang ({$jumlahAnggota} peserta). Peserta pertama ({$namaKetua}) ditunjuk sebagai perwakilan untuk mengajukan pembimbing setelah profil dilengkapi.");
+        }
+
+        // Mode Pendaftaran Individu
         $validated = $request->validate(
             [
+                'tipe_pendaftaran' => 'nullable|in:individu,kelompok',
                 'name' => 'required|string|max:255',
                 'email' => 'required|email|unique:users,email',
                 'password' => 'required|string|min:8',
-                'asn_profile_id' => 'required|exists:asn_profiles,id',
-                'tanggal_mulai' => 'nullable|date',
-                'tanggal_selesai' => 'nullable|date|after_or_equal:tanggal_mulai',
             ],
             [
-                'name.required' => 'Silakan isi nama lengkap Anda.',
+                'name.required' => 'Silakan isi nama lengkap peserta.',
                 'name.max' => 'Nama terlalu panjang, maksimal 255 huruf.',
                 'email.required' => 'Silakan isi alamat email.',
                 'email.email' => 'Mohon masukkan alamat email yang valid (contoh: user@domain.com).',
                 'email.unique' => 'Email ini sudah digunakan. Silakan gunakan email yang berbeda.',
                 'password.required' => 'Silakan buat kata sandi.',
                 'password.min' => 'Kata sandi harus memiliki minimal 8 karakter untuk keamanan.',
-                'asn_profile_id.required' => 'Silakan pilih pembimbing magang.',
-                'asn_profile_id.exists' => 'Pembimbing magang yang dipilih tidak valid.',
-                'tanggal_mulai.date' => 'Format tanggal masuk magang tidak valid.',
-                'tanggal_selesai.date' => 'Format tanggal selesai magang tidak valid.',
-                'tanggal_selesai.after_or_equal' => 'Tanggal selesai magang harus sama dengan atau setelah tanggal masuk.',
             ],
         );
 
-        $tanggalMulai = $validated['tanggal_mulai'] ?? null;
-        $tanggalSelesai = $validated['tanggal_selesai'] ?? null;
-
-        $statusOtomatis = MahasiswaProfile::tentukanStatusDariTanggal(
-            $tanggalMulai,
-            $tanggalSelesai,
-            'pending'
-        );
-
-        DB::transaction(function () use ($validated, $tanggalMulai, $tanggalSelesai, $statusOtomatis) {
+        DB::transaction(function () use ($validated) {
             $user = User::create([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
@@ -83,23 +133,197 @@ class AdminMahasiswa extends Controller
 
             MahasiswaProfile::create([
                 'user_id' => $user->id,
-                'asn_profile_id' => $validated['asn_profile_id'],
-                'tanggal_mulai' => $tanggalMulai,
-                'tanggal_selesai' => $tanggalSelesai,
-                'status' => $statusOtomatis,
+                'asn_profile_id' => null,
+                'calon_asn_profile_id' => null,
+                'kode_kelompok' => null,
+                'is_ketua_kelompok' => false,
+                'tanggal_mulai' => null,
+                'tanggal_selesai' => null,
+                'status' => 'pending',
+                'status_pengajuan' => 'belum_diajukan',
             ]);
         });
 
         Cache::forget('magang_status_sync_lock');
 
-        $tanpaTanggal = empty($tanggalMulai) && empty($tanggalSelesai);
-        $pesanSukses = $tanpaTanggal
-            ? "Data mahasiswa berhasil ditambahkan dengan status '{$statusOtomatis}'. Karena tanggal masuk dan selesai dikosongkan, akun akan otomatis terhapus setelah 1 bulan apabila peserta tidak melengkapinya."
-            : "Data mahasiswa berhasil ditambahkan dengan status '{$statusOtomatis}'. Mahasiswa perlu melengkapi profil (NIM, instansi, dll) setelah login.";
+        return redirect()->route('admin-mahasiswa')->with('success', 'Akun peserta magang individu berhasil dibuat. Peserta silakan login untuk melengkapi profil dan mengajukan pembimbing.');
+    }
+
+    /**
+     * Menampilkan halaman daftar permintaan pembimbing dari peserta magang
+     * beserta status konfirmasi dari kandidat ASN.
+     */
+    public function daftarPermintaan(Request $request)
+    {
+        $filterStatus = $request->query('status', 'perlu_tindakan');
+        $allowedStatuses = ['perlu_tindakan', 'menunggu_asn', 'diterima', 'ditolak', 'semua'];
+        if (! in_array($filterStatus, $allowedStatuses, true)) {
+            $filterStatus = 'perlu_tindakan';
+        }
+
+        $daftarPengajuan = MahasiswaProfile::query()
+            ->whereHas('user', fn ($q) => $q->where('role', 'mahasiswa'))
+            ->where(function ($q) {
+                $q->whereNull('kode_kelompok')->orWhere('is_ketua_kelompok', true);
+            })
+            ->when($filterStatus === 'perlu_tindakan', function ($query) {
+                $query->whereIn('status_pengajuan', ['menunggu_verifikasi', 'ditolak_asn']);
+            })
+            ->when(in_array($filterStatus, ['menunggu_asn', 'diterima', 'ditolak'], true), function ($query) use ($filterStatus) {
+                $query->where('status_pengajuan', $filterStatus);
+            })
+            ->when($filterStatus === 'semua', function ($query) {
+                $query->whereIn('status_pengajuan', ['menunggu_verifikasi', 'menunggu_asn', 'ditolak_asn', 'diterima', 'ditolak']);
+            })
+            ->with(['user', 'skills', 'pembimbing.user', 'calonPembimbing.user', 'verifikator'])
+            ->orderByRaw("CASE status_pengajuan WHEN 'ditolak_asn' THEN 1 WHEN 'menunggu_verifikasi' THEN 2 WHEN 'menunggu_asn' THEN 3 WHEN 'ditolak' THEN 4 WHEN 'diterima' THEN 5 ELSE 6 END")
+            ->orderByDesc('diajukan_at')
+            ->orderByDesc('updated_at')
+            ->get();
+
+        $kodeKelompokList = $daftarPengajuan->pluck('kode_kelompok')->filter()->unique()->values();
+        $anggotaPerKelompok = MahasiswaProfile::query()
+            ->whereIn('kode_kelompok', $kodeKelompokList)
+            ->with(['user', 'skills'])
+            ->orderByDesc('is_ketua_kelompok')
+            ->orderBy('id')
+            ->get()
+            ->groupBy('kode_kelompok');
+
+        $daftarPengajuan->each(function (MahasiswaProfile $profil) use ($anggotaPerKelompok) {
+            $profil->setRelation('daftar_anggota', $profil->isKelompok() ? ($anggotaPerKelompok[$profil->kode_kelompok] ?? collect([$profil])) : collect([$profil]));
+        });
+
+        $jumlahPerluTindakan = MahasiswaProfile::query()
+            ->whereIn('status_pengajuan', ['menunggu_verifikasi', 'ditolak_asn'])
+            ->where(fn ($q) => $q->whereNull('kode_kelompok')->orWhere('is_ketua_kelompok', true))
+            ->count();
+
+        $jumlahMenungguAsn = MahasiswaProfile::query()
+            ->where('status_pengajuan', 'menunggu_asn')
+            ->where(fn ($q) => $q->whereNull('kode_kelompok')->orWhere('is_ketua_kelompok', true))
+            ->count();
+
+        $jumlahDiterima = MahasiswaProfile::query()
+            ->where('status_pengajuan', 'diterima')
+            ->where(fn ($q) => $q->whereNull('kode_kelompok')->orWhere('is_ketua_kelompok', true))
+            ->count();
+
+        $jumlahDitolak = MahasiswaProfile::query()
+            ->where('status_pengajuan', 'ditolak')
+            ->where(fn ($q) => $q->whereNull('kode_kelompok')->orWhere('is_ketua_kelompok', true))
+            ->count();
+
+        $pembimbingList = $this->getDaftarPembimbing();
+
+        return view('pages.admin.mahasiswa.permintaan-bimbingan', compact(
+            'daftarPengajuan',
+            'filterStatus',
+            'jumlahPerluTindakan',
+            'jumlahMenungguAsn',
+            'jumlahDiterima',
+            'jumlahDitolak',
+            'pembimbingList'
+        ));
+    }
+
+    /**
+     * Mengirimkan permintaan kesediaan membimbing ke kandidat ASN yang dipilih Admin.
+     * Status berubah menjadi 'menunggu_asn' sampai ASN merespons terima/tolak.
+     */
+    public function kirimPermintaanKeAsn(Request $request, $id)
+    {
+        $validated = $request->validate(
+            [
+                'asn_profile_id' => 'required|exists:asn_profiles,id',
+            ],
+            [
+                'asn_profile_id.required' => 'Silakan pilih kandidat pembimbing ASN terlebih dahulu.',
+                'asn_profile_id.exists' => 'Pembimbing ASN yang dipilih tidak valid.',
+            ],
+        );
+
+        $profilUtama = MahasiswaProfile::with('user')->findOrFail($id);
+
+        if (! in_array($profilUtama->status_pengajuan, ['menunggu_verifikasi', 'ditolak_asn'], true)) {
+            return back()->with('error', 'Pengajuan ini tidak dapat diteruskan ke ASN pada status saat ini.');
+        }
+
+        if ($profilUtama->status_pengajuan === 'ditolak_asn' && (int) $profilUtama->calon_asn_profile_id === (int) $validated['asn_profile_id']) {
+            return back()->with('error', 'ASN tersebut baru saja menolak pengajuan ini. Silakan pilih pembimbing ASN lainnya.');
+        }
+
+        $calonAsn = AsnProfile::with('user')->findOrFail($validated['asn_profile_id']);
+        $targetProfiles = $profilUtama->isKelompok()
+            ? MahasiswaProfile::where('kode_kelompok', $profilUtama->kode_kelompok)->get()
+            : collect([$profilUtama]);
+
+        DB::transaction(function () use ($targetProfiles, $calonAsn) {
+            foreach ($targetProfiles as $item) {
+                $item->update([
+                    'calon_asn_profile_id' => $calonAsn->id,
+                    'status_pengajuan' => 'menunggu_asn',
+                    'pesan_penolakan_asn' => null,
+                    'alasan_penolakan' => null,
+                    'dikirim_ke_asn_at' => now(),
+                    'direspon_asn_at' => null,
+                    'diverifikasi_oleh' => Auth::id(),
+                    'diverifikasi_at' => now(),
+                ]);
+            }
+        });
+
+        $namaPemohon = $profilUtama->user?->name ?? 'Peserta';
+        $namaAsn = $calonAsn->user?->name ?? 'ASN';
 
         return redirect()
-            ->route('admin-mahasiswa')
-            ->with('success', $pesanSukses);
+            ->route('admin-permintaan-magang')
+            ->with('success', "Permintaan bimbingan untuk {$namaPemohon} berhasil dikirim ke {$namaAsn}. Menunggu konfirmasi dari ASN.");
+    }
+
+    /**
+     * Menolak pengajuan magang secara langsung oleh Admin beserta alasannya.
+     */
+    public function tolakPermintaan(Request $request, $id)
+    {
+        $validated = $request->validate(
+            [
+                'alasan_penolakan' => 'required|string|min:5|max:1000',
+            ],
+            [
+                'alasan_penolakan.required' => 'Alasan penolakan wajib diisi agar peserta mengetahui hal yang perlu diperbaiki.',
+                'alasan_penolakan.min' => 'Alasan penolakan minimal 5 karakter.',
+                'alasan_penolakan.max' => 'Alasan penolakan maksimal 1000 karakter.',
+            ],
+        );
+
+        $profilUtama = MahasiswaProfile::with('user')->findOrFail($id);
+
+        if (! in_array($profilUtama->status_pengajuan, ['menunggu_verifikasi', 'ditolak_asn'], true)) {
+            return back()->with('error', 'Pengajuan ini tidak dalam status yang dapat ditolak Admin.');
+        }
+
+        $targetProfiles = $profilUtama->isKelompok()
+            ? MahasiswaProfile::where('kode_kelompok', $profilUtama->kode_kelompok)->get()
+            : collect([$profilUtama]);
+
+        DB::transaction(function () use ($targetProfiles, $validated) {
+            foreach ($targetProfiles as $item) {
+                $item->update([
+                    'calon_asn_profile_id' => null,
+                    'status_pengajuan' => 'ditolak',
+                    'alasan_penolakan' => $validated['alasan_penolakan'],
+                    'diverifikasi_oleh' => Auth::id(),
+                    'diverifikasi_at' => now(),
+                ]);
+            }
+        });
+
+        $namaPemohon = $profilUtama->user?->name ?? 'Peserta';
+
+        return redirect()
+            ->route('admin-permintaan-magang')
+            ->with('success', "Pengajuan magang atas nama {$namaPemohon} telah ditolak beserta catatan alasannya.");
     }
 
     public function formMahasiswaEdit($id)
@@ -113,9 +337,7 @@ class AdminMahasiswa extends Controller
         $skillList = Skill::query()->orderBy('nama_skill', 'asc')->get();
         $pembimbingList = $this->getDaftarPembimbing();
 
-        $selectedSkillIds = $dataUser->mahasiswaProfile
-            ? $dataUser->mahasiswaProfile->skills->pluck('id')->toArray()
-            : [];
+        $selectedSkillIds = $dataUser->mahasiswaProfile ? $dataUser->mahasiswaProfile->skills->pluck('id')->toArray() : [];
 
         return view('pages.admin.mahasiswa.update', compact('dataUser', 'skillList', 'selectedSkillIds', 'pembimbingList'));
     }
@@ -148,7 +370,6 @@ class AdminMahasiswa extends Controller
                 'tanggal_mulai' => 'nullable|date',
                 'tanggal_selesai' => 'nullable|date|after_or_equal:tanggal_mulai',
                 'status' => 'required|in:pending,aktif,selesai,dibatalkan',
-                'periode_magang_id' => 'nullable|exists:periode_magang,id',
                 'skills' => 'nullable|array',
                 'skills.*' => 'exists:skills,id',
                 'alamat' => 'nullable|string',
@@ -179,24 +400,20 @@ class AdminMahasiswa extends Controller
                 'tanggal_selesai.after_or_equal' => 'Tanggal selesai harus sama dengan atau setelah tanggal mulai.',
                 'status.required' => 'Status wajib dipilih.',
                 'status.in' => 'Status harus salah satu dari: pending, aktif, selesai, atau dibatalkan.',
-                'periode_magang_id.exists' => 'Periode magang yang dipilih tidak terdaftar dalam sistem.',
                 'skills.array' => 'Format skills tidak valid.',
                 'skills.*.exists' => 'Skill yang dipilih tidak terdaftar dalam sistem.',
             ],
         );
 
-        $statusFinal = MahasiswaProfile::tentukanStatusDariTanggal(
-            $validated['tanggal_mulai'] ?? null,
-            $validated['tanggal_selesai'] ?? null,
-            $validated['status']
-        );
+        $sudahAdaPembimbing = ! empty($validated['asn_profile_id']);
+        $statusFinal = MahasiswaProfile::tentukanStatusDariTanggal($validated['tanggal_mulai'] ?? null, $validated['tanggal_selesai'] ?? null, $validated['status'], $sudahAdaPembimbing);
 
-        DB::transaction(function () use ($validated, $user, $statusFinal) {
+        DB::transaction(function () use ($validated, $user, $statusFinal, $sudahAdaPembimbing) {
             $user->update([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
                 'phone' => $validated['phone'] ?? null,
-                'password' => !empty($validated['password']) ? Hash::make($validated['password']) : $user->password,
+                'password' => ! empty($validated['password']) ? Hash::make($validated['password']) : $user->password,
                 'is_active' => $validated['is_active'] ?? false,
             ]);
 
@@ -204,7 +421,7 @@ class AdminMahasiswa extends Controller
                 ['user_id' => $user->id],
                 [
                     'asn_profile_id' => $validated['asn_profile_id'] ?? null,
-                    'periode_magang_id' => $validated['periode_magang_id'] ?? null,
+                    'calon_asn_profile_id' => $sudahAdaPembimbing ? null : $user->mahasiswaProfile?->calon_asn_profile_id,
                     'nim' => $validated['nim'] ?? null,
                     'instansi_asal' => $validated['instansi_asal'] ?? null,
                     'jenjang' => $validated['jenjang'] ?? null,
@@ -213,6 +430,7 @@ class AdminMahasiswa extends Controller
                     'tanggal_mulai' => $validated['tanggal_mulai'] ?? null,
                     'tanggal_selesai' => $validated['tanggal_selesai'] ?? null,
                     'status' => $statusFinal,
+                    'status_pengajuan' => $sudahAdaPembimbing ? 'diterima' : ($user->mahasiswaProfile?->status_pengajuan ?? 'belum_diajukan'),
                     'alamat' => $validated['alamat'] ?? null,
                 ],
             );
@@ -227,10 +445,7 @@ class AdminMahasiswa extends Controller
 
     public function destroyMahasiswa(Request $request, $id)
     {
-        $user = User::query()
-            ->where('id', $id)
-            ->where('role', 'mahasiswa')
-            ->firstOrFail();
+        $user = User::query()->where('id', $id)->where('role', 'mahasiswa')->firstOrFail();
 
         if ($user->id === Auth::id()) {
             return back()->with('error', 'Anda tidak bisa menghapus akun sendiri.');
@@ -241,24 +456,16 @@ class AdminMahasiswa extends Controller
         return redirect()->route('admin-mahasiswa')->with('success', 'Data mahasiswa berhasil dihapus.');
     }
 
-    /**
-     * Mengambil daftar pembimbing (ASN aktif) beserta jumlah peserta yang sedang dibimbing,
-     * diurutkan dari beban bimbingan paling sedikit.
-     */
     private function getDaftarPembimbing(): Collection
     {
         return AsnProfile::query()
             ->whereHas('user', function ($query) {
-                $query->where('role', 'asn')
-                    ->where('is_active', true);
+                $query->where('role', 'asn')->where('is_active', true);
             })
             ->with('user')
             ->withCount(['mahasiswaBimbinganAktif as jumlah_bimbingan'])
             ->get()
-            ->sortBy(fn (AsnProfile $asn) => [
-                $asn->jumlah_bimbingan,
-                strtolower($asn->user->name ?? ''),
-            ])
+            ->sortBy(fn (AsnProfile $asn) => [$asn->jumlah_bimbingan, strtolower($asn->user->name ?? '')])
             ->values();
     }
 }
