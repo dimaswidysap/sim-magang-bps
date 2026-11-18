@@ -7,7 +7,7 @@
     $sedangDiproses = $profilMhs && in_array($profilMhs->status_pengajuan, ['menunggu_verifikasi', 'menunggu_asn', 'ditolak_asn'], true);
 @endphp
 
-@if (session('success'))
+{{-- @if (session('success'))
     <div class="p-4 rounded-xl bg-success/10 border border-success/30 text-success-dark text-xs sm:text-sm font-medium">
         {{ session('success') }}
     </div>
@@ -17,7 +17,7 @@
     <div class="p-4 rounded-xl bg-danger/10 border border-danger/30 text-danger text-xs sm:text-sm font-medium">
         {{ session('error') }}
     </div>
-@endif
+@endif --}}
 
 @if ($userMhs && $userMhs->isMahasiswa())
     @if (! $profilLengkap)

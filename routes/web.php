@@ -146,10 +146,11 @@ Route::prefix('asn')
         Route::get('/profil/detail', [AsnController::class, 'profilAsnDetail'])->name('asn-detail-profil');
         Route::put('/profil', [AsnController::class, 'updateProfil'])->name('asn-profil-update');
 
-        // Permintaan Bimbingan Masuk dari Admin
+        // Permintaan Bimbingan Masuk dari Admin & Detail Profil Peserta
         Route::get('/permintaan-bimbingan', [AsnController::class, 'daftarPermintaanBimbingan'])->name('asn-permintaan-bimbingan');
         Route::post('/permintaan-bimbingan/{id}/terima', [AsnController::class, 'terimaPermintaanBimbingan'])->name('asn.permintaan.terima');
         Route::post('/permintaan-bimbingan/{id}/tolak', [AsnController::class, 'tolakPermintaanBimbingan'])->name('asn.permintaan.tolak');
+        Route::get('/mahasiswa/detail/{id}', [AsnController::class, 'detailMahasiswa'])->name('asn-mahasiswa-detail');
 
         Route::get('/create-task', [AsnController::class, 'createTugasForm'])->name('asn-create-task-form');
         Route::get('/task-not-done', [AsnController::class, 'taskNotDone'])->name('task-not-done');

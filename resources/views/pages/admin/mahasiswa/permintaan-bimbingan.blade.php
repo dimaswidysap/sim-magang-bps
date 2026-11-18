@@ -1,15 +1,20 @@
+@vite(['resources/js/fitur-search.js'])
 @extends('layouts.app')
 
 @section('content')
-    <main class="relative w-full min-h-screen flex bg-background overflow-x-hidden">
+    <main class=" relative w-full flex bg-background">
+        {{-- container-sidebar-admin --}}
         @include('components.header-mobile')
         @include('components.admin.sidebar-admin')
 
-        <section class="flex flex-col flex-1 min-w-0 md:pl-60 container-content-mobile">
+        {{-- container-content --}}
+        <section class="flex flex-col flex-1 md:pl-60 container-content-mobile">
+
+            {{-- header --}}
             @include('components.admin.header-admin')
 
-            <section class="w-full min-w-0 p-4 md:p-6 font-montserrat">
-                <div class="max-w-7xl mx-auto space-y-6">
+            <section class="w-full p-2">
+                <section class="container-dalam flex flex-col gap-4 font-montserrat">
 
                     <!-- Header Halaman -->
                     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -21,28 +26,7 @@
                         </div>
                     </div>
 
-                    <!-- Alert Notifikasi -->
-                    @if (session('success'))
-                        <div class="p-4 rounded-xl bg-success/10 border border-success/30 text-success-dark text-sm font-medium">
-                            {{ session('success') }}
-                        </div>
-                    @endif
 
-                    @if (session('error'))
-                        <div class="p-4 rounded-xl bg-danger/10 border border-danger/30 text-danger text-sm font-medium">
-                            {{ session('error') }}
-                        </div>
-                    @endif
-
-                    @if ($errors->any())
-                        <div class="p-4 rounded-xl bg-danger/10 border border-danger/30 text-danger text-sm">
-                            <ul class="list-disc list-inside space-y-1">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
 
                     <!-- Filter Status Tab -->
                     <div class="flex flex-wrap items-center gap-2 border-b border-border pb-3">
@@ -73,7 +57,7 @@
                     </div>
 
                     <!-- Daftar Card Pengajuan -->
-                    <div class="space-y-4">
+                    <div class="flex flex-col gap-4">
                         @forelse ($daftarPengajuan as $pengajuan)
                             @php
                                 $userPemohon = $pengajuan->user;
@@ -269,7 +253,7 @@
                         @endforelse
                     </div>
 
-                </div>
+                </section>
             </section>
         </section>
     </main>

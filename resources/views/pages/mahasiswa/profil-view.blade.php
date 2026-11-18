@@ -105,7 +105,6 @@
                                 @csrf
                                 <button type="submit"
                                     class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 active:bg-indigo-800 transition-colors duration-200 shadow-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                                    {{-- svg ikon kunci Anda tetap di sini --}}
                                     <span>Ganti kata sandi akun</span>
                                 </button>
                             </form>
@@ -172,7 +171,122 @@
                         </div>
                     </div>
 
-                    <!-- SEKSI 2: Kontak & Personal -->
+                    <!-- SEKSI 2: Pembimbing Magang -->
+                    @php
+                        $pembimbing = $profileRelation?->pembimbing;
+                        $pembimbingUser = $pembimbing?->user;
+                        $statusPengajuan = $profileRelation?->status_pengajuan;
+                    @endphp
+                    <div class="space-y-4">
+                        <h2 class="text-lg font-bold text-text flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            Pembimbing Magang
+                        </h2>
+
+                        @if ($pembimbing)
+                            <div class="bg-background p-6 rounded-xl border border-border space-y-5">
+                                <!-- Identitas Utama Pembimbing -->
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
+                                    <div class="flex items-center gap-3.5">
+                                        @if ($pembimbing->avatar)
+                                            <img src="{{ asset('storage/' . $pembimbing->avatar) }}"
+                                                alt="{{ $pembimbingUser?->name ?? 'Pembimbing' }}"
+                                                class="w-12 h-12 rounded-full object-cover border border-primary/20 shrink-0">
+                                        @else
+                                            <div
+                                                class="w-12 h-12 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center justify-center text-base font-bold uppercase shrink-0">
+                                                {{ strtoupper(substr($pembimbingUser?->name ?? 'P', 0, 1)) }}
+                                            </div>
+                                        @endif
+
+                                        <div>
+                                            <p class="font-bold text-text text-base">
+                                                {{ $pembimbingUser?->name ?? '-' }}
+                                            </p>
+                                            <p class="text-xs font-mono text-text-light mt-0.5">
+                                                NIP. {{ $pembimbing->nip ?? '-' }}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <span
+                                        class="self-start sm:self-center inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-success/10 border border-success/20 text-success-dark">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-success"></span>
+                                        Pembimbing Aktif
+                                    </span>
+                                </div>
+
+                                <!-- Detail Jabatan, Unit Kerja, & Kontak Pembimbing -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <div>
+                                        <p class="text-xs font-semibold text-text-light uppercase tracking-wider mb-1">
+                                            Jabatan
+                                        </p>
+                                        <p class="font-medium text-text text-sm">
+                                            {{ $pembimbing->jabatan ?? '-' }}
+                                        </p>
+                                    </div>
+
+                                    <div>
+                                        <p class="text-xs font-semibold text-text-light uppercase tracking-wider mb-1">
+                                            Unit Kerja / Bidang
+                                        </p>
+                                        <p class="font-medium text-text text-sm">
+                                            {{ $pembimbing->unit_kerja ?? '-' }}
+                                        </p>
+                                    </div>
+
+                                    <div>
+                                        <p class="text-xs font-semibold text-text-light uppercase tracking-wider mb-1">
+                                            Email Pembimbing
+                                        </p>
+                                        <p class="font-medium text-text text-sm">
+                                            {{ $pembimbingUser?->email ?? '-' }}
+                                        </p>
+                                    </div>
+
+                                    <div>
+                                        <p class="text-xs font-semibold text-text-light uppercase tracking-wider mb-1">
+                                            No. Telepon / WhatsApp
+                                        </p>
+                                        <p class="font-medium text-text text-sm">
+                                            {{ $pembimbingUser?->phone ?? '-' }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        @else
+                            <div class="bg-background p-6 rounded-xl border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                <div>
+                                    <p class="text-sm font-semibold text-text">Belum Ada Pembimbing Magang</p>
+                                    <p class="text-xs text-text-light mt-1">
+                                        @if ($statusPengajuan === 'menunggu_verifikasi')
+                                            Pengajuan pembimbing Anda sedang dalam proses verifikasi oleh Admin.
+                                        @elseif ($statusPengajuan === 'menunggu_asn')
+                                            Pengajuan Anda telah diteruskan Admin dan sedang menunggu konfirmasi pembimbing ASN.
+                                        @elseif ($statusPengajuan === 'ditolak_asn')
+                                            Admin sedang mencarikan pembimbing ASN pengganti untuk pengajuan Anda.
+                                        @elseif ($statusPengajuan === 'ditolak')
+                                            Pengajuan sebelumnya ditolak. Silakan periksa catatan di Dashboard dan ajukan kembali.
+                                        @else
+                                            Lengkapi seluruh data profil Anda, lalu klik tombol Ajukan Pembimbing pada halaman Dashboard.
+                                        @endif
+                                    </p>
+                                </div>
+
+                                <span
+                                    class="self-start sm:self-center shrink-0 inline-flex px-3 py-1 rounded-full text-xs font-bold bg-warning/15 border border-warning/30 text-warning-dark">
+                                    {{ in_array($statusPengajuan, ['menunggu_verifikasi', 'menunggu_asn', 'ditolak_asn'], true) ? 'Dalam Proses' : 'Belum Ditetapkan' }}
+                                </span>
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- SEKSI 3: Kontak & Personal -->
                     <div class="space-y-4">
                         <h2 class="text-lg font-bold text-text flex items-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none"
@@ -224,7 +338,7 @@
                         </div>
                     </div>
 
-                    <!-- SEKSI 3: Keahlian / Skills -->
+                    <!-- SEKSI 4: Keahlian / Skills -->
                     <div class="space-y-4">
                         <h2 class="text-lg font-bold text-text flex items-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none"

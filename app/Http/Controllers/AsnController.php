@@ -38,6 +38,43 @@ class AsnController extends Controller
     }
 
     /**
+     * Menampilkan detail profil peserta magang (kandidat pengajuan maupun bimbingan aktif ASN).
+     */
+    public function detailMahasiswa($id)
+    {
+        $asnProfileId = Auth::user()->asnProfile?->id;
+
+        if (! $asnProfileId) {
+            abort(403, 'Profil ASN Anda belum terdaftar.');
+        }
+
+        $detailUser = User::query()
+            ->where('id', $id)
+            ->where('role', 'mahasiswa')
+            ->with([
+                'mahasiswaProfile.skills',
+                'mahasiswaProfile.pembimbing.user',
+                'mahasiswaProfile.calonPembimbing.user',
+            ])
+            ->firstOrFail();
+
+        $profil = $detailUser->mahasiswaProfile;
+
+        $berhakAkses = $profil && (
+            (int) $profil->calon_asn_profile_id === (int) $asnProfileId ||
+            (int) $profil->asn_profile_id === (int) $asnProfileId
+        );
+
+        if (! $berhakAkses) {
+            abort(403, 'Anda tidak memiliki akses untuk melihat detail profil peserta ini.');
+        }
+
+        $anggotaKelompok = $profil->anggotaKelompok();
+
+        return view('pages.asn.mahasiswa-detail', compact('detailUser', 'anggotaKelompok'));
+    }
+
+    /**
      * Menampilkan daftar permintaan bimbingan peserta magang yang diteruskan Admin ke ASN ini.
      */
     public function daftarPermintaanBimbingan(Request $request)
