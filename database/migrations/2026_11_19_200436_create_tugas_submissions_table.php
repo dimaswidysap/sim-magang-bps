@@ -11,14 +11,10 @@ return new class extends Migration
         Schema::create('tugas_submissions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('tugas_id')->constrained('tugas')->cascadeOnDelete();
-
-            // Nullable - mahasiswa boleh submit dengan pesan teks saja
-            // tanpa file, atau file saja tanpa pesan (minimal salah satu).
             $table->string('file_path')->nullable();
             $table->string('file_name')->nullable();
             $table->unsignedBigInteger('file_size')->nullable();
             $table->string('mime_type')->nullable();
-
             $table->text('catatan_mahasiswa')->nullable();
             $table->enum('status', ['menunggu', 'disetujui', 'revisi'])->default('menunggu');
             $table->text('catatan_asn')->nullable();

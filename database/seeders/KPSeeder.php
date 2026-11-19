@@ -7,6 +7,7 @@ use App\Models\Berita;
 use App\Models\Logbook;
 use App\Models\MagangLogbook;
 use App\Models\MahasiswaProfile;
+use App\Models\PengajuanLibur;
 use App\Models\Skill;
 use App\Models\Tugas;
 use App\Models\TugasAnggota;
@@ -14,19 +15,23 @@ use App\Models\TugasSubmission;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 
 class KPSeeder extends Seeder
 {
     /**
      * Simulasi 1 tahun operasional SIM Magang untuk kebutuhan Seminar KP.
-     * - Tidak menambah akun Admin dan ASN baru (menggunakan 3 Admin & 5 ASN yang sudah ada).
-     * - Mengisi 16 peserta magang dalam 4 gelombang (1 tahun terakhir) beserta tugas, tim, submission, logbook, dan berita.
+     * - Menggunakan 3 akun Admin & 5 akun ASN pembimbing.
+     * - Mengisi 18 peserta magang dalam 4 gelombang (Alumni Selesai, Aktif, Pending Individu & Kelompok, Dibatalkan).
+     * - Mendukung seluruh fitur: pelacakan kirim email & password terenkripsi, kelompok & pengajuan pembimbing,
+     *   tugas kolaborasi/review/revisi, logbook harian beserta lokasi & validasi, pengajuan libur, dan berita.
      */
     public function run(): void
     {
         DB::transaction(function (): void {
             $defaultPassword = '12345678';
+            $encryptedDefaultPassword = Crypt::encryptString($defaultPassword);
             $today = Carbon::today();
 
             // =========================================================================
@@ -78,10 +83,12 @@ class KPSeeder extends Seeder
                         'name' => $admin['name'],
                         'email_verified_at' => $today->copy()->subYear(),
                         'password' => $defaultPassword,
+                        'password_terenkripsi' => null,
                         'role' => 'admin',
                         'phone' => $admin['phone'],
                         'avatar' => null,
                         'is_active' => true,
+                        'email_sent_count' => 0,
                     ]
                 );
             }
@@ -162,10 +169,12 @@ class KPSeeder extends Seeder
                         'name' => $asn['name'],
                         'email_verified_at' => $today->copy()->subYear(),
                         'password' => $defaultPassword,
+                        'password_terenkripsi' => null,
                         'role' => 'asn',
                         'phone' => $asn['phone'],
                         'avatar' => null,
                         'is_active' => true,
+                        'email_sent_count' => 0,
                     ]
                 );
 
@@ -186,7 +195,7 @@ class KPSeeder extends Seeder
             }
 
             // =========================================================================
-            // 4. DATA PESERTA MAGANG 1 TAHUN (4 GELOMBANG: ALUMNI, AKTIF, PENDING, BATAL)
+            // 4. DATA PESERTA MAGANG 1 TAHUN (4 GELOMBANG + KELOMPOK + STATUS EMAIL)
             // =========================================================================
             $gelombang1Mulai = $today->copy()->subMonths(12)->startOfMonth();
             $gelombang1Selesai = $today->copy()->subMonths(9)->endOfMonth();
@@ -200,6 +209,8 @@ class KPSeeder extends Seeder
             $gelombang4Mulai = $today->copy()->subDays(42);
             $gelombang4Selesai = $today->copy()->addDays(48);
 
+            $kodeKelompokDemo = 'KLP-' . $today->format('Ymd') . '-DEMO1';
+
             $pesertaMagangData = [
                 // --- GELOMBANG 1 (12 - 9 Bulan Lalu | Status: Selesai) ---
                 'magang1' => [
@@ -207,6 +218,7 @@ class KPSeeder extends Seeder
                     'email' => 'magang1@gmail.com',
                     'phone' => '085712345201',
                     'asn_key' => 1,
+                    'email_sent_count' => 1,
                     'created_at' => $gelombang1Mulai->copy()->subDays(7),
                     'profile' => [
                         'nim' => '164221015',
@@ -217,6 +229,7 @@ class KPSeeder extends Seeder
                         'tanggal_mulai' => $gelombang1Mulai->toDateString(),
                         'tanggal_selesai' => $gelombang1Selesai->toDateString(),
                         'status' => 'selesai',
+                        'status_pengajuan' => 'diterima',
                         'alamat' => 'Jl. Mulyorejo Tengah No. 19, Kota Surabaya',
                         'catatan' => 'Alumni Gelombang 1: Menyelesaikan pengolahan data Susenas dan visualisasi indikator kemiskinan.',
                     ],
@@ -227,6 +240,7 @@ class KPSeeder extends Seeder
                     'email' => 'magang2@gmail.com',
                     'phone' => '085712345202',
                     'asn_key' => 2,
+                    'email_sent_count' => 1,
                     'created_at' => $gelombang1Mulai->copy()->subDays(6),
                     'profile' => [
                         'nim' => '2241720048',
@@ -237,6 +251,7 @@ class KPSeeder extends Seeder
                         'tanggal_mulai' => $gelombang1Mulai->toDateString(),
                         'tanggal_selesai' => $gelombang1Selesai->toDateString(),
                         'status' => 'selesai',
+                        'status_pengajuan' => 'diterima',
                         'alamat' => 'Jl. Soekarno Hatta No. 102, Kota Malang',
                         'catatan' => 'Alumni Gelombang 1: Membangun dashboard monitoring pengolahan survei berbasis Laravel.',
                     ],
@@ -247,6 +262,7 @@ class KPSeeder extends Seeder
                     'email' => 'magang3@gmail.com',
                     'phone' => '085712345203',
                     'asn_key' => 4,
+                    'email_sent_count' => 1,
                     'created_at' => $gelombang1Mulai->copy()->subDays(5),
                     'profile' => [
                         'nim' => '5003221089',
@@ -257,6 +273,7 @@ class KPSeeder extends Seeder
                         'tanggal_mulai' => $gelombang1Mulai->toDateString(),
                         'tanggal_selesai' => $gelombang1Selesai->toDateString(),
                         'status' => 'selesai',
+                        'status_pengajuan' => 'diterima',
                         'alamat' => 'Jl. Keputih Tegal Timur No. 31, Kota Surabaya',
                         'catatan' => 'Alumni Gelombang 1: Bertugas pada tabulasi statistik industri dan infografis harga produsen.',
                     ],
@@ -269,6 +286,7 @@ class KPSeeder extends Seeder
                     'email' => 'magang4@gmail.com',
                     'phone' => '085712345204',
                     'asn_key' => 3,
+                    'email_sent_count' => 1,
                     'created_at' => $gelombang2Mulai->copy()->subDays(8),
                     'profile' => [
                         'nim' => '233140701111032',
@@ -279,6 +297,7 @@ class KPSeeder extends Seeder
                         'tanggal_mulai' => $gelombang2Mulai->toDateString(),
                         'tanggal_selesai' => $gelombang2Selesai->toDateString(),
                         'status' => 'selesai',
+                        'status_pengajuan' => 'diterima',
                         'alamat' => 'Jl. Veteran Dalam No. 12, Kota Malang',
                         'catatan' => 'Alumni Gelombang 2: Digitalisasi arsip surat menyurat dan inventarisasi BMN Subbagian Umum.',
                     ],
@@ -289,6 +308,7 @@ class KPSeeder extends Seeder
                     'email' => 'magang5@gmail.com',
                     'phone' => '085712345205',
                     'asn_key' => 5,
+                    'email_sent_count' => 1,
                     'created_at' => $gelombang2Mulai->copy()->subDays(6),
                     'profile' => [
                         'nim' => '24105012',
@@ -299,6 +319,7 @@ class KPSeeder extends Seeder
                         'tanggal_mulai' => $gelombang2Mulai->toDateString(),
                         'tanggal_selesai' => $gelombang2Selesai->toDateString(),
                         'status' => 'selesai',
+                        'status_pengajuan' => 'diterima',
                         'alamat' => 'Jl. Thamrin No. 55, Kel. Klegen, Kota Madiun',
                         'catatan' => 'Alumni PKL Gelombang 2: Desain publikasi PDRB dan kompilasi tabel direktori.',
                     ],
@@ -309,6 +330,7 @@ class KPSeeder extends Seeder
                     'email' => 'magang6@gmail.com',
                     'phone' => '085712345206',
                     'asn_key' => 5,
+                    'email_sent_count' => 1,
                     'created_at' => $gelombang2Mulai->copy()->subDays(5),
                     'profile' => [
                         'nim' => '220403010045',
@@ -319,6 +341,7 @@ class KPSeeder extends Seeder
                         'tanggal_mulai' => $gelombang2Mulai->toDateString(),
                         'tanggal_selesai' => $gelombang2Selesai->toDateString(),
                         'status' => 'selesai',
+                        'status_pengajuan' => 'diterima',
                         'alamat' => 'Jl. Ketintang Baru No. 40, Kota Surabaya',
                         'catatan' => 'Alumni Gelombang 2: Penyusunan analisis pertumbuhan ekonomi triwulanan Kota Madiun.',
                     ],
@@ -331,6 +354,7 @@ class KPSeeder extends Seeder
                     'email' => 'magang7@gmail.com',
                     'phone' => '085712345207',
                     'asn_key' => 1,
+                    'email_sent_count' => 1,
                     'created_at' => $gelombang3Mulai->copy()->subDays(6),
                     'profile' => [
                         'nim' => '222212589',
@@ -341,6 +365,7 @@ class KPSeeder extends Seeder
                         'tanggal_mulai' => $gelombang3Mulai->toDateString(),
                         'tanggal_selesai' => $gelombang3Selesai->toDateString(),
                         'status' => 'selesai',
+                        'status_pengajuan' => 'diterima',
                         'alamat' => 'Jl. Otto Iskandardinata No. 64C, Jakarta Timur',
                         'catatan' => 'Alumni Gelombang 3: Evaluasi kualitas data Sakernas dan penyusunan profil ketenagakerjaan.',
                     ],
@@ -351,6 +376,7 @@ class KPSeeder extends Seeder
                     'email' => 'magang8@gmail.com',
                     'phone' => '085712345208',
                     'asn_key' => 2,
+                    'email_sent_count' => 1,
                     'created_at' => $gelombang3Mulai->copy()->subDays(4),
                     'profile' => [
                         'nim' => '22081010142',
@@ -361,6 +387,7 @@ class KPSeeder extends Seeder
                         'tanggal_mulai' => $gelombang3Mulai->toDateString(),
                         'tanggal_selesai' => $gelombang3Selesai->toDateString(),
                         'status' => 'selesai',
+                        'status_pengajuan' => 'diterima',
                         'alamat' => 'Jl. Rungkut Madya No. 78, Kota Surabaya',
                         'catatan' => 'Alumni Gelombang 3: Optimasi query basis data direktori wilayah kerja statistik (Wilkerstat).',
                     ],
@@ -373,6 +400,7 @@ class KPSeeder extends Seeder
                     'email' => 'magang9@gmail.com',
                     'phone' => '085712345209',
                     'asn_key' => 1,
+                    'email_sent_count' => 1,
                     'created_at' => $gelombang4Mulai->copy()->subDays(5),
                     'profile' => [
                         'nim' => '235090501111018',
@@ -383,6 +411,7 @@ class KPSeeder extends Seeder
                         'tanggal_mulai' => $gelombang4Mulai->toDateString(),
                         'tanggal_selesai' => $gelombang4Selesai->toDateString(),
                         'status' => 'aktif',
+                        'status_pengajuan' => 'diterima',
                         'alamat' => 'Jl. MT Haryono No. 167, Kota Malang',
                         'catatan' => 'Peserta aktif pada Fungsi Statistik Sosial (anomalicheck & tabulasi Indeks Pembangunan Manusia).',
                     ],
@@ -393,6 +422,7 @@ class KPSeeder extends Seeder
                     'email' => 'magang10@gmail.com',
                     'phone' => '085712345210',
                     'asn_key' => 2,
+                    'email_sent_count' => 2, // Demo email dikirim lebih dari 1 kali
                     'created_at' => $gelombang4Mulai->copy()->subDays(5),
                     'profile' => [
                         'nim' => '233307041',
@@ -403,6 +433,7 @@ class KPSeeder extends Seeder
                         'tanggal_mulai' => $gelombang4Mulai->toDateString(),
                         'tanggal_selesai' => $gelombang4Selesai->toDateString(),
                         'status' => 'aktif',
+                        'status_pengajuan' => 'diterima',
                         'alamat' => 'Jl. Serayu No. 84, Kel. Pandean, Kota Madiun',
                         'catatan' => 'Peserta aktif pada Fungsi IPDS (pengembangan portal diseminasi data & otomatisasi script Python).',
                     ],
@@ -413,6 +444,7 @@ class KPSeeder extends Seeder
                     'email' => 'magang11@gmail.com',
                     'phone' => '085712345211',
                     'asn_key' => 3,
+                    'email_sent_count' => 1,
                     'created_at' => $gelombang4Mulai->copy()->subDays(4),
                     'profile' => [
                         'nim' => '233101019',
@@ -423,6 +455,7 @@ class KPSeeder extends Seeder
                         'tanggal_mulai' => $gelombang4Mulai->toDateString(),
                         'tanggal_selesai' => $gelombang4Selesai->toDateString(),
                         'status' => 'aktif',
+                        'status_pengajuan' => 'diterima',
                         'alamat' => 'Jl. Bali No. 23, Kel. Kartoharjo, Kota Madiun',
                         'catatan' => 'Peserta aktif pada Subbagian Umum (rekapitulasi SPJ, surat masuk/keluar, dan laporan bulanan).',
                     ],
@@ -433,6 +466,7 @@ class KPSeeder extends Seeder
                     'email' => 'magang12@gmail.com',
                     'phone' => '085712345212',
                     'asn_key' => 4,
+                    'email_sent_count' => 1,
                     'created_at' => $gelombang4Mulai->copy()->subDays(4),
                     'profile' => [
                         'nim' => 'H0823054',
@@ -443,6 +477,7 @@ class KPSeeder extends Seeder
                         'tanggal_mulai' => $gelombang4Mulai->toDateString(),
                         'tanggal_selesai' => $gelombang4Selesai->toDateString(),
                         'status' => 'aktif',
+                        'status_pengajuan' => 'diterima',
                         'alamat' => 'Jl. Ir. Sutami No. 36A, Kota Surakarta',
                         'catatan' => 'Peserta aktif pada Fungsi Statistik Produksi dan Distribusi (survei ubinan & harga gabah).',
                     ],
@@ -453,6 +488,7 @@ class KPSeeder extends Seeder
                     'email' => 'magang13@gmail.com',
                     'phone' => '085712345213',
                     'asn_key' => 5,
+                    'email_sent_count' => 1,
                     'created_at' => $gelombang4Mulai->copy()->subDays(3),
                     'profile' => [
                         'nim' => '230312604821',
@@ -463,18 +499,20 @@ class KPSeeder extends Seeder
                         'tanggal_mulai' => $gelombang4Mulai->toDateString(),
                         'tanggal_selesai' => $gelombang4Selesai->toDateString(),
                         'status' => 'aktif',
+                        'status_pengajuan' => 'diterima',
                         'alamat' => 'Jl. Semarang No. 5, Kota Malang',
                         'catatan' => 'Peserta aktif pada Fungsi Neraca Wilayah & Analisis Statistik (kompilasi PDRB lapangan usaha).',
                     ],
                     'skills' => ['Analisis Statistik', 'Pengolahan Data Excel', 'Desain Grafis & Infografis'],
                 ],
 
-                // --- STATUS PENDING & DIBATALKAN (Untuk Kelengkapan Statistik Dashboard Admin) ---
+                // --- STATUS PENDING, KELOMPOK, BELUM KIRIM EMAIL & DIBATALKAN ---
                 'magang14' => [
                     'name' => '14 Kevin Pratama Wijaya',
                     'email' => 'magang14@gmail.com',
                     'phone' => '085712345214',
                     'asn_key' => 2,
+                    'email_sent_count' => 0, // Muncul di tab info "Belum Dikirimi Email"
                     'created_at' => $today->copy()->subDays(3),
                     'profile' => [
                         'nim' => '232410102077',
@@ -485,8 +523,9 @@ class KPSeeder extends Seeder
                         'tanggal_mulai' => $today->copy()->addDays(14)->toDateString(),
                         'tanggal_selesai' => $today->copy()->addMonths(4)->toDateString(),
                         'status' => 'pending',
+                        'status_pengajuan' => 'diterima',
                         'alamat' => 'Jl. Kalimantan No. 37, Kab. Jember',
-                        'catatan' => 'Terjadwal mulai magang 2 minggu lagi pada Fungsi IPDS.',
+                        'catatan' => 'Terjadwal mulai magang 2 minggu lagi pada Fungsi IPDS (belum dikirimi email info login).',
                     ],
                     'skills' => ['Pengembangan Web Laravel', 'Manajemen Basis Data SQL'],
                 ],
@@ -494,7 +533,8 @@ class KPSeeder extends Seeder
                     'name' => '15 Rizka Amalia Putri',
                     'email' => 'magang15@gmail.com',
                     'phone' => '085712345215',
-                    'asn_key' => 3,
+                    'asn_key' => null,
+                    'email_sent_count' => 0, // Muncul di tab info "Belum Dikirimi Email" & peringatan 1 bulan
                     'created_at' => $today->copy()->subDays(12), // 12 hari lalu -> tersisa 18 hari sebelum terhapus otomatis
                     'profile' => [
                         'nim' => null,
@@ -505,6 +545,7 @@ class KPSeeder extends Seeder
                         'tanggal_mulai' => null,
                         'tanggal_selesai' => null,
                         'status' => 'pending',
+                        'status_pengajuan' => 'belum_diajukan',
                         'alamat' => 'Jl. Ring Road Barat No. 11, Kota Madiun',
                         'catatan' => 'Akun dibuat tanpa tanggal mulai & selesai (demo peringatan otomatis terhapus dalam 1 bulan).',
                     ],
@@ -515,6 +556,7 @@ class KPSeeder extends Seeder
                     'email' => 'magang16@gmail.com',
                     'phone' => '085712345216',
                     'asn_key' => 4,
+                    'email_sent_count' => 1,
                     'created_at' => $today->copy()->subMonths(3),
                     'profile' => [
                         'nim' => '1103223088',
@@ -525,10 +567,63 @@ class KPSeeder extends Seeder
                         'tanggal_mulai' => $today->copy()->subMonths(2)->toDateString(),
                         'tanggal_selesai' => $today->copy()->addMonth()->toDateString(),
                         'status' => 'dibatalkan',
+                        'status_pengajuan' => 'diterima',
                         'alamat' => 'Jl. Telekomunikasi No. 1, Kab. Bandung',
                         'catatan' => 'Dibatalkan atas permohonan peserta karena penyesuaian jadwal semester.',
                     ],
                     'skills' => ['Python & Pandas', 'Manajemen Basis Data SQL'],
+                ],
+
+                // --- KELOMPOK MAGANG BARU (Menunggu Verifikasi Admin -> Teruskan ke ASN) ---
+                'magang17' => [
+                    'name' => '17 Farhan Maulana Yusuf',
+                    'email' => 'magang17@gmail.com',
+                    'phone' => '085712345217',
+                    'asn_key' => null,
+                    'email_sent_count' => 0, // Muncul di tab info "Belum Dikirimi Email"
+                    'created_at' => $today->copy()->subDays(2),
+                    'profile' => [
+                        'kode_kelompok' => $kodeKelompokDemo,
+                        'is_ketua_kelompok' => true,
+                        'nim' => '233307055',
+                        'instansi_asal' => 'Politeknik Negeri Madiun',
+                        'jenjang' => 'D4',
+                        'jurusan' => 'Teknologi Rekayasa Perangkat Lunak',
+                        'tanggal_lahir' => '2005-05-19',
+                        'tanggal_mulai' => $today->copy()->addDays(7)->toDateString(),
+                        'tanggal_selesai' => $today->copy()->addMonths(3)->toDateString(),
+                        'status' => 'pending',
+                        'status_pengajuan' => 'menunggu_verifikasi',
+                        'diajukan_at' => $today->copy()->subDay(),
+                        'alamat' => 'Jl. Taman Praja No. 19, Kota Madiun',
+                        'catatan' => 'Perwakilan Kelompok PKL Politeknik Negeri Madiun (menunggu penunjukan pembimbing ASN).',
+                    ],
+                    'skills' => ['Pengembangan Web Laravel', 'Manajemen Basis Data SQL'],
+                ],
+                'magang18' => [
+                    'name' => '18 Zahra Nabila Khairani',
+                    'email' => 'magang18@gmail.com',
+                    'phone' => '085712345218',
+                    'asn_key' => null,
+                    'email_sent_count' => 0, // Muncul di tab info "Belum Dikirimi Email"
+                    'created_at' => $today->copy()->subDays(2),
+                    'profile' => [
+                        'kode_kelompok' => $kodeKelompokDemo,
+                        'is_ketua_kelompok' => false,
+                        'nim' => '233307058',
+                        'instansi_asal' => 'Politeknik Negeri Madiun',
+                        'jenjang' => 'D4',
+                        'jurusan' => 'Teknologi Rekayasa Perangkat Lunak',
+                        'tanggal_lahir' => '2005-08-22',
+                        'tanggal_mulai' => $today->copy()->addDays(7)->toDateString(),
+                        'tanggal_selesai' => $today->copy()->addMonths(3)->toDateString(),
+                        'status' => 'pending',
+                        'status_pengajuan' => 'menunggu_verifikasi',
+                        'diajukan_at' => $today->copy()->subDay(),
+                        'alamat' => 'Jl. Mastrip No. 42, Kota Madiun',
+                        'catatan' => 'Anggota Kelompok PKL Politeknik Negeri Madiun.',
+                    ],
+                    'skills' => ['Desain Grafis & Infografis', 'Visualisasi Data'],
                 ],
             ];
 
@@ -541,10 +636,12 @@ class KPSeeder extends Seeder
                         'name' => $peserta['name'],
                         'email_verified_at' => $peserta['created_at'],
                         'password' => $defaultPassword,
+                        'password_terenkripsi' => $encryptedDefaultPassword,
                         'role' => 'mahasiswa',
                         'phone' => $peserta['phone'],
                         'avatar' => null,
                         'is_active' => $peserta['profile']['status'] !== 'dibatalkan',
+                        'email_sent_count' => $peserta['email_sent_count'] ?? 0,
                     ]
                 );
 
@@ -554,10 +651,17 @@ class KPSeeder extends Seeder
                     'updated_at' => $peserta['created_at'],
                 ]);
 
+                $statusPengajuan = $peserta['profile']['status_pengajuan'] ?? 'belum_diajukan';
+                $sudahDiterima = $statusPengajuan === 'diterima';
+                $waktuVerifikasi = $sudahDiterima ? $peserta['created_at']->copy()->addDay() : null;
+
                 $mahasiswaProfile = MahasiswaProfile::updateOrCreate(
                     ['user_id' => $userMahasiswa->id],
                     [
-                        'asn_profile_id' => $asnProfiles[$peserta['asn_key']]->id,
+                        'asn_profile_id' => $peserta['asn_key'] ? $asnProfiles[$peserta['asn_key']]->id : null,
+                        'calon_asn_profile_id' => null,
+                        'kode_kelompok' => $peserta['profile']['kode_kelompok'] ?? null,
+                        'is_ketua_kelompok' => $peserta['profile']['is_ketua_kelompok'] ?? false,
                         'foto_profil_path' => null,
                         'nim' => $peserta['profile']['nim'],
                         'instansi_asal' => $peserta['profile']['instansi_asal'],
@@ -567,6 +671,14 @@ class KPSeeder extends Seeder
                         'tanggal_mulai' => $peserta['profile']['tanggal_mulai'],
                         'tanggal_selesai' => $peserta['profile']['tanggal_selesai'],
                         'status' => $peserta['profile']['status'],
+                        'status_pengajuan' => $statusPengajuan,
+                        'alasan_penolakan' => null,
+                        'pesan_penolakan_asn' => null,
+                        'diajukan_at' => $peserta['profile']['diajukan_at'] ?? ($sudahDiterima ? $peserta['created_at']->copy()->addHours(6) : null),
+                        'dikirim_ke_asn_at' => $sudahDiterima ? $peserta['created_at']->copy()->addHours(12) : null,
+                        'direspon_asn_at' => $waktuVerifikasi,
+                        'diverifikasi_oleh' => $sudahDiterima ? $adminUsers[1]->id : null,
+                        'diverifikasi_at' => $waktuVerifikasi,
                         'surat_pengantar_path' => null,
                         'catatan' => $peserta['profile']['catatan'],
                         'alamat' => $peserta['profile']['alamat'],
@@ -588,12 +700,13 @@ class KPSeeder extends Seeder
                 $mahasiswaProfiles[$key] = $mahasiswaProfile;
             }
 
-            // Bersihkan data tugas & logbook lama milik peserta seeder agar aman dijalankan berulang (idempoten)
+            // Bersihkan data tugas, logbook, & pengajuan libur lama milik peserta seeder agar idempoten
             $seededProfileIds = collect($mahasiswaProfiles)->pluck('id')->all();
             $seededAsnUserIds = collect($asnUsers)->pluck('id')->all();
 
             Tugas::whereIn('asn_id', $seededAsnUserIds)->delete();
             MagangLogbook::whereIn('mahasiswa_profile_id', $seededProfileIds)->delete();
+            PengajuanLibur::whereIn('mahasiswa_profile_id', $seededProfileIds)->delete();
 
             // =========================================================================
             // 5. DATA TUGAS (SELESAI, KOLABORASI TIM, REVIEW, REVISI, DIAMBIL, TERSEDIA)
@@ -1094,43 +1207,143 @@ class KPSeeder extends Seeder
             }
 
             // =========================================================================
-            // 6. LOGBOOK MANDIRI HARIAN (`magang_logbook`) SEPANJANG 1 TAHUN
+            // 6. LOGBOOK MANDIRI HARIAN (`magang_logbook`) BESERTA LOKASI & VALIDASI
             // =========================================================================
             $templateKegiatanPerFungsi = [
                 1 => [ // Statistik Sosial
-                    ['Apel Pagi & Briefing Survei Sosial', 'Mengikuti pengarahan pembimbing terkait target pengolahan kuesioner Susenas dan Sakernas.'],
-                    ['Editing & Coding Kuesioner Rumah Tangga', 'Memeriksa kelengkapan isian blok anggota rumah tangga, pendidikan, dan ketenagakerjaan.'],
-                    ['Tabulasi Indikator Kesejahteraan Rakyat', 'Menyusun tabel silang tingkat partisipasi sekolah dan akses sanitasi layak per kecamatan.'],
-                    ['Pengecekan Anomali Data Survei Sosial', 'Melakukan verifikasi ulang isian outlier pendapatan dan pengeluaran rumah tangga.'],
-                    ['Penyusunan Bahan Infografis Kemiskinan', 'Menyiapkan ringkasan angka indikator sosial untuk publikasi media sosial resmi.'],
+                    [
+                        'Apel Pagi & Briefing Survei Sosial',
+                        'Ruang Fungsi Statistik Sosial — BPS Kota Madiun',
+                        'Mengikuti pengarahan pembimbing terkait target pengolahan kuesioner Susenas dan Sakernas.',
+                    ],
+                    [
+                        'Editing & Coding Kuesioner Rumah Tangga',
+                        'Ruang Pengolahan Sosial — BPS Kota Madiun',
+                        'Memeriksa kelengkapan isian blok anggota rumah tangga, pendidikan, dan ketenagakerjaan.',
+                    ],
+                    [
+                        'Tabulasi Indikator Kesejahteraan Rakyat',
+                        'Ruang Fungsi Statistik Sosial — BPS Kota Madiun',
+                        'Menyusun tabel silang tingkat partisipasi sekolah dan akses sanitasi layak per kecamatan.',
+                    ],
+                    [
+                        'Pengecekan Anomali Data Survei Sosial',
+                        'Ruang Rapat Lantai 2 — BPS Kota Madiun',
+                        'Melakukan verifikasi ulang isian outlier pendapatan dan pengeluaran rumah tangga.',
+                    ],
+                    [
+                        'Penyusunan Bahan Infografis Kemiskinan',
+                        'Pojok Statistik — BPS Kota Madiun',
+                        'Menyiapkan ringkasan angka indikator sosial untuk publikasi media sosial resmi.',
+                    ],
                 ],
                 2 => [ // IPDS
-                    ['Sinkronisasi & Backup Basis Data Survei', 'Melakukan pengecekan integritas tabel hasil entri pengolahan survei harian.'],
-                    ['Pengembangan Fitur Monitoring Internal', 'Menulis kode modul rekapitulasi progres pengolahan dan melakukan pengujian form input.'],
-                    ['Pemutakhiran Master Wilayah Kerja Statistik', 'Memvalidasi kode desa/kelurahan dan batas Satuan Lingkungan Setempat (SLS).'],
-                    ['Otomasi Pembersihan Tabel Publikasi', 'Menjalankan script pengolahan format tabel agar sesuai standar publikasi Daerah Dalam Angka.'],
-                    ['Dukungan Teknis Layanan Diseminasi Data', 'Membantu penyiapan dataset permintaan mahasiswa dan instansi pemerintah daerah.'],
+                    [
+                        'Sinkronisasi & Backup Basis Data Survei',
+                        'Ruang Server & IPDS — BPS Kota Madiun',
+                        'Melakukan pengecekan integritas tabel hasil entri pengolahan survei harian.',
+                    ],
+                    [
+                        'Pengembangan Fitur Monitoring Internal',
+                        'Ruang Fungsi IPDS — BPS Kota Madiun',
+                        'Menulis kode modul rekapitulasi progres pengolahan dan melakukan pengujian form input.',
+                    ],
+                    [
+                        'Pemutakhiran Master Wilayah Kerja Statistik',
+                        'Ruang Fungsi IPDS — BPS Kota Madiun',
+                        'Memvalidasi kode desa/kelurahan dan batas Satuan Lingkungan Setempat (SLS).',
+                    ],
+                    [
+                        'Otomasi Pembersihan Tabel Publikasi',
+                        'Ruang Pengolahan IPDS — BPS Kota Madiun',
+                        'Menjalankan script pengolahan format tabel agar sesuai standar publikasi Daerah Dalam Angka.',
+                    ],
+                    [
+                        'Dukungan Teknis Layanan Diseminasi Data',
+                        'Pelayanan Statistik Terpadu (PST) — BPS Kota Madiun',
+                        'Membantu penyiapan dataset permintaan mahasiswa dan instansi pemerintah daerah.',
+                    ],
                 ],
                 3 => [ // Subbagian Umum
-                    ['Registrasi & Disposisi Surat Masuk', 'Mencatat surat masuk kedinasan pada buku agenda digital dan mendistribusikan ke fungsi terkait.'],
-                    ['Pengarsipan Dokumen Pertanggungjawaban', 'Menyusun dan mengelompokkan berkas administrasi kegiatan bulanan secara kronologis.'],
-                    ['Rekapitulasi Daftar Hadir & Kegiatan', 'Membantu kompilasi laporan administrasi kepegawaian dan jadwal rapat koordinasi.'],
-                    ['Inventarisasi Barang Milik Negara (BMN)', 'Melakukan pengecekan fisik kondisi peralatan kantor dan pembaruan daftar inventaris ruangan.'],
-                    ['Penyiapan Administrasi Rapat Evaluasi', 'Menyiapkan daftar hadir, notulensi, dan bahan paparan evaluasi kinerja bulanan.'],
+                    [
+                        'Registrasi & Disposisi Surat Masuk',
+                        'Ruang Subbagian Umum — BPS Kota Madiun',
+                        'Mencatat surat masuk kedinasan pada buku agenda digital dan mendistribusikan ke fungsi terkait.',
+                    ],
+                    [
+                        'Pengarsipan Dokumen Pertanggungjawaban',
+                        'Ruang Arsip Subbagian Umum — BPS Kota Madiun',
+                        'Menyusun dan mengelompokkan berkas administrasi kegiatan bulanan secara kronologis.',
+                    ],
+                    [
+                        'Rekapitulasi Daftar Hadir & Kegiatan',
+                        'Ruang Subbagian Umum — BPS Kota Madiun',
+                        'Membantu kompilasi laporan administrasi kepegawaian dan jadwal rapat koordinasi.',
+                    ],
+                    [
+                        'Inventarisasi Barang Milik Negara (BMN)',
+                        'Gudang & Ruang Kerja — BPS Kota Madiun',
+                        'Melakukan pengecekan fisik kondisi peralatan kantor dan pembaruan daftar inventaris ruangan.',
+                    ],
+                    [
+                        'Penyiapan Administrasi Rapat Evaluasi',
+                        'Aula Pertemuan — BPS Kota Madiun',
+                        'Menyiapkan daftar hadir, notulensi, dan bahan paparan evaluasi kinerja bulanan.',
+                    ],
                 ],
                 4 => [ // Statistik Produksi & Distribusi
-                    ['Verifikasi Kuesioner Survei Harga Konsumen', 'Memeriksa kewajaran perkembangan harga komoditas bahan pokok mingguan di pasar pencacahan.'],
-                    ['Tabulasi Hasil Survei Ubinan Tanaman Pangan', 'Merekap hasil pengukuran ubinan padi dan palawija untuk penghitungan produktivitas.'],
-                    ['Pemutakhiran Direktori Industri & Konstruksi', 'Mengonfirmasi status operasional perusahaan responden survei triwulanan.'],
-                    ['Pengolahan Data Statistik Transportasi & Pariwisata', 'Menginput dan memvalidasi data tingkat penghunian kamar hotel bulanan.'],
-                    ['Penyusunan Grafik Perkembangan Inflasi Bulanan', 'Membuat visualisasi andil komoditas penyumbang inflasi dan deflasi daerah.'],
+                    [
+                        'Verifikasi Kuesioner Survei Harga Konsumen',
+                        'Pasar Besar Madiun & Ruang Distribusi BPS',
+                        'Memeriksa kewajaran perkembangan harga komoditas bahan pokok mingguan di pasar pencacahan.',
+                    ],
+                    [
+                        'Tabulasi Hasil Survei Ubinan Tanaman Pangan',
+                        'Ruang Statistik Produksi — BPS Kota Madiun',
+                        'Merekap hasil pengukuran ubinan padi dan palawija untuk penghitungan produktivitas.',
+                    ],
+                    [
+                        'Pemutakhiran Direktori Industri & Konstruksi',
+                        'Ruang Statistik Produksi — BPS Kota Madiun',
+                        'Mengonfirmasi status operasional perusahaan responden survei triwulanan.',
+                    ],
+                    [
+                        'Pengolahan Data Statistik Transportasi & Pariwisata',
+                        'Ruang Statistik Distribusi — BPS Kota Madiun',
+                        'Menginput dan memvalidasi data tingkat penghunian kamar hotel bulanan.',
+                    ],
+                    [
+                        'Penyusunan Grafik Perkembangan Inflasi Bulanan',
+                        'Ruang Statistik Distribusi — BPS Kota Madiun',
+                        'Membuat visualisasi andil komoditas penyumbang inflasi dan deflasi daerah.',
+                    ],
                 ],
                 5 => [ // Neraca Wilayah & Analisis Statistik
-                    ['Kompilasi Data Pendukung PDRB Triwulanan', 'Menghimpun data realisasi produksi dan indikator sektoral dari dinas teknis terkait.'],
-                    ['Pengecekan Konsistensi Seri Data PDRB', 'Membandingkan nilai PDRB ADHB dan ADHK antar triwulan untuk menjaga kewajaran indeks implisit.'],
-                    ['Penghitungan Struktur & Laju Pertumbuhan Ekonomi', 'Menyusun tabel distribusi persentase 17 kategori lapangan usaha Kota Madiun.'],
-                    ['Penyusunan Narasi Analisis Ekonomi Daerah', 'Menulis ringkasan faktor pendorong pertumbuhan ekonomi pada sektor perdagangan dan jasa.'],
-                    ['Finalisasi Tabel Publikasi PDRB Tahunan', 'Melakukan proofreading angka dan tata letak tabel sebelum tahap publikasi.'],
+                    [
+                        'Kompilasi Data Pendukung PDRB Triwulanan',
+                        'Ruang Fungsi Neraca Wilayah — BPS Kota Madiun',
+                        'Menghimpun data realisasi produksi dan indikator sektoral dari dinas teknis terkait.',
+                    ],
+                    [
+                        'Pengecekan Konsistensi Seri Data PDRB',
+                        'Ruang Fungsi Neraca Wilayah — BPS Kota Madiun',
+                        'Membandingkan nilai PDRB ADHB dan ADHK antar triwulan untuk menjaga kewajaran indeks implisit.',
+                    ],
+                    [
+                        'Penghitungan Struktur & Laju Pertumbuhan Ekonomi',
+                        'Ruang Fungsi Neraca Wilayah — BPS Kota Madiun',
+                        'Menyusun tabel distribusi persentase 17 kategori lapangan usaha Kota Madiun.',
+                    ],
+                    [
+                        'Penyusunan Narasi Analisis Ekonomi Daerah',
+                        'Ruang Rapat Lantai 2 — BPS Kota Madiun',
+                        'Menulis ringkasan faktor pendorong pertumbuhan ekonomi pada sektor perdagangan dan jasa.',
+                    ],
+                    [
+                        'Finalisasi Tabel Publikasi PDRB Tahunan',
+                        'Ruang Fungsi Neraca Wilayah — BPS Kota Madiun',
+                        'Melakukan proofreading angka dan tata letak tabel sebelum tahap publikasi.',
+                    ],
                 ],
             ];
 
@@ -1177,7 +1390,7 @@ class KPSeeder extends Seeder
                 }
 
                 // Pastikan 2 hari kerja terakhir sebelum hari ini ikut masuk untuk peserta aktif
-                // (akan dijadikan logbook "Menunggu Validasi" saat demo seminar KP)
+                // (akan dijadikan logbook "Menunggu Validasi" pada modal validasi logbook pembimbing)
                 if ($statusPeserta === 'aktif' && count($hariKerja) >= 2) {
                     $duaHariTerakhir = array_slice($hariKerja, -2);
                     foreach ($duaHariTerakhir as $tglAkhir) {
@@ -1202,7 +1415,8 @@ class KPSeeder extends Seeder
                         'mahasiswa_profile_id' => $profile->id,
                         'tanggal_kegiatan' => $tglKegiatan->toDateString(),
                         'judul_kegiatan' => $tpl[0],
-                        'deskripsi_kegiatan' => $tpl[1] . ' (' . $tglKegiatan->translatedFormat('d F Y') . ').',
+                        'lokasi' => $tpl[1],
+                        'deskripsi_kegiatan' => $tpl[2] . ' (' . $tglKegiatan->translatedFormat('d F Y') . ').',
                         'file_lampiran' => null,
                         'is_validated' => ! $menungguValidasi,
                         'validated_at' => $menungguValidasi ? null : $tglKegiatan->copy()->setTime(16, 15),
@@ -1219,31 +1433,96 @@ class KPSeeder extends Seeder
             }
 
             // =========================================================================
-            // 7. DATA BERITA & PENGUMUMAN INTERNAL (`berita`)
+            // 7. DATA PENGAJUAN LIBUR / IZIN PESERTA MAGANG (`pengajuan_liburs`)
+            // =========================================================================
+            $daftarPengajuanLibur = [
+                [
+                    'peserta_key' => 'magang9',
+                    'asn_key' => 1,
+                    'tanggal_mulai' => $today->copy()->subDays(10)->toDateString(),
+                    'tanggal_selesai' => $today->copy()->subDays(10)->toDateString(),
+                    'alasan' => 'Mengikuti seminar proposal tugas akhir di Fakultas MIPA Universitas Brawijaya.',
+                    'file_lampiran' => 'pengajuan-libur/surat-izin-sempro.pdf',
+                    'nama_file_asli' => 'Surat_Permohonan_Izin_Sempro_Anisa.pdf',
+                    'status' => 'disetujui',
+                    'catatan_asn' => 'Disetujui, selamat menempuh seminar proposal. Pastikan pekerjaan tabulasi IPM dilanjutkan keesokan harinya.',
+                    'created_at' => $today->copy()->subDays(13),
+                    'direspon_at' => $today->copy()->subDays(12),
+                ],
+                [
+                    'peserta_key' => 'magang10',
+                    'asn_key' => 2,
+                    'tanggal_mulai' => $today->copy()->addDays(2)->toDateString(),
+                    'tanggal_selesai' => $today->copy()->addDays(3)->toDateString(),
+                    'alasan' => 'Izin bimbingan tugas akhir dan pengurusan administrasi akademik di kampus Politeknik Negeri Madiun.',
+                    'file_lampiran' => 'pengajuan-libur/surat-izin-bimbingan.pdf',
+                    'nama_file_asli' => 'Surat_Pengantar_Bimbingan_TA_Bagas.pdf',
+                    'status' => 'pending',
+                    'catatan_asn' => null,
+                    'created_at' => $today->copy()->subDay(),
+                    'direspon_at' => null,
+                ],
+                [
+                    'peserta_key' => 'magang11',
+                    'asn_key' => 3,
+                    'tanggal_mulai' => $today->copy()->subDays(5)->toDateString(),
+                    'tanggal_selesai' => $today->copy()->subDays(5)->toDateString(),
+                    'alasan' => 'Izin keperluan pribadi keluarga di luar kota.',
+                    'file_lampiran' => 'pengajuan-libur/surat-keterangan-izin.pdf',
+                    'nama_file_asli' => 'Surat_Permohonan_Izin_Nadia.pdf',
+                    'status' => 'ditolak',
+                    'catatan_asn' => 'Mohon maaf belum dapat disetujui pada tanggal tersebut karena bertepatan dengan jadwal tutup buku dan evaluasi SPJ bulanan.',
+                    'created_at' => $today->copy()->subDays(7),
+                    'direspon_at' => $today->copy()->subDays(6),
+                ],
+            ];
+
+            foreach ($daftarPengajuanLibur as $libur) {
+                $pengajuan = PengajuanLibur::create([
+                    'mahasiswa_profile_id' => $mahasiswaProfiles[$libur['peserta_key']]->id,
+                    'asn_profile_id' => $asnProfiles[$libur['asn_key']]->id,
+                    'tanggal_mulai' => $libur['tanggal_mulai'],
+                    'tanggal_selesai' => $libur['tanggal_selesai'],
+                    'alasan' => $libur['alasan'],
+                    'file_lampiran' => $libur['file_lampiran'],
+                    'nama_file_asli' => $libur['nama_file_asli'],
+                    'status' => $libur['status'],
+                    'catatan_asn' => $libur['catatan_asn'],
+                    'direspon_at' => $libur['direspon_at'],
+                ]);
+
+                PengajuanLibur::where('id', $pengajuan->id)->update([
+                    'created_at' => $libur['created_at'],
+                    'updated_at' => $libur['direspon_at'] ?? $libur['created_at'],
+                ]);
+            }
+
+            // =========================================================================
+            // 8. DATA BERITA & PENGUMUMAN INTERNAL (`berita`)
             // =========================================================================
             $daftarBerita = [
                 [
                     'user_id' => $adminUsers[1]->id,
                     'judul' => 'Pedoman Pengisian Logbook Harian dan Validasi Pembimbing',
-                    'konten' => "Seluruh peserta magang/PKL diwajibkan mengisi logbook kegiatan harian setiap selesai jam kerja. Logbook mandiri yang telah diisi akan diverifikasi oleh pembimbing ASN masing-masing dan otomatis terhitung dalam rekap Total Hari Masuk peserta.",
+                    'konten' => 'Seluruh peserta magang/PKL diwajibkan mengisi logbook kegiatan harian beserta lokasi pelaksanaan setiap selesai jam kerja. Logbook mandiri yang telah diisi akan diverifikasi oleh pembimbing ASN masing-masing dan otomatis terhitung dalam rekap Total Hari Masuk peserta.',
                     'created_at' => $today->copy()->subMonths(11),
                 ],
                 [
                     'user_id' => $asnUsers[2]->id,
                     'judul' => 'Standar Penamaan File Hasil Pengolahan dan Publikasi',
-                    'konten' => "Untuk memudahkan pengarsipan pada server internal IPDS, setiap file hasil pengolahan data atau desain infografis yang dikumpulkan pada modul Tugas agar menggunakan format penamaan: [KodeFungsi]_[NamaKegiatan]_[Tanggal].",
+                    'konten' => 'Untuk memudahkan pengarsipan pada server internal IPDS, setiap file hasil pengolahan data atau desain infografis yang dikumpulkan pada modul Tugas agar menggunakan format penamaan: [KodeFungsi]_[NamaKegiatan]_[Tanggal].',
                     'created_at' => $today->copy()->subMonths(6),
                 ],
                 [
                     'user_id' => $adminUsers[2]->id,
                     'judul' => 'Ketentuan Kelengkapan Tanggal Mulai dan Selesai Magang pada Profil',
-                    'konten' => "Bagi calon peserta magang yang akunnya dibuat sebelum surat penetapan tanggal terbit, harap segera melengkapi Tanggal Mulai dan Tanggal Selesai magang pada halaman Profil maksimal 1 bulan sejak akun dibuat agar akun tetap aktif.",
+                    'konten' => 'Bagi calon peserta magang yang akunnya dibuat sebelum surat penetapan tanggal terbit, harap segera melengkapi Tanggal Mulai dan Tanggal Selesai magang pada halaman Profil maksimal 1 bulan sejak akun dibuat agar akun tetap aktif.',
                     'created_at' => $today->copy()->subMonths(2),
                 ],
                 [
                     'user_id' => $asnUsers[1]->id,
                     'judul' => 'Jadwal Evaluasi Tengah Periode Peserta Magang Gelombang Berjalan',
-                    'konten' => "Diberitahukan kepada seluruh peserta magang aktif agar memastikan seluruh progres tugas dan logbook kegiatan minggu ini sudah terbarui sebelum sesi evaluasi bersama pembimbing masing-masing.",
+                    'konten' => 'Diberitahukan kepada seluruh peserta magang aktif agar memastikan seluruh progres tugas, pengajuan izin/libur, dan logbook kegiatan minggu ini sudah terbarui sebelum sesi evaluasi bersama pembimbing masing-masing.',
                     'created_at' => $today->copy()->subDays(4),
                 ],
             ];

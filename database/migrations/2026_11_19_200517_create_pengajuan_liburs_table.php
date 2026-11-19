@@ -10,13 +10,8 @@ return new class extends Migration
     {
         Schema::create('pengajuan_liburs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('mahasiswa_profile_id')
-                ->constrained('mahasiswa_profiles')
-                ->cascadeOnDelete();
-            $table->foreignId('asn_profile_id')
-                ->nullable()
-                ->constrained('asn_profiles')
-                ->nullOnDelete();
+            $table->foreignId('mahasiswa_profile_id')->constrained('mahasiswa_profiles')->cascadeOnDelete();
+            $table->foreignId('asn_profile_id')->nullable()->constrained('asn_profiles')->nullOnDelete();
             $table->date('tanggal_mulai');
             $table->date('tanggal_selesai');
             $table->text('alasan');

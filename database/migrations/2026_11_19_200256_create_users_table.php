@@ -14,14 +14,14 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->enum('role', ['admin', 'mahasiswa', 'asn']);
+            $table->text('password_terenkripsi')->nullable();
+            $table->enum('role', ['admin', 'mahasiswa', 'asn'])->index();
             $table->string('phone', 20)->nullable();
             $table->string('avatar')->nullable();
             $table->boolean('is_active')->default(true);
+            $table->unsignedInteger('email_sent_count')->default(0);
             $table->rememberToken();
             $table->timestamps();
-
-            $table->index('role');
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

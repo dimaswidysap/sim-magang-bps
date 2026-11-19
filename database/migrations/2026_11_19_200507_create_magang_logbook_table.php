@@ -6,31 +6,23 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('magang_logbook', function (Blueprint $table) {
             $table->id();
-
-            // Relasi ke tabel profil mahasiswa
-            $table->foreignId('mahasiswa_profile_id')
-                  ->constrained('mahasiswa_profiles')
-                  ->cascadeOnDelete();
-
-            // Field sesuai kriteria fitur
+            $table->foreignId('mahasiswa_profile_id')->constrained('mahasiswa_profiles')->cascadeOnDelete();
             $table->date('tanggal_kegiatan');
             $table->string('judul_kegiatan');
+            $table->string('lokasi')->nullable();
             $table->text('deskripsi_kegiatan');
-            $table->text('file_lampiran')->nullable(); // Menyimpan path file foto (png, jpg, jpeg)
+            $table->text('file_lampiran')->nullable();
+            $table->boolean('is_validated')->default(false)->index();
+            $table->timestamp('validated_at')->nullable();
+            $table->foreignId('validated_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('magang_logbook');

@@ -10,11 +10,11 @@ return new class extends Migration
     {
         Schema::create('asn_profiles', function (Blueprint $table) {
             $table->id();
-            $table->date('tanggal_lahir')->nullable();
             $table->foreignId('user_id')->unique()->constrained('users')->cascadeOnDelete();
             $table->string('nip')->unique();
             $table->string('jabatan')->nullable();
             $table->string('unit_kerja')->nullable();
+            $table->date('tanggal_lahir')->nullable();
             $table->text('alamat')->nullable();
             $table->string('avatar')->nullable();
             $table->timestamps();

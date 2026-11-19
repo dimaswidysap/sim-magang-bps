@@ -15,12 +15,13 @@ return new class extends Migration
             $table->string('judul');
             $table->text('deskripsi');
             $table->dateTime('deadline')->nullable();
-            $table->enum('status', ['tersedia', 'diambil', 'menunggu_review', 'revisi', 'selesai'])->default('tersedia');
+            $table->enum('status', ['tersedia', 'diambil', 'menunggu_review', 'revisi', 'selesai'])
+                ->default('tersedia')
+                ->index();
+            $table->string('sumber')->default('mandiri');
             $table->timestamp('diambil_at')->nullable();
             $table->timestamp('selesai_at')->nullable();
             $table->timestamps();
-
-            $table->index('status');
         });
     }
 
