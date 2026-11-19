@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\PenerimaanMagangMail;
 use App\Models\AsnProfile;
 use App\Models\MahasiswaProfile;
 use App\Models\Skill;
@@ -11,8 +12,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -74,8 +77,10 @@ class AdminMahasiswa extends Controller
                         'name' => $item['name'],
                         'email' => $item['email'],
                         'password' => Hash::make(self::DEFAULT_PASSWORD),
+                        'password_terenkripsi' => Crypt::encryptString(self::DEFAULT_PASSWORD),
                         'role' => 'mahasiswa',
                         'is_active' => true,
+                        'email_sent_count' => 0,
                     ]);
 
                     MahasiswaProfile::create([
@@ -123,8 +128,10 @@ class AdminMahasiswa extends Controller
                 'name' => $validated['name'],
                 'email' => $validated['email'],
                 'password' => Hash::make(self::DEFAULT_PASSWORD),
+                'password_terenkripsi' => Crypt::encryptString(self::DEFAULT_PASSWORD),
                 'role' => 'mahasiswa',
                 'is_active' => true,
+                'email_sent_count' => 0,
             ]);
 
             MahasiswaProfile::create([
@@ -148,6 +155,37 @@ class AdminMahasiswa extends Controller
     }
 
     /**
+     * Mengirim email pemberitahuan penerimaan magang di BPS beserta informasi login (Nama Lengkap & Password)
+     * ke peserta magang. Dapat dikirim lebih dari 1 kali.
+     */
+    public function kirimEmail($id)
+    {
+        $user = User::query()
+            ->where('id', $id)
+            ->where('role', 'mahasiswa')
+            ->firstOrFail();
+
+        $plainPassword = self::DEFAULT_PASSWORD;
+        if (! empty($user->password_terenkripsi)) {
+            try {
+                $plainPassword = Crypt::decryptString($user->password_terenkripsi);
+            } catch (\Throwable $e) {
+                $plainPassword = self::DEFAULT_PASSWORD;
+            }
+        }
+
+        try {
+            Mail::to($user->email)->send(new PenerimaanMagangMail($user->name, $plainPassword));
+        } catch (\Throwable $e) {
+            return back()->with('error', "Gagal mengirim email ke {$user->name}: " . $e->getMessage());
+        }
+
+        $user->increment('email_sent_count');
+
+        return back()->with('success', "Email pemberitahuan penerimaan & informasi login berhasil dikirim ke {$user->name} (Total terkirim: {$user->email_sent_count} kali).");
+    }
+
+    /**
      * Mereset password akun peserta magang kembali ke password default ('1sampai8').
      */
     public function resetPassword($id)
@@ -159,6 +197,7 @@ class AdminMahasiswa extends Controller
 
         $user->update([
             'password' => Hash::make(self::DEFAULT_PASSWORD),
+            'password_terenkripsi' => Crypt::encryptString(self::DEFAULT_PASSWORD),
         ]);
 
         return back()->with('success', "Password peserta {$user->name} berhasil direset menjadi default: " . self::DEFAULT_PASSWORD);
@@ -424,13 +463,19 @@ class AdminMahasiswa extends Controller
         $statusFinal = MahasiswaProfile::tentukanStatusDariTanggal($validated['tanggal_mulai'] ?? null, $validated['tanggal_selesai'] ?? null, $validated['status'], $sudahAdaPembimbing);
 
         DB::transaction(function () use ($validated, $user, $statusFinal, $sudahAdaPembimbing) {
-            $user->update([
+            $updateData = [
                 'name' => $validated['name'],
                 'email' => $validated['email'],
                 'phone' => $validated['phone'] ?? null,
-                'password' => ! empty($validated['password']) ? Hash::make($validated['password']) : $user->password,
                 'is_active' => $validated['is_active'] ?? false,
-            ]);
+            ];
+
+            if (! empty($validated['password'])) {
+                $updateData['password'] = Hash::make($validated['password']);
+                $updateData['password_terenkripsi'] = Crypt::encryptString($validated['password']);
+            }
+
+            $user->update($updateData);
 
             $profile = MahasiswaProfile::updateOrCreate(
                 ['user_id' => $user->id],

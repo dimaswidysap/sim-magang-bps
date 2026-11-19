@@ -274,6 +274,18 @@ class AdminController extends Controller
             ->whereHas('mahasiswaProfile', fn ($p) => $p->where('status', 'dibatalkan'))
             ->count();
 
+        // Daftar peserta magang yang belum pernah dikirimi email (email_sent_count = 0)
+        $mahasiswaBelumDikirimEmail = User::query()
+            ->where('role', 'mahasiswa')
+            ->where(function ($q) {
+                $q->where('email_sent_count', 0)
+                    ->orWhereNull('email_sent_count');
+            })
+            ->with('mahasiswaProfile')
+            ->orderByDesc('created_at')
+            ->orderBy('name')
+            ->get();
+
         // Terapkan filter tab kategori
         $dataMahasiswa = (clone $baseQuery)
             ->when($kategori === 'aktif', function ($q) {
@@ -319,6 +331,7 @@ class AdminController extends Controller
 
         return view('pages.admin.mahasiswa.index', compact(
             'dataMahasiswa',
+            'mahasiswaBelumDikirimEmail',
             'kategori',
             'tahun',
             'tanggal',

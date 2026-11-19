@@ -11,8 +11,28 @@
     $countSelesai = $jumlahSelesai ?? 0;
     $countDibatalkan = $jumlahDibatalkan ?? 0;
 
+    $belumDikirimEmailList = $mahasiswaBelumDikirimEmail ?? collect();
     $adaFilterAktif = $kategoriAktif !== 'semua' || $tahunAktif !== '' || $tanggalAktif !== '' || $searchAktif !== '';
 @endphp
+
+<!-- Flash Alert -->
+@if (session('success'))
+    <div class="p-4 bg-surface border border-success/40 text-success rounded-xl text-sm font-semibold flex items-center gap-2.5 shadow-xs">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+        </svg>
+        <span>{{ session('success') }}</span>
+    </div>
+@endif
+
+@if (session('error'))
+    <div class="p-4 bg-surface border border-danger/40 text-danger rounded-xl text-sm font-semibold flex items-center gap-2.5 shadow-xs">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+        </svg>
+        <span>{{ session('error') }}</span>
+    </div>
+@endif
 
 <!-- Header & Tombol Tambah -->
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -31,6 +51,56 @@
         Tambah Data
     </x-buttonv2>
 </div>
+
+<!-- Tab / Panel Info Atas: Peserta Magang yang Belum Pernah Dikirimi Email -->
+@if ($belumDikirimEmailList->isNotEmpty())
+    <div class="bg-surface border border-warning/40 rounded-xl p-4 shadow-xs space-y-3">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5">
+                <span class="w-8 h-8 rounded-lg bg-warning/15 text-warning-dark flex items-center justify-center shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="2.2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                </span>
+                <div>
+                    <h2 class="text-xs md:text-sm font-bold text-text flex items-center gap-2">
+                        <span>Belum Dikirimi Email Penerimaan &amp; Info Login</span>
+                        <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-warning/20 text-warning-dark border border-warning/30">
+                            {{ $belumDikirimEmailList->count() }} Peserta
+                        </span>
+                    </h2>
+                    <p class="text-[11px] text-text-light">
+                        Daftar peserta berikut belum pernah menerima email pemberitahuan. Peserta otomatis hilang dari daftar ini setelah email dikirim.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-wrap gap-2 max-h-36 overflow-y-auto pt-1">
+            @foreach ($belumDikirimEmailList as $mhsBelum)
+                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-background border border-border text-xs">
+                    <span class="w-2 h-2 rounded-full bg-warning shrink-0"></span>
+                    <span class="font-semibold text-text">{{ $mhsBelum->name }}</span>
+                    @if ($mhsBelum->mahasiswaProfile?->instansi_asal)
+                        <span class="text-[11px] text-text-light">({{ $mhsBelum->mahasiswaProfile->instansi_asal }})</span>
+                    @endif
+                    <form method="POST" action="{{ route('admin.mahasiswa.kirim-email', $mhsBelum->id) }}"
+                        data-confirm="Kirim email penerimaan dan informasi login ke {{ $mhsBelum->name }}?"
+                        class="inline-flex">
+                        @csrf
+                        <button type="submit"
+                            class="ml-1 px-2 py-0.5 rounded bg-primary/10 hover:bg-primary text-primary-dark hover:text-white text-[11px] font-bold transition-colors cursor-pointer"
+                            title="Kirim Email ke {{ $mhsBelum->name }}">
+                            Kirim
+                        </button>
+                    </form>
+                </div>
+            @endforeach
+        </div>
+    </div>
+@endif
 
 <!-- Filter Tab Kategori Status Magang -->
 <div class="flex flex-wrap items-center gap-2 border-b border-border pb-3">
@@ -140,7 +210,7 @@
                     <th scope="col" class="px-4 py-3.5 font-bold text-center whitespace-nowrap">No</th>
                     <th scope="col" class="px-4 py-3.5 font-bold">Nama Peserta</th>
                     <th scope="col" class="px-4 py-3.5 font-bold whitespace-nowrap">NIM</th>
-                    <th scope="col" class="px-4 py-3.5 font-bold">Instansi & Jurusan</th>
+                    <th scope="col" class="px-4 py-3.5 font-bold">Instansi &amp; Jurusan</th>
                     <th scope="col" class="px-4 py-3.5 font-bold whitespace-nowrap">Periode Magang</th>
                     <th scope="col" class="px-4 py-3.5 font-bold text-center whitespace-nowrap">Status Magang</th>
                     <th scope="col" class="px-4 py-3.5 font-bold text-center whitespace-nowrap">Aksi</th>
@@ -153,6 +223,7 @@
                     @php
                         $profil = $mhs->mahasiswaProfile;
                         $statusMagang = $profil?->status ?? 'pending';
+                        $jumlahEmailTerkirim = (int) ($mhs->email_sent_count ?? 0);
                     @endphp
                     <tr
                         class="data-row block md:table-row flex-col p-4 md:p-0 hover:bg-primary/5 transition-colors duration-200 group md:border-b md:border-border last:border-b-0">
@@ -276,20 +347,60 @@
                             </div>
                         </td>
 
-                        <!-- Aksi -->
+                        <!-- Aksi (Dropdown Menu: Detail & Kirim Email + Counter) -->
                         <td
                             class="block md:table-cell md:px-4 md:py-3.5 md:text-center mt-4 md:mt-0 pt-4 md:pt-0 border-t border-border md:border-0 whitespace-nowrap">
-                            <x-main-button href="{{ route('admin-mahasiswa-detail', $mhs->id) }}"
-                                class="w-full md:w-auto bg-surface hover:bg-primary text-text hover:text-white border border-border hover:border-primary text-xs px-3.5 py-2 rounded-lg transition-all shadow-xs inline-flex justify-center items-center gap-1.5">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="2" stroke="currentColor" class="w-4 h-4 shrink-0">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                </svg>
-                                <span>Detail</span>
-                            </x-main-button>
+                            <div class="relative inline-block w-full md:w-auto text-left" data-aksi-dropdown>
+                                <button type="button" data-aksi-trigger
+                                    class="w-full md:w-auto bg-surface hover:bg-primary text-text hover:text-white border border-border hover:border-primary text-xs font-semibold px-3.5 py-2 rounded-lg transition-all shadow-xs inline-flex justify-center items-center gap-1.5 cursor-pointer">
+                                    <span>Aksi</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 shrink-0" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+
+                                <div data-aksi-menu
+                                    class="hidden fixed z-50 w-52 bg-surface border border-border rounded-xl shadow-lg py-1.5 text-left">
+                                    <!-- Menu 1: Detail -->
+                                    <a href="{{ route('admin-mahasiswa-detail', $mhs->id) }}"
+                                        class="flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-text hover:bg-primary/10 hover:text-primary-dark transition-colors">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke-width="2" stroke="currentColor" class="w-4 h-4 shrink-0 text-primary">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        </svg>
+                                        <span>Detail</span>
+                                    </a>
+
+                                    <div class="my-1 border-t border-border/60"></div>
+
+                                    <!-- Menu 2: Kirim Email + Counter -->
+                                    <form method="POST" action="{{ route('admin.mahasiswa.kirim-email', $mhs->id) }}"
+                                        data-confirm="Kirim email pemberitahuan penerimaan magang & informasi login ke {{ $mhs->name }}?">
+                                        @csrf
+                                        <button type="submit"
+                                            class="w-full flex items-center justify-between gap-2 px-3.5 py-2 text-xs font-semibold text-text hover:bg-primary/10 hover:text-primary-dark transition-colors cursor-pointer">
+                                            <span class="flex items-center gap-2.5">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                    stroke-width="2" stroke="currentColor" class="w-4 h-4 shrink-0 text-accent-dark">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                                                </svg>
+                                                <span>Kirim Email</span>
+                                            </span>
+
+                                            <span
+                                                class="px-2 py-0.5 rounded-full text-[11px] font-bold {{ $jumlahEmailTerkirim > 0 ? 'bg-success/15 text-success-dark border border-success/30' : 'bg-warning/20 text-warning-dark border border-warning/30' }}"
+                                                title="Jumlah email yang telah dikirim">
+                                                {{ $jumlahEmailTerkirim }}
+                                            </span>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
                         </td>
 
                     </tr>
@@ -344,3 +455,57 @@
         </div>
     @endif
 </div>
+
+<!-- Script Dropdown Menu Aksi (Anti-Clip di dalam Tabel) -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        let activeMenu = null;
+
+        function closeAllMenus() {
+            document.querySelectorAll('[data-aksi-menu]').forEach(function (menu) {
+                menu.classList.add('hidden');
+            });
+            activeMenu = null;
+        }
+
+        document.querySelectorAll('[data-aksi-trigger]').forEach(function (btn) {
+            btn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                const wrapper = btn.closest('[data-aksi-dropdown]');
+                const menu = wrapper ? wrapper.querySelector('[data-aksi-menu]') : null;
+                if (!menu) return;
+
+                const isCurrentlyOpen = !menu.classList.contains('hidden');
+                closeAllMenus();
+
+                if (!isCurrentlyOpen) {
+                    menu.classList.remove('hidden');
+                    const rect = btn.getBoundingClientRect();
+                    const menuWidth = menu.offsetWidth || 208;
+                    const menuHeight = menu.offsetHeight || 96;
+
+                    let left = rect.right - menuWidth;
+                    if (left < 12) left = 12;
+
+                    let top = rect.bottom + 6;
+                    if (top + menuHeight > window.innerHeight - 12) {
+                        top = rect.top - menuHeight - 6;
+                    }
+
+                    menu.style.left = left + 'px';
+                    menu.style.top = top + 'px';
+                    activeMenu = menu;
+                }
+            });
+        });
+
+        document.addEventListener('click', function (e) {
+            if (activeMenu && !activeMenu.contains(e.target)) {
+                closeAllMenus();
+            }
+        });
+
+        window.addEventListener('scroll', closeAllMenus, true);
+        window.addEventListener('resize', closeAllMenus);
+    });
+</script>
