@@ -8,84 +8,69 @@
     <style>
         @page {
             size: A4 portrait;
-            margin: 18mm 16mm 18mm 16mm;
-        }
-
-        * {
-            box-sizing: border-box;
+            margin: 18mm 15mm;
         }
 
         body {
-            font-family: "DejaVu Sans", Arial, Helvetica, sans-serif;
+            font-family: DejaVu Sans, Arial, Helvetica, sans-serif;
             font-size: 11px;
-            line-height: 1.45;
             color: #1f2937;
+            line-height: 1.45;
             margin: 0;
-            padding: 0;
+            padding: {{ ! empty($isPdfEngine) ? '0' : '24px' }};
+            background: {{ ! empty($isPdfEngine) ? '#ffffff' : '#f3f4f6' }};
+        }
+
+        .sheet {
+            max-width: 800px;
+            margin: 0 auto;
             background: #ffffff;
+            padding: {{ ! empty($isPdfEngine) ? '0' : '32px' }};
+            border: {{ ! empty($isPdfEngine) ? 'none' : '1px solid #e5e7eb' }};
         }
 
-        .print-toolbar {
-            background: #f3f4f6;
-            border-bottom: 1px solid #d1d5db;
-            padding: 10px 18px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
+        .print-bar {
+            max-width: 800px;
+            margin: 0 auto 14px auto;
+            text-align: right;
         }
 
-        .btn-action {
-            display: inline-block;
-            padding: 7px 14px;
+        .btn-print {
+            background: #1d4ed8;
+            color: #ffffff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
             font-size: 12px;
             font-weight: bold;
-            text-decoration: none;
-            border-radius: 6px;
             cursor: pointer;
-            border: 1px solid #d1d5db;
-            background: #ffffff;
-            color: #111827;
         }
 
-        .btn-primary {
-            background: #1e3a8a;
-            border-color: #1e3a8a;
-            color: #ffffff;
-        }
-
-        .container {
-            max-width: 780px;
-            margin: 0 auto;
-            padding: {{ $isPdfEngine ?? false ? '0' : '12px 20px 32px 20px' }};
-        }
-
-        .kop {
+        .header {
             text-align: center;
-            border-bottom: 2.5px solid #111827;
-            padding-bottom: 10px;
+            border-bottom: 2px solid #111827;
+            padding-bottom: 12px;
             margin-bottom: 18px;
         }
 
-        .kop-sub {
+        .header .subtitle {
             font-size: 10px;
             font-weight: bold;
             text-transform: uppercase;
             letter-spacing: 1px;
-            color: #1e3a8a;
-            margin: 0 0 3px 0;
+            color: #1d4ed8;
+            margin: 0 0 4px 0;
         }
 
-        .kop-title {
+        .header h1 {
             font-size: 16px;
-            font-weight: bold;
             text-transform: uppercase;
             margin: 0 0 4px 0;
             color: #111827;
         }
 
-        .kop-meta {
-            font-size: 9.5px;
+        .header .meta {
+            font-size: 10px;
             color: #6b7280;
             margin: 0;
         }
@@ -94,311 +79,243 @@
             font-size: 11px;
             font-weight: bold;
             text-transform: uppercase;
-            color: #1e3a8a;
+            color: #1d4ed8;
             border-bottom: 1px solid #d1d5db;
             padding-bottom: 4px;
-            margin: 16px 0 8px 0;
+            margin: 18px 0 8px 0;
         }
 
-        table.info-grid {
+        table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 12px;
         }
 
-        table.info-grid td {
+        table.info-table td {
+            padding: 4px 6px;
             vertical-align: top;
-            width: 50%;
-            padding: 0;
         }
 
-        table.info-grid td.left-col {
-            padding-right: 10px;
-        }
-
-        table.info-grid td.right-col {
-            padding-left: 10px;
-        }
-
-        table.kv {
-            width: 100%;
-            border-collapse: collapse;
-            border: 1px solid #e5e7eb;
-        }
-
-        table.kv td {
-            padding: 5px 8px;
-            border-bottom: 1px solid #f3f4f6;
-            font-size: 10.5px;
-        }
-
-        table.kv td.label {
-            width: 38%;
+        table.info-table td.label {
+            width: 28%;
             color: #4b5563;
-            background: #f9fafb;
         }
 
-        table.kv td.value {
+        table.info-table td.sep {
+            width: 2%;
+        }
+
+        table.info-table td.val {
+            width: 70%;
             font-weight: bold;
             color: #111827;
         }
 
-        table.stats {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 12px 0 16px 0;
+        table.stats-table {
+            margin-top: 12px;
         }
 
-        table.stats td {
-            width: 25%;
+        table.stats-table th,
+        table.stats-table td {
             border: 1px solid #d1d5db;
-            background: #f9fafb;
+            padding: 7px 6px;
             text-align: center;
-            padding: 8px 6px;
         }
 
-        .stat-label {
-            font-size: 9.5px;
+        table.stats-table th {
+            background: #f9fafb;
+            font-size: 10px;
             color: #4b5563;
-            display: block;
+            text-transform: uppercase;
         }
 
-        .stat-num {
-            font-size: 15px;
+        table.stats-table td {
+            font-size: 13px;
             font-weight: bold;
             color: #111827;
-            display: block;
-            margin: 2px 0;
-        }
-
-        .stat-sub {
-            font-size: 8.5px;
-            color: #6b7280;
-            display: block;
-        }
-
-        table.data-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 14px;
         }
 
         table.data-table th,
         table.data-table td {
             border: 1px solid #d1d5db;
             padding: 6px 8px;
-            text-align: left;
             vertical-align: top;
-            font-size: 10px;
+            font-size: 10.5px;
         }
 
         table.data-table th {
             background: #f3f4f6;
             font-weight: bold;
             text-transform: uppercase;
-            font-size: 9px;
+            font-size: 9.5px;
             color: #374151;
         }
 
         .text-center {
-            text-align: center !important;
+            text-align: center;
         }
 
         .nowrap {
             white-space: nowrap;
         }
 
-        .item-title {
-            font-weight: bold;
-            color: #111827;
-            margin-bottom: 2px;
-        }
-
-        .item-desc {
-            color: #4b5563;
+        .muted {
+            color: #6b7280;
             font-size: 9.5px;
         }
 
-        .badge-selesai {
-            display: inline-block;
-            padding: 2px 6px;
-            font-size: 8.5px;
-            font-weight: bold;
-            text-transform: uppercase;
-            background: #dcfce7;
-            color: #166534;
-            border: 1px solid #86efac;
-            border-radius: 4px;
-        }
-
-        table.ttd {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 26px;
+        .ttd-table {
+            margin-top: 32px;
             page-break-inside: avoid;
         }
 
-        table.ttd td {
+        .ttd-table td {
             width: 50%;
             text-align: center;
             vertical-align: top;
-            font-size: 10.5px;
         }
 
         .ttd-space {
-            height: 62px;
+            height: 60px;
         }
 
         @media print {
-            .no-print {
-                display: none !important;
+            body {
+                background: #ffffff;
+                padding: 0;
             }
 
-            .container {
+            .sheet {
+                border: none;
                 padding: 0;
-                max-width: 100%;
+            }
+
+            .no-print {
+                display: none !important;
             }
         }
     </style>
 </head>
 
 <body>
-
-    @if (!($isPdfEngine ?? false))
-        <div class="print-toolbar no-print">
-            <span style="font-size: 12px; color: #374151;">
-                Gunakan tombol <strong>Simpan / Cetak PDF</strong> (pilih tujuan <em>Save as PDF</em>).
-            </span>
-            <div style="display: flex; gap: 8px;">
-                <a href="{{ route('admin.laporan.show', $mahasiswa->id) }}" class="btn-action">Kembali</a>
-                <button type="button" onclick="window.print()" class="btn-action btn-primary">Simpan / Cetak
-                    PDF</button>
-            </div>
+    @if (empty($isPdfEngine))
+        <div class="print-bar no-print">
+            <button type="button" class="btn-print" onclick="window.print()">Cetak / Simpan PDF</button>
         </div>
     @endif
 
-    <div class="container">
+    <div class="sheet">
         <!-- Kop Laporan -->
-        <div class="kop">
-            <p class="kop-sub">Sistem Informasi Manajemen Magang / Praktik Kerja Lapangan</p>
-            <h1 class="kop-title">Laporan Akhir Kegiatan Peserta Magang</h1>
-            <p class="kop-meta">Dicetak pada: {{ $tanggalCetak->translatedFormat('d F Y, H:i') }} WIB</p>
+        <div class="header">
+            <p class="subtitle">Sistem Informasi Manajemen Magang / Praktik Kerja Lapangan</p>
+            <h1>Laporan Akhir Kegiatan Peserta Magang</h1>
+            <p class="meta">Dicetak pada: {{ $tanggalCetak->translatedFormat('d F Y, H:i') }} WIB</p>
         </div>
 
-        <!-- Identitas & Pembimbing -->
-        <table class="info-grid">
+        <!-- Bagian A: Identitas Peserta -->
+        <h2 class="section-title">A. Identitas Peserta Magang</h2>
+        <table class="info-table">
             <tr>
-                <td class="left-col">
-                    <div class="section-title" style="margin-top: 0;">A. Identitas Peserta Magang</div>
-                    <table class="kv">
-                        <tr>
-                            <td class="label">Nama Lengkap</td>
-                            <td class="value">{{ $mahasiswa->name }}</td>
-                        </tr>
-                        <tr>
-                            <td class="label">NIM / NIS</td>
-                            <td class="value">{{ $profil->nim ?? '-' }}</td>
-                        </tr>
-                        <tr>
-                            <td class="label">Instansi Asal</td>
-                            <td class="value">{{ $profil->instansi_asal ?? '-' }}</td>
-                        </tr>
-                        <tr>
-                            <td class="label">Jenjang / Jurusan</td>
-                            <td class="value">{{ $profil->jenjang ?? '-' }} - {{ $profil->jurusan ?? '-' }}</td>
-                        </tr>
-                        <tr>
-                            <td class="label">Email / Telepon</td>
-                            <td class="value" style="font-weight: normal;">
-                                {{ $mahasiswa->email }}{{ $mahasiswa->phone ? ' / ' . $mahasiswa->phone : '' }}
-                            </td>
-                        </tr>
-                    </table>
+                <td class="label">Nama Lengkap</td>
+                <td class="sep">:</td>
+                <td class="val">{{ $mahasiswa->name }}</td>
+            </tr>
+            <tr>
+                <td class="label">NIM / NIS</td>
+                <td class="sep">:</td>
+                <td class="val">{{ $profil->nim ?? '-' }}</td>
+            </tr>
+            <tr>
+                <td class="label">Instansi Asal</td>
+                <td class="sep">:</td>
+                <td class="val">{{ $profil->instansi_asal ?? '-' }}</td>
+            </tr>
+            <tr>
+                <td class="label">Jenjang / Program Studi</td>
+                <td class="sep">:</td>
+                <td class="val">{{ $profil->jenjang ?? '-' }} - {{ $profil->jurusan ?? '-' }}</td>
+            </tr>
+            <tr>
+                <td class="label">Email / No. Telepon</td>
+                <td class="sep">:</td>
+                <td class="val">{{ $mahasiswa->email }}{{ $mahasiswa->phone ? ' / ' . $mahasiswa->phone : '' }}</td>
+            </tr>
+        </table>
+
+        <!-- Bagian B: Pelaksanaan & Pembimbing -->
+        <h2 class="section-title">B. Pelaksanaan & Pembimbing ASN</h2>
+        <table class="info-table">
+            <tr>
+                <td class="label">Pembimbing ASN</td>
+                <td class="sep">:</td>
+                <td class="val">{{ $pembimbing?->user?->name ?? '-' }}</td>
+            </tr>
+            <tr>
+                <td class="label">NIP Pembimbing</td>
+                <td class="sep">:</td>
+                <td class="val">{{ $pembimbing?->nip ?? '-' }}</td>
+            </tr>
+            <tr>
+                <td class="label">Jabatan / Unit Kerja</td>
+                <td class="sep">:</td>
+                <td class="val">
+                    {{ $pembimbing?->jabatan ?? '-' }}
+                    {{ $pembimbing?->unit_kerja ? '(' . $pembimbing->unit_kerja . ')' : '' }}
                 </td>
-                <td class="right-col">
-                    <div class="section-title" style="margin-top: 0;">B. Pelaksanaan & Pembimbing ASN</div>
-                    <table class="kv">
-                        <tr>
-                            <td class="label">Pembimbing ASN</td>
-                            <td class="value">{{ $pembimbing?->user?->name ?? '-' }}</td>
-                        </tr>
-                        <tr>
-                            <td class="label">NIP Pembimbing</td>
-                            <td class="value">{{ $pembimbing?->nip ?? '-' }}</td>
-                        </tr>
-                        <tr>
-                            <td class="label">Jabatan / Unit</td>
-                            <td class="value" style="font-weight: normal;">
-                                {{ $pembimbing?->jabatan ?? '-' }}
-                                @if ($pembimbing?->unit_kerja)
-                                    ({{ $pembimbing->unit_kerja }})
-                                @endif
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="label">Periode Magang</td>
-                            <td class="value">
-                                {{ $profil->tanggal_mulai?->translatedFormat('d M Y') ?? '-' }}
-                                s.d.
-                                {{ $profil->tanggal_selesai?->translatedFormat('d M Y') ?? '-' }}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="label">Status Akhir</td>
-                            <td class="value"><span class="badge-selesai">Selesai</span></td>
-                        </tr>
-                    </table>
+            </tr>
+            <tr>
+                <td class="label">Periode Magang</td>
+                <td class="sep">:</td>
+                <td class="val">
+                    {{ $profil->tanggal_mulai?->translatedFormat('d F Y') ?? '-' }}
+                    s.d.
+                    {{ $profil->tanggal_selesai?->translatedFormat('d F Y') ?? '-' }}
                 </td>
             </tr>
         </table>
 
-        <!-- Ringkasan Statistik -->
-        <table class="stats">
-            <tr>
-                <td>
-                    <span class="stat-label">Total Hari Masuk</span>
-                    <span class="stat-num">{{ $totalHariMasuk }} Hari</span>
-                    <span class="stat-sub">Hari aktif tervalidasi</span>
-                </td>
-                <td>
-                    <span class="stat-label">Tugas Selesai</span>
-                    <span class="stat-num">{{ $totalTugasSelesai }} / {{ $totalTugasDiikuti }}</span>
-                    <span class="stat-sub">Penugasan ASN</span>
-                </td>
-                <td>
-                    <span class="stat-label">Logbook Mandiri</span>
-                    <span class="stat-num">{{ $totalLogbookMandiri }} Catatan</span>
-                    <span class="stat-sub">Telah divalidasi pembimbing</span>
-                </td>
-                <td>
-                    <span class="stat-label">Durasi Periode</span>
-                    <span class="stat-num">{{ $durasiHariKalender }} Hari</span>
-                    <span class="stat-sub">Kalender pelaksanaan</span>
-                </td>
-            </tr>
+        <!-- Ringkasan Capaian -->
+        <table class="stats-table">
+            <thead>
+                <tr>
+                    <th>Total Hari Masuk</th>
+                    <th>Total Hari Libur</th>
+                    <th>Tugas Selesai</th>
+                    <th>Logbook Mandiri</th>
+                    <th>Durasi Kalender</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ $totalHariMasuk }} Hari</td>
+                    <td>{{ $totalHariLibur }} Hari</td>
+                    <td>{{ $totalTugasSelesai }} / {{ $totalTugasDiikuti }}</td>
+                    <td>{{ $totalLogbookMandiri }} Catatan</td>
+                    <td>{{ $durasiHariKalender }} Hari</td>
+                </tr>
+            </tbody>
         </table>
 
         <!-- Bagian C: Rekapitulasi Tugas -->
-        <div class="section-title">C. Rekapitulasi Penugasan Selama Magang</div>
+        <h2 class="section-title">C. Rekapitulasi Penugasan Selama Magang</h2>
         @if ($daftarTugas->isEmpty())
-            <p style="font-size: 10px; color: #6b7280; font-style: italic;">Tidak ada catatan penugasan pada periode
-                ini.</p>
+            <p class="muted">Tidak ada catatan penugasan pada periode ini.</p>
         @else
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th class="text-center" style="width: 28px;">No</th>
+                        <th class="text-center" style="width: 30px;">No</th>
                         <th>Judul & Deskripsi Tugas</th>
-                        <th class="nowrap" style="width: 145px;">Pemberi Tugas</th>
-                        <th class="nowrap" style="width: 85px;">Selesai</th>
-                        <th class="text-center nowrap" style="width: 72px;">Status</th>
+                        <th class="nowrap">Pemberi Tugas</th>
+                        <th class="nowrap">Tanggal Selesai</th>
+                        <th class="text-center nowrap">Status</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($daftarTugas as $tugas)
                         @php
-                            $statusVal =
-                                $tugas->status instanceof \BackedEnum ? $tugas->status->value : (string) $tugas->status;
+                            $statusVal = $tugas->status instanceof \BackedEnum
+                                ? $tugas->status->value
+                                : (string) $tugas->status;
                             $statusLabel = method_exists($tugas->status, 'label')
                                 ? $tugas->status->label()
                                 : ucfirst(str_replace('_', ' ', $statusVal));
@@ -406,32 +323,30 @@
                         <tr>
                             <td class="text-center">{{ $loop->iteration }}</td>
                             <td>
-                                <div class="item-title">{{ $tugas->judul }}</div>
-                                <div class="item-desc">{{ $tugas->deskripsi }}</div>
+                                <strong>{{ $tugas->judul }}</strong><br>
+                                <span class="muted">{{ $tugas->deskripsi }}</span>
                             </td>
-                            <td>{{ $tugas->asn?->name ?? '-' }}</td>
-                            <td class="nowrap">
-                                {{ $tugas->selesai_at ? $tugas->selesai_at->translatedFormat('d M Y') : '-' }}</td>
-                            <td class="text-center nowrap"><span class="badge-selesai">{{ $statusLabel }}</span></td>
+                            <td class="nowrap">{{ $tugas->asn?->name ?? '-' }}</td>
+                            <td class="nowrap">{{ $tugas->selesai_at ? $tugas->selesai_at->translatedFormat('d M Y') : '-' }}</td>
+                            <td class="text-center nowrap">{{ strtoupper($statusLabel) }}</td>
                         </tr>
                     @endforeach
                 </tbody>
             </table>
         @endif
 
-        <!-- Bagian D: Rekapitulasi Logbook Kegiatan Harian -->
-        <div class="section-title">D. Rekapitulasi Logbook Kegiatan Harian (Tervalidasi)</div>
+        <!-- Bagian D: Rekapitulasi Logbook -->
+        <h2 class="section-title">D. Rekapitulasi Logbook Kegiatan Harian (Tervalidasi)</h2>
         @if ($logbookMandiri->isEmpty())
-            <p style="font-size: 10px; color: #6b7280; font-style: italic;">Tidak ada logbook mandiri yang tervalidasi.
-            </p>
+            <p class="muted">Tidak ada logbook mandiri yang tervalidasi.</p>
         @else
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th class="text-center" style="width: 28px;">No</th>
-                        <th class="nowrap" style="width: 88px;">Tanggal</th>
+                        <th class="text-center" style="width: 30px;">No</th>
+                        <th class="nowrap">Tanggal</th>
                         <th>Kegiatan & Uraian Aktivitas</th>
-                        <th class="text-center nowrap" style="width: 78px;">Status</th>
+                        <th class="text-center nowrap">Validasi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -440,44 +355,75 @@
                             <td class="text-center">{{ $loop->iteration }}</td>
                             <td class="nowrap">{{ $item->tanggal_kegiatan?->translatedFormat('d M Y') ?? '-' }}</td>
                             <td>
-                                <div class="item-title">{{ $item->judul_kegiatan }}</div>
-                                <div class="item-desc">{{ $item->deskripsi_kegiatan }}</div>
+                                <strong>{{ $item->judul_kegiatan }}</strong><br>
+                                <span class="muted">{{ $item->deskripsi_kegiatan }}</span>
                             </td>
-                            <td class="text-center nowrap"><span class="badge-selesai">Tervalidasi</span></td>
+                            <td class="text-center nowrap">Tervalidasi</td>
                         </tr>
                     @endforeach
                 </tbody>
             </table>
         @endif
 
-        <!-- Pengesahan -->
-        <table class="ttd">
+        <!-- Bagian E: Rekapitulasi Hari Libur -->
+        <h2 class="section-title">E. Rekapitulasi Hari Libur / Izin (Disetujui ASN)</h2>
+        @if ($daftarLiburDisetujui->isEmpty())
+            <p class="muted">Tidak ada riwayat pengajuan libur yang disetujui selama periode magang.</p>
+        @else
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th class="text-center" style="width: 30px;">No</th>
+                        <th class="nowrap">Tanggal Libur</th>
+                        <th class="text-center nowrap">Durasi</th>
+                        <th>Alasan Libur</th>
+                        <th class="nowrap">Disetujui Oleh</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($daftarLiburDisetujui as $libur)
+                        <tr>
+                            <td class="text-center">{{ $loop->iteration }}</td>
+                            <td class="nowrap">
+                                {{ $libur->tanggal_mulai?->translatedFormat('d M Y') ?? '-' }}
+                                @if ($libur->tanggal_mulai && $libur->tanggal_selesai && ! $libur->tanggal_mulai->equalTo($libur->tanggal_selesai))
+                                    s.d. {{ $libur->tanggal_selesai->translatedFormat('d M Y') }}
+                                @endif
+                            </td>
+                            <td class="text-center nowrap">{{ $libur->jumlah_hari }} Hari</td>
+                            <td>
+                                {{ $libur->alasan }}
+                                @if ($libur->catatan_asn)
+                                    <br><span class="muted">Catatan ASN: {{ $libur->catatan_asn }}</span>
+                                @endif
+                            </td>
+                            <td class="nowrap">{{ $libur->pembimbing?->user?->name ?? ($pembimbing?->user?->name ?? '-') }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        @endif
+
+        <!-- Kolom Tanda Tangan -->
+        <table class="ttd-table">
             <tr>
                 <td>
-                    <div>Peserta Magang / PKL,</div>
+                    <p>Peserta Magang / PKL,</p>
                     <div class="ttd-space"></div>
-                    <div style="font-weight: bold; text-decoration: underline;">{{ $mahasiswa->name }}</div>
-                    <div style="font-size: 9.5px; color: #4b5563;">NIM. {{ $profil->nim ?? '-' }}</div>
+                    <p><strong><u>{{ $mahasiswa->name }}</u></strong><br>
+                        <span class="muted">NIM. {{ $profil->nim ?? '-' }}</span>
+                    </p>
                 </td>
                 <td>
-                    <div>Mengetahui,</div>
-                    <div>Pembimbing Lapangan (ASN)</div>
+                    <p>Mengetahui,<br>Pembimbing Lapangan (ASN)</p>
                     <div class="ttd-space"></div>
-                    <div style="font-weight: bold; text-decoration: underline;">
-                        {{ $pembimbing?->user?->name ?? '........................................' }}</div>
-                    <div style="font-size: 9.5px; color: #4b5563;">NIP. {{ $pembimbing?->nip ?? '-' }}</div>
+                    <p><strong><u>{{ $pembimbing?->user?->name ?? '........................................' }}</u></strong><br>
+                        <span class="muted">NIP. {{ $pembimbing?->nip ?? '-' }}</span>
+                    </p>
                 </td>
             </tr>
         </table>
     </div>
-
-    @if (!($isPdfEngine ?? false))
-        <script>
-            window.addEventListener('load', function() {
-                window.print();
-            });
-        </script>
-    @endif
 </body>
 
 </html>

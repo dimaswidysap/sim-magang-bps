@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Hash;
 
 class User extends Authenticatable
 {
@@ -22,6 +23,27 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_active' => 'boolean',
         ];
+    }
+
+    /**
+     * Mencari user berdasarkan email atau name secara case-sensitive (huruf besar/kecil harus persis sama)
+     * serta memverifikasi kecocokan password.
+     */
+    public static function findForCaseSensitiveLogin(string $identifier, string $password): ?self
+    {
+        $candidates = static::query()
+            ->where('email', $identifier)
+            ->orWhere('name', $identifier)
+            ->get()
+            ->filter(fn (self $user): bool => $user->email === $identifier || $user->name === $identifier);
+
+        foreach ($candidates as $candidate) {
+            if (Hash::check($password, $candidate->password)) {
+                return $candidate;
+            }
+        }
+
+        return null;
     }
 
     /**

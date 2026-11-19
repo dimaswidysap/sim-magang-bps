@@ -42,13 +42,14 @@
                 <form class="space-y-6" method="POST" action="{{ route('login.post') }}">
                     @csrf
 
-                    <!-- Email -->
+                    <!-- Email atau Nama -->
                     <div>
                         <label class="mb-2 block text-sm font-semibold text-white md:text-text">
-                            Email
+                            Email atau Nama
                         </label>
 
-                        <input type="email" name="email" value="{{ old('email') }}" placeholder="Masukkan Email"
+                        <input type="text" name="login" value="{{ old('login') }}" autocomplete="username"
+                            placeholder="Masukkan Email atau Nama"
                             class="w-full rounded-xl border border-border bg-background px-4 py-3 text-text placeholder:text-text-light outline-none transition duration-300 focus:border-primary focus:ring-4 focus:ring-primary/20" />
                     </div>
 
@@ -64,12 +65,13 @@
                             </a>
                         </div>
 
-                        <input type="password" name="password" placeholder="Masukkan Password"
+                        <input type="password" name="password" autocomplete="current-password"
+                            placeholder="Masukkan Password"
                             class="w-full rounded-xl border border-border bg-background px-4 py-3 text-text placeholder:text-text-light outline-none transition duration-300 focus:border-primary focus:ring-4 focus:ring-primary/20" />
                     </div>
 
                     {{-- Pesan Error --}}
-                    @error('email')
+                    @error('login')
                         <div class="w-full py-2">
                             <span class="text-danger text-sm font-bold">{{ $message }}</span>
                         </div>

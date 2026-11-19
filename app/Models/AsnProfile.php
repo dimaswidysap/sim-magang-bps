@@ -41,4 +41,9 @@ class AsnProfile extends Model
         return $this->hasMany(MahasiswaProfile::class, 'asn_profile_id')
             ->whereIn('status', ['aktif', 'pending']);
     }
+
+    public function pengajuanLiburs()
+    {
+        return $this->hasMany(PengajuanLibur::class, 'asn_profile_id');
+    }
 }

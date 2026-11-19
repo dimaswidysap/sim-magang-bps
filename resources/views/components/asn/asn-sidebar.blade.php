@@ -10,6 +10,13 @@
             })
             ->count()
         : 0;
+
+    $jumlahPengajuanLiburAsn = $asnSidebarProfileId
+        ? \App\Models\PengajuanLibur::query()
+            ->where('asn_profile_id', $asnSidebarProfileId)
+            ->where('status', 'pending')
+            ->count()
+        : 0;
 @endphp
 
 <section class="fixed w-60 h-full p-2 z-20 sidebar-mobile">
@@ -39,9 +46,9 @@
                     </x-nav-link>
                 </li>
 
-                <!-- Menu Permintaan Bimbingan (Baru) -->
+                <!-- Menu Permintaan Bimbingan -->
                 <li>
-                    <x-nav-link :href="route('asn-permintaan-bimbingan')" :active="request()->routeIs('asn-permintaan-bimbingan') || request()->routeIs('asn.permintaan.*')">
+                    <x-nav-link :href="route('asn-permintaan-bimbingan')" :active="request()->routeIs('asn-permintaan-bimbingan') || request()->routeIs('asn.permintaan.*') || request()->routeIs('asn-mahasiswa-detail')">
                         <x-slot name="icon">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                 stroke="currentColor" stroke-width="2" class="w-5 h-5">
@@ -54,6 +61,27 @@
                             @if ($jumlahPermintaanBimbinganAsn > 0)
                                 <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-danger text-white">
                                     {{ $jumlahPermintaanBimbinganAsn }}
+                                </span>
+                            @endif
+                        </span>
+                    </x-nav-link>
+                </li>
+
+                <!-- Menu Pengajuan Libur Peserta -->
+                <li>
+                    <x-nav-link :href="route('asn.pengajuan-libur.index')" :active="request()->routeIs('asn.pengajuan-libur.*')">
+                        <x-slot name="icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="2" class="w-5 h-5">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                        </x-slot>
+                        <span class="flex items-center justify-between w-full gap-2">
+                            <span>Pengajuan Libur</span>
+                            @if ($jumlahPengajuanLiburAsn > 0)
+                                <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-warning text-white">
+                                    {{ $jumlahPengajuanLiburAsn }}
                                 </span>
                             @endif
                         </span>

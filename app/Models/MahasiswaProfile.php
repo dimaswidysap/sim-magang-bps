@@ -59,6 +59,10 @@ class MahasiswaProfile extends Model
     | LOGIKA KELOMPOK & PENGAJUAN PEMBIMBING
     |--------------------------------------------------------------------------
     */
+    public function pengajuanLiburs()
+    {
+        return $this->hasMany(PengajuanLibur::class, 'mahasiswa_profile_id');
+    }
 
     public function isKelompok(): bool
     {
@@ -305,6 +309,66 @@ class MahasiswaProfile extends Model
     public function getJumlahHariMasuk(bool $includeLogbookTugas = true): int
     {
         return $this->getTanggalAktifLogbook($includeLogbookTugas)->count();
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | REKAP HARI LIBUR BERDASARKAN PENGAJUAN LIBUR DISETUJUI
+    |--------------------------------------------------------------------------
+    */
+
+    public function getDaftarLiburDisetujui()
+    {
+        return $this->pengajuanLiburs()
+            ->with('pembimbing.user')
+            ->where('status', 'disetujui')
+            ->orderBy('tanggal_mulai', 'asc')
+            ->orderBy('id', 'asc')
+            ->get();
+    }
+
+    public function getJumlahHariLibur(): int
+    {
+        $liburList = $this->relationLoaded('pengajuanLiburs')
+            ? $this->pengajuanLiburs->where('status', 'disetujui')
+            : $this->getDaftarLiburDisetujui();
+
+        if ($liburList->isEmpty()) {
+            return 0;
+        }
+
+        $periodeMulai = $this->tanggal_mulai?->copy()->startOfDay();
+        $periodeSelesai = $this->tanggal_selesai?->copy()->startOfDay();
+        $tanggalUnik = [];
+
+        foreach ($liburList as $libur) {
+            if (! $libur->tanggal_mulai || ! $libur->tanggal_selesai) {
+                continue;
+            }
+
+            $mulai = $libur->tanggal_mulai->copy()->startOfDay();
+            $selesai = $libur->tanggal_selesai->copy()->startOfDay();
+
+            if ($periodeMulai && $mulai->lt($periodeMulai)) {
+                $mulai = $periodeMulai->copy();
+            }
+
+            if ($periodeSelesai && $selesai->gt($periodeSelesai)) {
+                $selesai = $periodeSelesai->copy();
+            }
+
+            if ($mulai->gt($selesai)) {
+                continue;
+            }
+
+            $kursor = $mulai->copy();
+            while ($kursor->lte($selesai)) {
+                $tanggalUnik[$kursor->toDateString()] = true;
+                $kursor->addDay();
+            }
+        }
+
+        return count($tanggalUnik);
     }
 
     /*

@@ -138,11 +138,16 @@
                         </div>
 
                         <!-- Kartu Statistik Capaian -->
-                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
                             <div class="bg-background border border-border rounded-xl p-4 text-center">
                                 <p class="text-xs text-text-light font-medium">Total Hari Masuk</p>
                                 <p class="text-2xl font-bold text-success mt-1">{{ $totalHariMasuk }}</p>
                                 <p class="text-[11px] text-text-light mt-0.5">Hari aktif tervalidasi</p>
+                            </div>
+                            <div class="bg-background border border-border rounded-xl p-4 text-center">
+                                <p class="text-xs text-text-light font-medium">Total Hari Libur</p>
+                                <p class="text-2xl font-bold text-warning-dark mt-1">{{ $totalHariLibur }}</p>
+                                <p class="text-[11px] text-text-light mt-0.5">Hari izin/libur disetujui</p>
                             </div>
                             <div class="bg-background border border-border rounded-xl p-4 text-center">
                                 <p class="text-xs text-text-light font-medium">Tugas Selesai</p>
@@ -155,7 +160,7 @@
                                 <p class="text-2xl font-bold text-text mt-1">{{ $totalLogbookMandiri }}</p>
                                 <p class="text-[11px] text-text-light mt-0.5">Catatan tervalidasi</p>
                             </div>
-                            <div class="bg-background border border-border rounded-xl p-4 text-center">
+                            <div class="bg-background border border-border rounded-xl p-4 text-center col-span-2 sm:col-span-1">
                                 <p class="text-xs text-text-light font-medium">Durasi Kalender</p>
                                 <p class="text-2xl font-bold text-text mt-1">{{ $durasiHariKalender }}</p>
                                 <p class="text-[11px] text-text-light mt-0.5">Hari periode magang</p>
@@ -268,6 +273,66 @@
                                                             class="inline-flex px-2 py-0.5 rounded-full text-[11px] font-bold bg-success/10 text-success border border-success/20">
                                                             Tervalidasi
                                                         </span>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @endif
+                        </div>
+
+                        <!-- Bagian E: Rekapitulasi Pengajuan Libur (Disetujui) -->
+                        <div class="space-y-3">
+                            <h3
+                                class="text-sm font-bold uppercase tracking-wider text-primary border-b border-border pb-2">
+                                E. Rekapitulasi Hari Libur / Izin (Disetujui ASN)
+                            </h3>
+
+                            @if ($daftarLiburDisetujui->isEmpty())
+                                <p class="text-xs text-text-light italic py-4">Tidak ada riwayat pengajuan libur yang disetujui selama periode magang.
+                                </p>
+                            @else
+                                <div class="overflow-x-auto border border-border rounded-xl">
+                                    <table class="w-full text-left border-collapse text-xs sm:text-sm">
+                                        <thead
+                                            class="bg-background border-b border-border text-[11px] uppercase text-text-light">
+                                            <tr>
+                                                <th class="px-4 py-3 text-center w-10">No</th>
+                                                <th class="px-4 py-3 whitespace-nowrap">Tanggal Libur</th>
+                                                <th class="px-4 py-3 text-center whitespace-nowrap">Durasi</th>
+                                                <th class="px-4 py-3">Alasan Libur</th>
+                                                <th class="px-4 py-3 whitespace-nowrap">Disetujui Oleh</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-border">
+                                            @foreach ($daftarLiburDisetujui as $libur)
+                                                <tr>
+                                                    <td class="px-4 py-3 text-center text-text-light">
+                                                        {{ $loop->iteration }}</td>
+                                                    <td class="px-4 py-3 whitespace-nowrap font-medium text-text">
+                                                        {{ $libur->tanggal_mulai?->translatedFormat('d M Y') ?? '-' }}
+                                                        @if ($libur->tanggal_mulai && $libur->tanggal_selesai && ! $libur->tanggal_mulai->equalTo($libur->tanggal_selesai))
+                                                            <span class="text-text-light font-normal"> s.d. </span>
+                                                            {{ $libur->tanggal_selesai->translatedFormat('d M Y') }}
+                                                        @endif
+                                                    </td>
+                                                    <td class="px-4 py-3 text-center whitespace-nowrap">
+                                                        <span
+                                                            class="inline-flex px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-warning/15 text-warning-dark border border-warning/30">
+                                                            {{ $libur->jumlah_hari }} Hari
+                                                        </span>
+                                                    </td>
+                                                    <td class="px-4 py-3">
+                                                        <p class="text-text leading-relaxed">{{ $libur->alasan }}</p>
+                                                        @if ($libur->catatan_asn)
+                                                            <p class="text-[11px] text-text-light mt-1">
+                                                                <strong>Catatan ASN:</strong> {{ $libur->catatan_asn }}
+                                                            </p>
+                                                        @endif
+                                                    </td>
+                                                    <td class="px-4 py-3 whitespace-nowrap text-text">
+                                                        {{ $libur->pembimbing?->user?->name ?? ($pembimbing?->user?->name ?? '-') }}
                                                     </td>
                                                 </tr>
                                             @endforeach

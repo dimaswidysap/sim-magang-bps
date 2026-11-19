@@ -15,12 +15,14 @@ use App\Http\Controllers\Admin\AdminSkill;
 use App\Http\Controllers\Admin\LaporanController;
 //
 use App\Http\Controllers\Asn\TugasController;
+use App\Http\Controllers\Asn\PengajuanLiburAsnController;
 //
 use App\Http\Controllers\Mahasiswa\MahasiswaTugas;
 use App\Http\Controllers\Mahasiswa\MagangLogbook;
 use App\Http\Controllers\Mahasiswa\TugasanggotacontrollerInvite;
 use App\Http\Controllers\Mahasiswa\TugasAnggotaControllerRespond;
 use App\Http\Controllers\Mahasiswa\TugasMahasiswaControllerAmbil;
+use App\Http\Controllers\Mahasiswa\PengajuanLiburController;
 //
 use App\Http\Controllers\BeritaController;
 use App\Http\Controllers\Mahasiswa\MagangLogbookController;
@@ -152,6 +154,12 @@ Route::prefix('asn')
         Route::post('/permintaan-bimbingan/{id}/tolak', [AsnController::class, 'tolakPermintaanBimbingan'])->name('asn.permintaan.tolak');
         Route::get('/mahasiswa/detail/{id}', [AsnController::class, 'detailMahasiswa'])->name('asn-mahasiswa-detail');
 
+        // Pengajuan Libur Peserta Bimbingan
+        Route::get('/pengajuan-libur', [PengajuanLiburAsnController::class, 'index'])->name('asn.pengajuan-libur.index');
+        Route::get('/pengajuan-libur/{id}', [PengajuanLiburAsnController::class, 'show'])->name('asn.pengajuan-libur.show');
+        Route::post('/pengajuan-libur/{id}/setujui', [PengajuanLiburAsnController::class, 'setujui'])->name('asn.pengajuan-libur.setujui');
+        Route::post('/pengajuan-libur/{id}/tolak', [PengajuanLiburAsnController::class, 'tolak'])->name('asn.pengajuan-libur.tolak');
+
         Route::get('/create-task', [AsnController::class, 'createTugasForm'])->name('asn-create-task-form');
         Route::get('/task-not-done', [AsnController::class, 'taskNotDone'])->name('task-not-done');
         Route::get('/task-done', [AsnController::class, 'taskDone'])->name('task-done');
@@ -191,6 +199,15 @@ Route::prefix('magang')
         Route::put('/profilUpdate', [MahasiswaController::class, 'updateProfil'])->name('mahasiswa-profil-update');
         Route::get('/profil', [MahasiswaController::class, 'profil'])->name('profil-magang');
         Route::post('/ajukan-pembimbing', [MahasiswaController::class, 'ajukanPembimbing'])->name('mahasiswa-ajukan-pembimbing');
+
+        // Pengajuan Libur Peserta Magang
+        Route::get('/pengajuan-libur', [PengajuanLiburController::class, 'index'])->name('mahasiswa.pengajuan-libur.index');
+        Route::get('/pengajuan-libur/create', [PengajuanLiburController::class, 'create'])->name('mahasiswa.pengajuan-libur.create');
+        Route::post('/pengajuan-libur', [PengajuanLiburController::class, 'store'])->name('mahasiswa.pengajuan-libur.store');
+        Route::get('/pengajuan-libur/{id}', [PengajuanLiburController::class, 'show'])->name('mahasiswa.pengajuan-libur.show');
+        Route::get('/pengajuan-libur/{id}/edit', [PengajuanLiburController::class, 'edit'])->name('mahasiswa.pengajuan-libur.edit');
+        Route::put('/pengajuan-libur/{id}', [PengajuanLiburController::class, 'update'])->name('mahasiswa.pengajuan-libur.update');
+        Route::delete('/pengajuan-libur/{id}', [PengajuanLiburController::class, 'destroy'])->name('mahasiswa.pengajuan-libur.destroy');
 
         Route::get('/tugas', [MahasiswaController::class, 'tugas'])->name('tugas');
         Route::get('/tugas-saya', [MahasiswaController::class, 'tugasSaya'])->name('tugas-saya');

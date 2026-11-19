@@ -222,6 +222,10 @@
                                                                     {{ $mhs->total_hari_masuk }} Hari Masuk
                                                                 </span>
                                                                 <span
+                                                                    class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-warning/15 text-warning-dark border border-warning/30">
+                                                                    {{ $mhs->total_hari_libur }} Hari Libur
+                                                                </span>
+                                                                <span
                                                                     class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-primary/10 text-primary-dark border border-primary/20">
                                                                     {{ $mhs->total_tugas_selesai }} Tugas Selesai
                                                                 </span>

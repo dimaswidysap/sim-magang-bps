@@ -42,6 +42,7 @@ class LaporanController extends Controller
             ->with([
                 'mahasiswaProfile.pembimbing.user',
                 'mahasiswaProfile.skills',
+                'mahasiswaProfile.pengajuanLiburs',
             ])
             ->when($tahunValid, function ($query) use ($tahunValid) {
                 $query->whereHas('mahasiswaProfile', function ($subQuery) use ($tahunValid) {
@@ -60,10 +61,11 @@ class LaporanController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        // Hitung ringkasan hari masuk & tugas selesai untuk setiap peserta pada halaman aktif
+        // Hitung ringkasan hari masuk, hari libur & tugas selesai untuk setiap peserta pada halaman aktif
         $daftarLaporan->getCollection()->transform(function (User $user) {
             $profil = $user->mahasiswaProfile;
             $user->total_hari_masuk = $profil ? $profil->getJumlahHariMasuk() : 0;
+            $user->total_hari_libur = $profil ? $profil->getJumlahHariLibur() : 0;
             $user->total_tugas_selesai = $profil ? Tugas::getJumlahTugasSelesai($profil->id) : 0;
 
             return $user;
@@ -106,7 +108,7 @@ class LaporanController extends Controller
     }
 
     /**
-     * Menyusun seluruh data profil, pembimbing, tugas, dan logbook peserta selesai.
+     * Menyusun seluruh data profil, pembimbing, tugas, logbook, dan hari libur peserta selesai.
      */
     private function buildLaporanData($id): array
     {
@@ -144,7 +146,11 @@ class LaporanController extends Controller
             ->orderBy('created_at', 'asc')
             ->get();
 
+        $daftarLiburDisetujui = $profil->getDaftarLiburDisetujui();
+        $profil->setRelation('pengajuanLiburs', $daftarLiburDisetujui);
+
         $totalHariMasuk = $profil->getJumlahHariMasuk();
+        $totalHariLibur = $profil->getJumlahHariLibur();
         $totalTugasSelesai = $daftarTugas->filter(function (Tugas $tugas) {
             $status = $tugas->status instanceof BackedEnum ? $tugas->status->value : (string) $tugas->status;
 
@@ -162,7 +168,9 @@ class LaporanController extends Controller
             'daftarTugas' => $daftarTugas,
             'logbookMandiri' => $logbookMandiri,
             'logbookTugas' => $logbookTugas,
+            'daftarLiburDisetujui' => $daftarLiburDisetujui,
             'totalHariMasuk' => $totalHariMasuk,
+            'totalHariLibur' => $totalHariLibur,
             'totalTugasSelesai' => $totalTugasSelesai,
             'totalTugasDiikuti' => $daftarTugas->count(),
             'totalLogbookMandiri' => $logbookMandiri->count(),

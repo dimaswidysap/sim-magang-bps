@@ -3,13 +3,13 @@
 
     {{-- container dalam --}}
 
-    <section class="h-full w-full bg-text container-dalam relative overflow-hidden">
+    <section class="h-full w-full bg-text container-dalam relative overflow-y-auto">
 
         {{-- conatiner logo bps --}}
 
         @include('components.icon-sidebar')
 
-        <nav class="mt-10">
+        <nav class="mt-10 pb-6">
             <ul class="font-montserrat flex flex-col gap-1.5">
                 <!-- Menu Dashboard -->
                 <li class="text-bold font-black text-white/50 text-[10px] ml-[5%] translate-y-2.5 mb-1">Utama</li>
@@ -42,6 +42,23 @@
                 </li>
 
                 @if (auth()->user()->isProfileComplete())
+                    <li class="text-bold font-black text-white/50 text-[10px] ml-[5%] translate-y-2.5 mb-1">
+                        Administrasi
+                    </li>
+
+                    <li>
+                        <x-nav-link :href="route('mahasiswa.pengajuan-libur.index')" :active="request()->routeIs('mahasiswa.pengajuan-libur.*')">
+                            <x-slot name="icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor" stroke-width="2" class="w-5 h-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            </x-slot>
+                            Pengajuan Libur
+                        </x-nav-link>
+                    </li>
+
                     <li class="text-bold font-black text-white/50 text-[10px] ml-[5%] translate-y-2.5 mb-1">
                         Management Tugas
                     </li>

@@ -22,54 +22,48 @@ class AuthController extends Controller
     {
         $credentials = $request->validate(
             [
-                'email' => 'required|email',
+                'login' => 'required|string',
                 'password' => 'required|string',
             ],
             [
-                'email.required' => 'Email wajib diisi.',
-                'email.email' => 'Format email tidak valid.',
+                'login.required' => 'Email atau nama wajib diisi.',
                 'password.required' => 'Password wajib diisi.',
             ]
         );
 
-        $throttleKey = Str::transliterate(Str::lower($credentials['email'])) . '|' . $request->ip();
+        $throttleKey = Str::transliterate(Str::lower($credentials['login'])) . '|' . $request->ip();
 
         if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
             $seconds = RateLimiter::availableIn($throttleKey);
 
             throw ValidationException::withMessages([
-                'email' => "Terlalu banyak percobaan login. Silakan coba lagi dalam {$seconds} detik.",
+                'login' => "Terlalu banyak percobaan login. Silakan coba lagi dalam {$seconds} detik.",
             ]);
         }
 
-        // Ambil user menggunakan indeks unique email, lalu pastikan huruf besar/kecil persis sama
-        $user = User::where('email', $credentials['email'])->first();
+        // Cari user dengan pencocokan case-sensitive pada kolom email atau name
+        $user = User::findForCaseSensitiveLogin($credentials['login'], $credentials['password']);
 
-        if (!$user || $user->email !== $credentials['email'] || !Auth::attempt($credentials)) {
+        if (!$user) {
             RateLimiter::hit($throttleKey, 60);
 
             throw ValidationException::withMessages([
-                'email' => 'Email atau password salah.',
+                'login' => 'Email/nama atau password salah.',
             ]);
         }
 
-        $authenticatedUser = Auth::user();
-
-        if (!$authenticatedUser->is_active) {
-            Auth::logout();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
-
+        if (!$user->is_active) {
             throw ValidationException::withMessages([
-                'email' => 'Akun Anda tidak aktif. Hubungi admin.',
+                'login' => 'Akun Anda tidak aktif. Hubungi admin.',
             ]);
         }
 
         RateLimiter::clear($throttleKey);
 
+        Auth::login($user);
         $request->session()->regenerate();
 
-        return $this->redirectByRole($authenticatedUser->role);
+        return $this->redirectByRole($user->role);
     }
 
     public function logout(Request $request): RedirectResponse
