@@ -99,6 +99,7 @@ Route::prefix('admin')
         Route::get('/mahasiswa/detail/{id}', [AdminMahasiswa::class, 'detailMahasiswa'])->name('admin-mahasiswa-detail');
         Route::get('/mahasiswa/update/{id}', [AdminMahasiswa::class, 'formMahasiswaEdit'])->name('form-mahasiswa-edit');
         Route::put('/mahasiswa/{id}', [AdminMahasiswa::class, 'updateMahasiswa'])->name('admin-mahasiswa-update');
+        Route::patch('/mahasiswa/{id}/reset-password', [AdminMahasiswa::class, 'resetPassword'])->name('admin.mahasiswa.reset-password');
         Route::delete('/destroyMahasiswa/{id}', [AdminMahasiswa::class, 'destroyMahasiswa'])->name('admin-mahasiswa-destroy');
 
         // Permintaan / Pengajuan Pembimbing Magang (diteruskan ke kandidat ASN)

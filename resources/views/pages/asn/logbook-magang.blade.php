@@ -234,9 +234,9 @@
                     $lampiranList = array_filter($lampiranList);
                 @endphp
 
-                <div class="bg-surface border border-border rounded-xl p-4 sm:p-5 shadow-xs space-y-3">
+                <div class="bg-surface border border-border rounded-xl p-4 sm:p-5 shadow-xs space-y-3.5">
                     <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                        <div class="space-y-1">
+                        <div class="space-y-1.5">
                             <div class="flex flex-wrap items-center gap-2">
                                 <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-bold bg-primary/10 text-primary-dark border border-primary/20">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -249,9 +249,25 @@
                                 </span>
                             </div>
 
-                            <h4 class="text-base font-bold text-text pt-1">
-                                {{ $item->judul_kegiatan }}
-                            </h4>
+                            <!-- Judul Kegiatan -->
+                            <div class="pt-1">
+                                <span class="block text-[11px] font-semibold uppercase tracking-wider text-text-light">
+                                    Judul Kegiatan
+                                </span>
+                                <h4 class="text-base font-bold text-text leading-snug">
+                                    {{ $item->judul_kegiatan }}
+                                </h4>
+                            </div>
+
+                            <!-- Lokasi Kegiatan -->
+                            <div class="flex items-center gap-1.5 text-xs pt-0.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                <span class="font-semibold text-text-light">Lokasi:</span>
+                                <span class="font-semibold text-text">{{ $item->lokasi ?: '-' }}</span>
+                            </div>
                         </div>
 
                         <form method="POST" action="{{ route('asn-logbook-mandiri-validasi', $item->id) }}"
@@ -268,9 +284,13 @@
                         </form>
                     </div>
 
-                    <p class="text-sm text-text-light leading-relaxed whitespace-pre-line">
-                        {{ $item->deskripsi_kegiatan }}
-                    </p>
+                    <!-- Deskripsi Kegiatan -->
+                    <div class="bg-background/80 border border-border/70 rounded-lg p-3 space-y-1">
+                        <span class="block text-[11px] font-semibold uppercase tracking-wider text-text-light">
+                            Deskripsi Kegiatan
+                        </span>
+                        <p class="text-sm text-text leading-relaxed whitespace-pre-line">{{ $item->deskripsi_kegiatan }}</p>
+                    </div>
 
                     @if (!empty($lampiranList))
                         <div class="pt-2 border-t border-border/70">

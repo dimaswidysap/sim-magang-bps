@@ -223,10 +223,13 @@
                                             class="px-5 py-4 text-xs font-semibold text-text-light uppercase tracking-wider text-center w-12 align-middle">
                                             No</th>
                                         <th
-                                            class="px-5 py-4 text-xs font-semibold text-text-light uppercase tracking-wider w-1/2 align-middle">
+                                            class="px-5 py-4 text-xs font-semibold text-text-light uppercase tracking-wider w-2/5 align-middle">
                                             Judul & Deskripsi Kegiatan</th>
                                         <th
-                                            class="px-5 py-4 text-xs font-semibold text-text-light uppercase tracking-wider  whitespace-nowrap align-middle">
+                                            class="px-5 py-4 text-xs font-semibold text-text-light uppercase tracking-wider align-middle">
+                                            Lokasi</th>
+                                        <th
+                                            class="px-5 py-4 text-xs font-semibold text-text-light uppercase tracking-wider whitespace-nowrap align-middle">
                                             Kategori</th>
                                         <th
                                             class="px-5 py-4 text-xs font-semibold text-text-light uppercase tracking-wider whitespace-nowrap align-middle">
@@ -253,8 +256,23 @@
                                                 </p>
                                             </td>
 
+                                            <!-- Lokasi -->
+                                            <td class="px-5 py-4 align-middle">
+                                                <p class="text-xs text-text flex items-center gap-1.5">
+                                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                                        class="h-3.5 w-3.5 text-primary shrink-0" fill="none"
+                                                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                    </svg>
+                                                    <span>{{ $item->lokasi ?? '-' }}</span>
+                                                </p>
+                                            </td>
+
                                             <!-- Kategori Badge -->
-                                            <td class="px-5 py-4 align-middle  whitespace-nowrap">
+                                            <td class="px-5 py-4 align-middle whitespace-nowrap">
                                                 <span
                                                     class="inline-flex items-center px-2.5 py-1 bg-accent/10 text-accent-dark text-[10px] font-bold rounded-md uppercase tracking-wide border border-accent/20">
                                                     Logbook Mandiri
@@ -298,7 +316,17 @@
                                         <h3 class="text-base font-bold text-text leading-snug">
                                             {{ $item->judul_kegiatan }}
                                         </h3>
-                                        <p class="text-xs text-text-light mt-1 line-clamp-3 leading-relaxed">
+                                        <p class="text-xs text-primary font-medium flex items-center gap-1 mt-1">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 shrink-0"
+                                                fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            </svg>
+                                            <span>{{ $item->lokasi ?? '-' }}</span>
+                                        </p>
+                                        <p class="text-xs text-text-light mt-1.5 line-clamp-3 leading-relaxed">
                                             {{ $item->deskripsi_kegiatan }}
                                         </p>
                                     </div>

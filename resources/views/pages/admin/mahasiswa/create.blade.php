@@ -16,7 +16,7 @@
             <div class="mb-6 pb-4 border-b border-border">
                 <h1 class="text-2xl font-bold text-text">Buat Akun Magang/PKL</h1>
                 <p class="text-sm text-text-light mt-1">
-                    Pilih mode pendaftaran <strong>Individu</strong> atau <strong>Kelompok</strong>. Peserta akan melengkapi biodata dan periode magang secara mandiri setelah login sebelum mengajukan pembimbing.
+                    Pilih mode pendaftaran <strong>Individu</strong> atau <strong>Kelompok</strong>. Password setiap akun otomatis diatur ke <code class="px-1.5 py-0.5 rounded bg-background border border-border font-mono font-bold text-primary">1sampai8</code>.
                 </p>
             </div>
 
@@ -81,7 +81,7 @@
                     </h2>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-background p-5 rounded-xl border border-border">
-                        <div class="md:col-span-2">
+                        <div>
                             <label class="block text-sm font-medium text-text-light mb-1.5">Nama Lengkap</label>
                             <input type="text" name="name" value="{{ old('name') }}" placeholder="Masukkan nama lengkap peserta"
                                 class="input-individu w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors">
@@ -89,11 +89,6 @@
                         <div>
                             <label class="block text-sm font-medium text-text-light mb-1.5">Email</label>
                             <input type="email" name="email" value="{{ old('email') }}" placeholder="contoh@email.com"
-                                class="input-individu w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-text-light mb-1.5">Password</label>
-                            <input type="password" name="password" placeholder="Minimal 8 karakter"
                                 class="input-individu w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors">
                         </div>
                     </div>
@@ -143,7 +138,7 @@
                                     </button>
                                 </div>
 
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-xs font-medium text-text-light mb-1.5">Nama Lengkap</label>
                                         <input type="text" name="anggota[{{ $idx }}][name]"
@@ -156,12 +151,6 @@
                                             value="{{ $anggota['email'] ?? '' }}" placeholder="email@domain.com"
                                             class="input-kelompok w-full px-3.5 py-2.5 bg-surface border border-border rounded-lg text-sm text-text focus:outline-none focus:border-primary transition-colors">
                                     </div>
-                                    <div>
-                                        <label class="block text-xs font-medium text-text-light mb-1.5">Password</label>
-                                        <input type="password" name="anggota[{{ $idx }}][password]"
-                                            placeholder="Minimal 8 karakter"
-                                            class="input-kelompok w-full px-3.5 py-2.5 bg-surface border border-border rounded-lg text-sm text-text focus:outline-none focus:border-primary transition-colors">
-                                    </div>
                                 </div>
                             </div>
                         @endforeach
@@ -172,8 +161,8 @@
                 <div class="text-xs text-text-light bg-background border border-border rounded-xl p-4 space-y-1.5">
                     <p class="font-semibold text-text">Alur Pendaftaran & Penetapan Pembimbing:</p>
                     <ol class="list-decimal list-inside space-y-1">
-                        <li>Admin membuat akun peserta (Individu atau Kelompok) tanpa menetapkan pembimbing dan tanggal periode terlebih dahulu.</li>
-                        <li>Peserta login menggunakan akun yang dibuat dan melengkapi profil (NIM, instansi, jurusan, serta tanggal mulai & selesai magang).</li>
+                        <li>Admin membuat akun peserta (Individu atau Kelompok) tanpa menetapkan pembimbing dan tanggal periode terlebih dahulu. Password awal otomatis terisi <strong class="font-mono text-primary">1sampai8</strong>.</li>
+                        <li>Peserta login menggunakan email/nama dan password default tersebut, lalu melengkapi profil (NIM, instansi, jurusan, serta tanggal mulai & selesai magang).</li>
                         <li>Setelah profil lengkap, tombol <strong>Ajukan Pembimbing</strong> muncul pada akun peserta (atau akun peserta pertama untuk magang kelompok).</li>
                         <li>Admin memverifikasi pengajuan pada menu <strong>Permintaan Magang</strong> untuk memilih pembimbing ASN atau menolak beserta alasannya.</li>
                     </ol>
@@ -247,7 +236,6 @@
                     const inputs = card.querySelectorAll('input');
                     if (inputs[0]) inputs[0].name = `anggota[${idx}][name]`;
                     if (inputs[1]) inputs[1].name = `anggota[${idx}][email]`;
-                    if (inputs[2]) inputs[2].name = `anggota[${idx}][password]`;
                 });
             }
 
@@ -270,7 +258,7 @@
                             Hapus
                         </button>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-medium text-text-light mb-1.5">Nama Lengkap</label>
                             <input type="text" name="anggota[${indexBaru}][name]" placeholder="Nama anggota"
@@ -279,11 +267,6 @@
                         <div>
                             <label class="block text-xs font-medium text-text-light mb-1.5">Email</label>
                             <input type="email" name="anggota[${indexBaru}][email]" placeholder="email@domain.com"
-                                class="input-kelompok w-full px-3.5 py-2.5 bg-surface border border-border rounded-lg text-sm text-text focus:outline-none focus:border-primary transition-colors">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-text-light mb-1.5">Password</label>
-                            <input type="password" name="anggota[${indexBaru}][password]" placeholder="Minimal 8 karakter"
                                 class="input-kelompok w-full px-3.5 py-2.5 bg-surface border border-border rounded-lg text-sm text-text focus:outline-none focus:border-primary transition-colors">
                         </div>
                     </div>

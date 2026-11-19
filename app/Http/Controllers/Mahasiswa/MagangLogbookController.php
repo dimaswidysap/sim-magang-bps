@@ -88,6 +88,7 @@ class MagangLogbookController extends Controller
             [
                 'tanggal_kegiatan' => 'required|date|before_or_equal:today',
                 'judul_kegiatan' => 'required|string|max:255',
+                'lokasi' => 'required|string|max:255',
                 'deskripsi_kegiatan' => 'required|string',
                 'file_lampiran' => 'nullable|array',
                 'file_lampiran.*' => 'image|mimes:jpg,jpeg,png|max:2048',
@@ -96,6 +97,8 @@ class MagangLogbookController extends Controller
                 'tanggal_kegiatan.required' => 'Tanggal kegiatan wajib diisi.',
                 'tanggal_kegiatan.before_or_equal' => 'Tanggal kegiatan tidak boleh melebihi hari ini.',
                 'judul_kegiatan.required' => 'Judul kegiatan wajib diisi.',
+                'lokasi.required' => 'Lokasi kegiatan wajib diisi.',
+                'lokasi.max' => 'Lokasi kegiatan maksimal 255 karakter.',
                 'deskripsi_kegiatan.required' => 'Deskripsi kegiatan wajib diisi.',
                 'file_lampiran.array' => 'Format lampiran tidak valid.',
                 'file_lampiran.*.image' => 'Setiap file lampiran harus berupa gambar.',
@@ -121,6 +124,7 @@ class MagangLogbookController extends Controller
             'mahasiswa_profile_id' => $mahasiswaProfile->id,
             'tanggal_kegiatan' => $validated['tanggal_kegiatan'],
             'judul_kegiatan' => $validated['judul_kegiatan'],
+            'lokasi' => $validated['lokasi'],
             'deskripsi_kegiatan' => $validated['deskripsi_kegiatan'],
             'file_lampiran' => $filePaths,
             'is_validated' => false,
@@ -147,15 +151,25 @@ class MagangLogbookController extends Controller
                 ->with('error', 'Logbook yang sudah divalidasi pembimbing tidak dapat diubah.');
         }
 
-        $validated = $request->validate([
-            'tanggal_kegiatan' => 'required|date',
-            'judul_kegiatan' => 'required|string|max:255',
-            'deskripsi_kegiatan' => 'required|string',
-            'file_lampiran' => 'nullable|array',
-            'file_lampiran.*' => 'image|mimes:png,jpg,jpeg|max:10240',
-            'hapus_lampiran' => 'nullable|array',
-            'hapus_lampiran.*' => 'string',
-        ]);
+        $validated = $request->validate(
+            [
+                'tanggal_kegiatan' => 'required|date',
+                'judul_kegiatan' => 'required|string|max:255',
+                'lokasi' => 'required|string|max:255',
+                'deskripsi_kegiatan' => 'required|string',
+                'file_lampiran' => 'nullable|array',
+                'file_lampiran.*' => 'image|mimes:png,jpg,jpeg|max:10240',
+                'hapus_lampiran' => 'nullable|array',
+                'hapus_lampiran.*' => 'string',
+            ],
+            [
+                'tanggal_kegiatan.required' => 'Tanggal kegiatan wajib diisi.',
+                'judul_kegiatan.required' => 'Judul kegiatan wajib diisi.',
+                'lokasi.required' => 'Lokasi kegiatan wajib diisi.',
+                'lokasi.max' => 'Lokasi kegiatan maksimal 255 karakter.',
+                'deskripsi_kegiatan.required' => 'Deskripsi kegiatan wajib diisi.',
+            ],
+        );
 
         $existingFiles = $logbook->file_lampiran ?? [];
         if (is_string($existingFiles)) {
@@ -181,6 +195,7 @@ class MagangLogbookController extends Controller
         $logbook->update([
             'tanggal_kegiatan' => $validated['tanggal_kegiatan'],
             'judul_kegiatan' => $validated['judul_kegiatan'],
+            'lokasi' => $validated['lokasi'],
             'deskripsi_kegiatan' => $validated['deskripsi_kegiatan'],
             'file_lampiran' => $existingFiles,
         ]);

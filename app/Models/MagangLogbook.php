@@ -16,6 +16,7 @@ class MagangLogbook extends Model
         'mahasiswa_profile_id',
         'tanggal_kegiatan',
         'judul_kegiatan',
+        'lokasi',
         'deskripsi_kegiatan',
         'file_lampiran',
         'is_validated',

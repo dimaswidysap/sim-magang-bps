@@ -18,6 +18,8 @@ use Illuminate\Validation\Rule;
 
 class AdminMahasiswa extends Controller
 {
+    private const DEFAULT_PASSWORD = '1sampai8';
+
     public function showForm()
     {
         return view('pages.admin.mahasiswa.create');
@@ -38,7 +40,7 @@ class AdminMahasiswa extends Controller
 
     /**
      * Menyimpan pendaftaran peserta magang baru (Mode Individu atau Kelompok)
-     * tanpa pemilihan pembimbing ASN maupun periode magang di awal.
+     * dengan password default '1sampai8' tanpa pemilihan pembimbing maupun periode di awal.
      */
     public function storeMahasiswa(Request $request)
     {
@@ -51,7 +53,6 @@ class AdminMahasiswa extends Controller
                     'anggota' => 'required|array|min:2',
                     'anggota.*.name' => 'required|string|max:255',
                     'anggota.*.email' => 'required|email|distinct|unique:users,email',
-                    'anggota.*.password' => 'required|string|min:8',
                 ],
                 [
                     'anggota.required' => 'Data anggota kelompok wajib diisi.',
@@ -62,8 +63,6 @@ class AdminMahasiswa extends Controller
                     'anggota.*.email.email' => 'Format email anggota tidak valid.',
                     'anggota.*.email.distinct' => 'Email antar anggota dalam satu kelompok tidak boleh sama.',
                     'anggota.*.email.unique' => 'Salah satu email anggota sudah terdaftar dalam sistem.',
-                    'anggota.*.password.required' => 'Password setiap anggota wajib diisi.',
-                    'anggota.*.password.min' => 'Password anggota minimal 8 karakter.',
                 ],
             );
 
@@ -74,7 +73,7 @@ class AdminMahasiswa extends Controller
                     $user = User::create([
                         'name' => $item['name'],
                         'email' => $item['email'],
-                        'password' => Hash::make($item['password']),
+                        'password' => Hash::make(self::DEFAULT_PASSWORD),
                         'role' => 'mahasiswa',
                         'is_active' => true,
                     ]);
@@ -100,7 +99,7 @@ class AdminMahasiswa extends Controller
 
             return redirect()
                 ->route('admin-mahasiswa')
-                ->with('success', "Berhasil mendaftarkan kelompok magang ({$jumlahAnggota} peserta). Peserta pertama ({$namaKetua}) ditunjuk sebagai perwakilan untuk mengajukan pembimbing setelah profil dilengkapi.");
+                ->with('success', "Berhasil mendaftarkan kelompok magang ({$jumlahAnggota} peserta) dengan password default '" . self::DEFAULT_PASSWORD . "'. Peserta pertama ({$namaKetua}) ditunjuk sebagai perwakilan untuk mengajukan pembimbing setelah profil dilengkapi.");
         }
 
         // Mode Pendaftaran Individu
@@ -109,7 +108,6 @@ class AdminMahasiswa extends Controller
                 'tipe_pendaftaran' => 'nullable|in:individu,kelompok',
                 'name' => 'required|string|max:255',
                 'email' => 'required|email|unique:users,email',
-                'password' => 'required|string|min:8',
             ],
             [
                 'name.required' => 'Silakan isi nama lengkap peserta.',
@@ -117,8 +115,6 @@ class AdminMahasiswa extends Controller
                 'email.required' => 'Silakan isi alamat email.',
                 'email.email' => 'Mohon masukkan alamat email yang valid (contoh: user@domain.com).',
                 'email.unique' => 'Email ini sudah digunakan. Silakan gunakan email yang berbeda.',
-                'password.required' => 'Silakan buat kata sandi.',
-                'password.min' => 'Kata sandi harus memiliki minimal 8 karakter untuk keamanan.',
             ],
         );
 
@@ -126,7 +122,7 @@ class AdminMahasiswa extends Controller
             $user = User::create([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
-                'password' => Hash::make($validated['password']),
+                'password' => Hash::make(self::DEFAULT_PASSWORD),
                 'role' => 'mahasiswa',
                 'is_active' => true,
             ]);
@@ -146,7 +142,26 @@ class AdminMahasiswa extends Controller
 
         Cache::forget('magang_status_sync_lock');
 
-        return redirect()->route('admin-mahasiswa')->with('success', 'Akun peserta magang individu berhasil dibuat. Peserta silakan login untuk melengkapi profil dan mengajukan pembimbing.');
+        return redirect()
+            ->route('admin-mahasiswa')
+            ->with('success', "Akun peserta magang individu berhasil dibuat dengan password default '" . self::DEFAULT_PASSWORD . "'. Peserta silakan login untuk melengkapi profil dan mengajukan pembimbing.");
+    }
+
+    /**
+     * Mereset password akun peserta magang kembali ke password default ('1sampai8').
+     */
+    public function resetPassword($id)
+    {
+        $user = User::query()
+            ->where('id', $id)
+            ->where('role', 'mahasiswa')
+            ->firstOrFail();
+
+        $user->update([
+            'password' => Hash::make(self::DEFAULT_PASSWORD),
+        ]);
+
+        return back()->with('success', "Password peserta {$user->name} berhasil direset menjadi default: " . self::DEFAULT_PASSWORD);
     }
 
     /**

@@ -56,6 +56,21 @@
                     @enderror
                 </div>
 
+                <!-- Lokasi Kegiatan -->
+                <div>
+                    <label for="lokasi"
+                        class="block text-xs font-bold text-text-light uppercase tracking-wider mb-2">
+                        Lokasi Kegiatan <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" id="lokasi" name="lokasi" value="{{ old('lokasi') }}"
+                        placeholder="Masukkan lokasi pelaksanaan kegiatan..."
+                        class="w-full px-4 py-2.5 rounded-xl border border-border text-text bg-surface placeholder:text-text-light/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition duration-200 text-sm"
+                        required>
+                    @error('lokasi')
+                        <p class="mt-1.5 text-xs text-danger">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <!-- Deskripsi Kegiatan -->
                 <div>
                     <label for="deskripsi_kegiatan"

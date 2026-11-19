@@ -20,7 +20,21 @@
                 </div>
             </div>
 
-            <!-- Alert Error -->
+            <!-- Alert Sukses -->
+            @if (session('success'))
+                <div class="mb-6 p-4 bg-success/10 border border-success/30 rounded-lg text-sm font-semibold text-success">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            <!-- Alert Error Session -->
+            @if (session('error'))
+                <div class="mb-6 p-4 bg-danger/10 border border-danger/30 rounded-lg text-sm font-semibold text-danger">
+                    {{ session('error') }}
+                </div>
+            @endif
+
+            <!-- Alert Error Validasi -->
             @if ($errors->any())
                 <div class="mb-6 p-4 bg-surface border border-danger rounded-lg">
                     <div class="flex items-center gap-2 text-danger font-semibold mb-2">
@@ -71,6 +85,21 @@
                                 class="w-full px-4 py-2.5 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-primary transition-colors">
                             <p class="text-xs text-text-light mt-1.5 italic">* Kosongkan jika tidak ingin mengubah password.
                             </p>
+
+                            <div class="mt-3 pt-3 border-t border-border/70 flex flex-wrap items-center justify-between gap-2">
+                                <span class="text-xs text-text-light">
+                                    Lupa password? Kembalikan ke default (<strong class="font-mono text-text">1sampai8</strong>):
+                                </span>
+                                <button type="submit" form="form-reset-password"
+                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-warning/15 text-warning-dark border border-warning/30 hover:bg-warning/25 transition-colors cursor-pointer">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor" stroke-width="2.2">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                    Reset ke Default
+                                </button>
+                            </div>
                         </div>
 
                         <div>
@@ -268,6 +297,14 @@
                     </x-buttonv2>
                 </div>
 
+            </form>
+
+            <!-- Form Terpisah untuk Reset Password Default (Menghindari Nested Form) -->
+            <form id="form-reset-password" method="POST"
+                action="{{ route('admin.mahasiswa.reset-password', $dataUser->id) }}"
+                data-confirm="Apakah Anda yakin ingin mereset password {{ $dataUser->name }} menjadi default '1sampai8'?">
+                @csrf
+                @method('PATCH')
             </form>
         </section>
     </main>
