@@ -2,11 +2,11 @@
 
 @section('content')
     <main class="relative w-full min-h-screen flex bg-background overflow-x-hidden">
-        @include('components.header-mobile')
-        @include('components.asn.asn-sidebar')
+        {{-- @include('components.header-mobile') --}}
+        {{-- @include('components.asn.asn-sidebar') --}}
 
-        <section class="flex flex-col flex-1 min-w-0 md:pl-60 container-content-mobile">
-            @include('components.asn.header-asn')
+        <section class="flex flex-col flex-1 min-w-0 container-content-mobile">
+            {{-- @include('components.asn.header-asn') --}}
 
             @php
                 $mhsProfil = $pengajuan->mahasiswaProfile;

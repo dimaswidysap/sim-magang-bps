@@ -30,18 +30,60 @@
 
                     <!-- Password baru -->
                     <div>
-                        <label class="mb-2 block text-sm font-semibold text-white md:text-text">Password Baru</label>
-                        <input type="password" name="password" placeholder="Minimal 8 karakter" required
-                            autocomplete="new-password"
-                            class="w-full rounded-xl border border-border bg-background px-4 py-3 text-text placeholder:text-text-light outline-none transition duration-300 focus:border-primary focus:ring-4 focus:ring-primary/20" />
+                        <label for="new-password" class="mb-2 block text-sm font-semibold text-white md:text-text">Password Baru</label>
+                        <div class="relative">
+                            <input id="new-password" type="password" name="password" placeholder="Minimal 8 karakter" required
+                                autocomplete="new-password"
+                                class="w-full rounded-xl border border-border bg-background px-4 py-3 pr-12 text-text placeholder:text-text-light outline-none transition duration-300 focus:border-primary focus:ring-4 focus:ring-primary/20" />
+
+                            <button type="button" onclick="togglePassword('new-password', this)"
+                                aria-label="Tampilkan atau sembunyikan password baru"
+                                class="absolute inset-y-0 right-0 flex items-center px-3.5 text-text-light hover:text-text transition-colors cursor-pointer">
+                                <svg class="icon-eye h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />
+                                    <circle cx="12" cy="12" r="3" />
+                                </svg>
+                                <svg class="icon-eye-off hidden h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49" />
+                                    <path d="M14.084 14.158a3 3 0 0 1-4.242-4.242" />
+                                    <path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143" />
+                                    <path d="m2 2 20 20" />
+                                </svg>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Konfirmasi password -->
                     <div>
-                        <label class="mb-2 block text-sm font-semibold text-white md:text-text">Konfirmasi Password</label>
-                        <input type="password" name="password_confirmation" placeholder="Ulangi password baru" required
-                            autocomplete="new-password"
-                            class="w-full rounded-xl border border-border bg-background px-4 py-3 text-text placeholder:text-text-light outline-none transition duration-300 focus:border-primary focus:ring-4 focus:ring-primary/20" />
+                        <label for="confirm-password" class="mb-2 block text-sm font-semibold text-white md:text-text">Konfirmasi Password</label>
+                        <div class="relative">
+                            <input id="confirm-password" type="password" name="password_confirmation" placeholder="Ulangi password baru" required
+                                autocomplete="new-password"
+                                class="w-full rounded-xl border border-border bg-background px-4 py-3 pr-12 text-text placeholder:text-text-light outline-none transition duration-300 focus:border-primary focus:ring-4 focus:ring-primary/20" />
+
+                            <button type="button" onclick="togglePassword('confirm-password', this)"
+                                aria-label="Tampilkan atau sembunyikan konfirmasi password"
+                                class="absolute inset-y-0 right-0 flex items-center px-3.5 text-text-light hover:text-text transition-colors cursor-pointer">
+                                <svg class="icon-eye h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />
+                                    <circle cx="12" cy="12" r="3" />
+                                </svg>
+                                <svg class="icon-eye-off hidden h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49" />
+                                    <path d="M14.084 14.158a3 3 0 0 1-4.242-4.242" />
+                                    <path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143" />
+                                    <path d="m2 2 20 20" />
+                                </svg>
+                            </button>
+                        </div>
                     </div>
 
                     {{-- Pesan Error --}}
@@ -71,4 +113,22 @@
     </main>
 
     @include('components.Footer')
+
+    <script>
+        function togglePassword(inputId, button) {
+            const input = document.getElementById(inputId);
+            const iconEye = button.querySelector('.icon-eye');
+            const iconEyeOff = button.querySelector('.icon-eye-off');
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                iconEye.classList.add('hidden');
+                iconEyeOff.classList.remove('hidden');
+            } else {
+                input.type = 'password';
+                iconEye.classList.remove('hidden');
+                iconEyeOff.classList.add('hidden');
+            }
+        }
+    </script>
 @endsection
